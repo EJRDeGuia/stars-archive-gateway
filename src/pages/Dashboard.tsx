@@ -214,58 +214,24 @@ const Dashboard = () => {
             </Card>
           </div>
 
-          {/* Colleges Grid */}
+          {/* Colleges Grid - Uniform styling for all roles */}
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">Browse by College</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {colleges.map((college) => {
-                const colorMappings: Record<string, { bg: string, icon: string, text: string, border: string }> = {
-                  'red': { 
-                    bg: 'bg-red-50', 
-                    icon: 'bg-red-500 text-white', 
-                    text: 'text-red-500',
-                    border: 'border-red-200'
-                  },
-                  'blue': { 
-                    bg: 'bg-blue-50', 
-                    icon: 'bg-blue-500 text-white',
-                    text: 'text-blue-500',
-                    border: 'border-blue-200'
-                  },
-                  'yellow': { 
-                    bg: 'bg-yellow-50', 
-                    icon: 'bg-yellow-500 text-white',
-                    text: 'text-yellow-500',
-                    border: 'border-yellow-200'
-                  },
-                  'green': { 
-                    bg: 'bg-green-50', 
-                    icon: 'bg-green-500 text-white',
-                    text: 'text-green-500',
-                    border: 'border-green-200'
-                  },
-                  'gray': { 
-                    bg: 'bg-gray-50', 
-                    icon: 'bg-gray-500 text-white',
-                    text: 'text-gray-500',
-                    border: 'border-gray-200'
-                  }
-                };
-                
-                const colorSet = colorMappings[college.color] || colorMappings.gray;
                 const Icon = college.icon;
 
                 return (
                   <Card 
                     key={college.id} 
-                    className={`hover:shadow-md transition-shadow cursor-pointer bg-white border ${colorSet.border}`}
+                    className="hover:shadow-md transition-shadow cursor-pointer bg-white border border-gray-200"
                     onClick={() => navigate(`/college/${college.id}`)}
                   >
                     <CardContent className="p-6">
                       <div className="flex items-center mb-4">
-                        <div className={`${colorSet.bg} p-3 rounded-full`}>
-                          <div className={`${colorSet.icon} p-2 rounded-full`}>
-                            <Icon className="h-6 w-6" />
+                        <div className="bg-dlsl-green/10 p-3 rounded-full">
+                          <div className="bg-dlsl-green p-2 rounded-full">
+                            <Icon className="h-6 w-6 text-white" />
                           </div>
                         </div>
                         <div className="ml-4">
@@ -287,7 +253,7 @@ const Dashboard = () => {
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className={`${colorSet.text}`}
+                          className="text-dlsl-green"
                           onClick={(e) => {
                             e.stopPropagation();
                             navigate(`/college/${college.id}`);
