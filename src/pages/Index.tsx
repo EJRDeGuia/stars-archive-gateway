@@ -199,8 +199,8 @@ const Index = () => {
           </div>
         </header>
 
-        {/* Hero Section */}
-        <section className="relative bg-gradient-to-r from-dlsl-green/90 via-dlsl-green to-dlsl-green-dark text-white">
+        {/* Hero Section - Modified to use the background image directly */}
+        <section className="relative">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
             <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -210,12 +210,12 @@ const Index = () => {
                   De La Salle Lipa • Learning Resource Center
                 </div>
                 <div className="space-y-4">
-                  <h1 className="text-4xl md:text-6xl font-bold leading-tight">
+                  <h1 className="text-4xl md:text-6xl font-bold leading-tight text-white">
                     Smart Thesis
-                    <span className="block text-white">Archival and</span>
+                    <span className="block">Archival and</span>
                     <span className="block">Retrieval System</span>
                   </h1>
-                  <p className="text-xl text-green-100 leading-relaxed max-w-lg">
+                  <p className="text-xl text-white/90 leading-relaxed max-w-lg">
                     A modern platform for managing, discovering, and accessing academic research at De La Salle Lipa.
                   </p>
                 </div>
