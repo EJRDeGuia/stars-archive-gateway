@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,47 +10,49 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Index = () => {
   const navigate = useNavigate();
-  const collegeData = [{
-    id: '1',
-    name: 'CITE',
-    fullName: 'College of Information Technology and Engineering',
-    color: 'red',
-    thesesCount: 120,
-    icon: <Code className="h-6 w-6" />,
-    description: 'Advancing technology through innovative research'
-  }, {
-    id: '2',
-    name: 'CBEAM',
-    fullName: 'College of Business, Economics, Accountancy, and Management',
-    color: 'yellow',
-    thesesCount: 145,
-    icon: <Calculator className="h-6 w-6" />,
-    description: 'Driving business excellence and economic growth'
-  }, {
-    id: '3',
-    name: 'CEAS',
-    fullName: 'College of Education, Arts, and Sciences',
-    color: 'blue',
-    thesesCount: 98,
-    icon: <Microscope className="h-6 w-6" />,
-    description: 'Exploring knowledge across diverse disciplines'
-  }, {
-    id: '4',
-    name: 'CON',
-    fullName: 'College of Nursing',
-    color: 'gray',
-    thesesCount: 76,
-    icon: <HeartPulse className="h-6 w-6" />,
-    description: 'Advancing healthcare through compassionate research'
-  }, {
-    id: '5',
-    name: 'CIHTM',
-    fullName: 'College of International Hospitality and Tourism Management',
-    color: 'green',
-    thesesCount: 110,
-    icon: <UtensilsCrossed className="h-6 w-6" />,
-    description: 'Shaping the future of hospitality and tourism'
-  }];
+  const collegeData = [
+    {
+      id: '1',
+      name: 'CITE',
+      fullName: 'College of Information Technology and Engineering',
+      color: 'red',
+      thesesCount: 120,
+      icon: <Code className="h-6 w-6" />,
+      description: 'Advancing technology through innovative research'
+    }, {
+      id: '2',
+      name: 'CBEAM',
+      fullName: 'College of Business, Economics, Accountancy, and Management',
+      color: 'yellow',
+      thesesCount: 145,
+      icon: <Calculator className="h-6 w-6" />,
+      description: 'Driving business excellence and economic growth'
+    }, {
+      id: '3',
+      name: 'CEAS',
+      fullName: 'College of Education, Arts, and Sciences',
+      color: 'blue',
+      thesesCount: 98,
+      icon: <Microscope className="h-6 w-6" />,
+      description: 'Exploring knowledge across diverse disciplines'
+    }, {
+      id: '4',
+      name: 'CON',
+      fullName: 'College of Nursing',
+      color: 'gray',
+      thesesCount: 76,
+      icon: <HeartPulse className="h-6 w-6" />,
+      description: 'Advancing healthcare through compassionate research'
+    }, {
+      id: '5',
+      name: 'CIHTM',
+      fullName: 'College of International Hospitality and Tourism Management',
+      color: 'green',
+      thesesCount: 110,
+      icon: <UtensilsCrossed className="h-6 w-6" />,
+      description: 'Shaping the future of hospitality and tourism'
+    }
+  ];
 
   const getCollegeColors = (color: string) => {
     switch (color) {
@@ -113,14 +114,13 @@ const Index = () => {
         }}
       />
       
-      {/* Multi-layered Overlay for Depth */}
-      <div className="fixed inset-0 bg-gradient-to-br from-dlsl-green/20 via-white/60 to-dlsl-green/30 z-10"></div>
-      <div className="fixed inset-0 bg-gradient-to-t from-dlsl-green/40 via-transparent to-white/20 z-20"></div>
+      {/* Subtle overlay for better text readability */}
+      <div className="fixed inset-0 bg-black/20 z-10"></div>
       
       {/* Content Layer */}
       <div className="relative z-30">
         {/* Header */}
-        <header className="bg-white/95 backdrop-blur-md shadow-sm border-b border-white/30">
+        <header className="bg-white/95 backdrop-blur-md shadow-sm border-b border-white/30 relative z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center space-x-3">
@@ -138,7 +138,7 @@ const Index = () => {
                   <NavigationMenuList>
                     <NavigationMenuItem>
                       <NavigationMenuTrigger>About</NavigationMenuTrigger>
-                      <NavigationMenuContent>
+                      <NavigationMenuContent className="z-50">
                         <ul className="grid gap-3 p-6 w-[400px] md:w-[500px] lg:w-[600px]">
                           <li className="row-span-3">
                             <NavigationMenuLink asChild>
@@ -166,7 +166,7 @@ const Index = () => {
                     </NavigationMenuItem>
                     <NavigationMenuItem>
                       <NavigationMenuTrigger>Resources</NavigationMenuTrigger>
-                      <NavigationMenuContent>
+                      <NavigationMenuContent className="z-50">
                         <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2">
                           <ListItem href="#" title="User Guide">
                             Step-by-step guides to using STARS
