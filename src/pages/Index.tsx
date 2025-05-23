@@ -451,7 +451,7 @@ const Index = () => {
                   <Star className="mr-2 h-5 w-5" />
                   Sign in to STARS
                 </Button>
-                <Button size="lg" variant="outline" className="border-white/80 hover:bg-white/20 border-2 backdrop-blur-sm shadow-xl transition-all duration-300 text-white">
+                <Button size="lg" variant="outline" className="border-white/80 hover:bg-white/20 border-2 backdrop-blur-sm shadow-xl transition-all duration-300 text-inherit">
                   <Book className="mr-2 h-5 w-5" />
                   Learn More
                 </Button>
