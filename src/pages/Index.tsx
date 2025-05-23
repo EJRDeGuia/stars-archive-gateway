@@ -8,7 +8,6 @@ import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMe
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
 const Index = () => {
   const navigate = useNavigate();
   const collegeData = [{
@@ -47,7 +46,6 @@ const Index = () => {
     thesesCount: 110,
     icon: <UtensilsCrossed className="h-6 w-6" />
   }];
-  
   const getCollegeColors = (color: string) => {
     switch (color) {
       case 'red':
@@ -92,7 +90,6 @@ const Index = () => {
         };
     }
   };
-  
   return <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
@@ -100,11 +97,7 @@ const Index = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-dlsl-green rounded-md flex items-center justify-center">
-                <img 
-                  src="/lovable-uploads/e19f3e92-3af9-49e5-aa2b-59619f4271e9.png" 
-                  alt="STARS Logo" 
-                  className="w-7 h-7"
-                />
+                <img src="/lovable-uploads/e19f3e92-3af9-49e5-aa2b-59619f4271e9.png" alt="STARS Logo" className="w-7 h-7" />
               </div>
               <h1 className="text-xl font-bold text-dlsl-green">STARS</h1>
             </div>
@@ -209,11 +202,7 @@ const Index = () => {
             <div className="hidden md:flex justify-center">
               <div className="relative">
                 <div className="w-80 h-80 bg-dlsl-green/10 rounded-full flex items-center justify-center">
-                  <img 
-                    src="/lovable-uploads/e19f3e92-3af9-49e5-aa2b-59619f4271e9.png" 
-                    alt="STARS Logo" 
-                    className="w-40 h-40"
-                  />
+                  <img src="/lovable-uploads/e19f3e92-3af9-49e5-aa2b-59619f4271e9.png" alt="STARS Logo" className="w-40 h-40" />
                 </div>
                 <div className="absolute -top-4 -right-4 bg-white rounded-lg shadow-md p-4 border border-gray-100">
                   <div className="flex items-center space-x-2">
@@ -441,7 +430,7 @@ const Index = () => {
             <Button size="lg" className="bg-white text-dlsl-green hover:bg-gray-100" onClick={() => navigate('/login')}>
               Sign in to STARS
             </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+            <Button size="lg" variant="outline" className="border-white bg-gray-400 hover:bg-gray-300 text-dlsl-green">
               Learn More
             </Button>
           </div>
