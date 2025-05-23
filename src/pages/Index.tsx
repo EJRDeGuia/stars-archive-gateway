@@ -7,10 +7,8 @@ import Footer from '@/components/Footer';
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
 const Index = () => {
   const navigate = useNavigate();
-  
   const collegeData = [{
     id: '1',
     name: 'CITE',
@@ -52,7 +50,6 @@ const Index = () => {
     icon: <UtensilsCrossed className="h-6 w-6" />,
     description: 'Shaping the future of hospitality and tourism'
   }];
-  
   const getCollegeColors = (color: string) => {
     switch (color) {
       case 'red':
@@ -97,7 +94,6 @@ const Index = () => {
         };
     }
   };
-  
   return <div className="min-h-screen relative overflow-hidden">
       {/* Enhanced Background with Dotted Pattern and Increased Blur */}
       <div className="fixed inset-0 z-0">
@@ -235,14 +231,14 @@ const Index = () => {
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 relative z-20">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div className="space-y-8">
-                <div className="inline-flex items-center backdrop-blur-xl px-6 py-3 rounded-full text-sm font-medium border border-white/30 shadow-2xl bg-white/10">
+                <div className="inline-flex items-center backdrop-blur-xl px-6 py-3 rounded-full text-sm font-medium border border-white/30 shadow-2xl bg-[dlsl-green-dark] bg-transparent">
                   <Sparkles className="w-4 h-4 mr-2 text-white" />
                   <span className="text-white">De La Salle Lipa • Learning Resource Center</span>
                 </div>
                 <div className="space-y-4">
                   <h1 className="text-4xl md:text-6xl font-bold leading-tight text-white drop-shadow-2xl">
                     Smart Thesis
-                    <span className="block bg-gradient-to-r from-white to-green-100 bg-clip-text text-transparent">Archival and</span>
+                    <span className="block bg-gradient-to-r from-white to-green-100 bg-clip-text text-zinc-50">Archival and</span>
                     <span className="block bg-gradient-to-r from-green-100 to-white bg-clip-text text-transparent">Retrieval System</span>
                   </h1>
                   <p className="text-xl text-white/95 leading-relaxed max-w-lg drop-shadow-lg">
@@ -260,7 +256,7 @@ const Index = () => {
                     Start Exploring
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
-                  <Button size="lg" variant="outline" onClick={() => navigate('/login')} className="border-white/80 hover:bg-white/20 border-2 text-white backdrop-blur-sm shadow-xl transition-all duration-300">
+                  <Button size="lg" variant="outline" onClick={() => navigate('/login')} className="border-white/80 border-2 backdrop-blur-sm shadow-xl transition-all duration-300 bg-dlsl-green text-zinc-50">
                     <Book className="mr-2 h-5 w-5" />
                     Login to Browse
                   </Button>
@@ -268,7 +264,7 @@ const Index = () => {
               </div>
               <div className="hidden md:flex justify-center">
                 <div className="relative backdrop-blur-xl">
-                  <div className="w-80 h-80 backdrop-blur-xl rounded-3xl flex items-center justify-center border border-white/30 shadow-3xl bg-gradient-to-br from-dlsl-green/20 to-dlsl-green-dark/30">
+                  <div className="w-80 h-80 backdrop-blur-xl flex items-center justify-center border border-white/30 shadow-3xl bg-gradient-to-br from-dlsl-green/20 to-dlsl-green-dark/30 rounded-xl bg-inherit">
                     <Star className="h-32 w-32 text-white/90 drop-shadow-2xl" />
                   </div>
                   {/* Enhanced stats cards */}
@@ -455,7 +451,7 @@ const Index = () => {
                   <Star className="mr-2 h-5 w-5" />
                   Sign in to STARS
                 </Button>
-                <Button size="lg" variant="outline" className="border-white/80 hover:bg-white/20 border-2 text-white backdrop-blur-sm shadow-xl transition-all duration-300">
+                <Button size="lg" variant="outline" className="border-white/80 hover:bg-white/20 border-2 backdrop-blur-sm shadow-xl transition-all duration-300 text-white">
                   <Book className="mr-2 h-5 w-5" />
                   Learn More
                 </Button>
