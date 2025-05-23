@@ -101,7 +101,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen relative">
-      {/* Campus Background Image with Blur and Depth */}
+      {/* Campus Background Image with Green Tint and Texture */}
       <div 
         className="fixed inset-0 z-0"
         style={{
@@ -109,13 +109,23 @@ const Index = () => {
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          filter: 'blur(8px)',
+          filter: 'blur(4px)',
           transform: 'scale(1.1)'
         }}
       />
       
-      {/* Subtle overlay for better text readability */}
-      <div className="fixed inset-0 bg-black/20 z-10"></div>
+      {/* Green tint overlay with texture */}
+      <div className="fixed inset-0 bg-gradient-to-br from-dlsl-green/20 via-dlsl-green/10 to-emerald-600/15 z-10" 
+           style={{
+             backgroundImage: `
+               radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 0%, transparent 50%),
+               radial-gradient(circle at 75% 75%, rgba(255,255,255,0.05) 0%, transparent 50%),
+               linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25%),
+               linear-gradient(-45deg, rgba(255,255,255,0.03) 25%, transparent 25%)
+             `,
+             backgroundSize: '60px 60px, 80px 80px, 20px 20px, 20px 20px'
+           }}>
+      </div>
       
       {/* Content Layer */}
       <div className="relative z-30">
@@ -269,7 +279,7 @@ const Index = () => {
         </section>
 
         {/* Search Section */}
-        <section id="search-section" className="py-16 bg-white/90 backdrop-blur-md">
+        <section id="search-section" className="py-16 bg-white/80 backdrop-blur-md">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-dlsl-green mb-4">Find Academic Research</h2>
@@ -368,7 +378,7 @@ const Index = () => {
         </section>
 
         {/* Features Section */}
-        <section className="py-16 bg-gray-50/90 backdrop-blur-md">
+        <section className="py-16 bg-white/70 backdrop-blur-md">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-dlsl-green mb-4">Platform Features</h2>
@@ -432,7 +442,7 @@ const Index = () => {
         </section>
 
         {/* CTA Section */}
-        <section className="bg-gradient-to-r from-dlsl-green to-dlsl-green-dark text-white py-16">
+        <section className="bg-gradient-to-r from-dlsl-green/90 to-dlsl-green-dark/90 backdrop-blur-md text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <div className="space-y-6">
               <h2 className="text-4xl font-bold">Ready to start exploring?</h2>
