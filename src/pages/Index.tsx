@@ -105,13 +105,13 @@ const Index = () => {
         }}
       />
       
-      {/* Background Overlay */}
-      <div className="fixed inset-0 bg-white/60 backdrop-blur-[2px] z-10"></div>
+      {/* Subtle Background Overlay */}
+      <div className="fixed inset-0 bg-white/30 backdrop-blur-[1px] z-10"></div>
       
       {/* Content with relative positioning */}
       <div className="relative z-20 flex flex-col min-h-screen">
         {/* Header */}
-        <header className="bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200">
+        <header className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center space-x-3">
@@ -188,7 +188,7 @@ const Index = () => {
         </header>
 
         {/* Hero Section */}
-        <div className="bg-white/80 backdrop-blur-sm py-16 md:py-24 border-b border-gray-200">
+        <div className="bg-white/70 backdrop-blur-sm py-16 md:py-24 border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div className="text-left">
@@ -253,7 +253,7 @@ const Index = () => {
         </div>
 
         {/* Search Section */}
-        <section id="search-section" className="py-16 bg-gray-50/80 backdrop-blur-sm">
+        <section id="search-section" className="py-16 bg-white/60 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-dlsl-green flex items-center justify-center">
@@ -359,7 +359,7 @@ const Index = () => {
         </section>
 
         {/* Features Section */}
-        <section className="py-16 bg-white/80 backdrop-blur-sm">
+        <section className="py-16 bg-white/50 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-dlsl-green flex items-center justify-center">
@@ -439,7 +439,7 @@ const Index = () => {
         </section>
 
         {/* CTA Section */}
-        <section className="py-16 bg-dlsl-green/90 backdrop-blur-sm text-white">
+        <section className="py-16 bg-dlsl-green/85 backdrop-blur-sm text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl font-bold mb-4">Ready to start exploring?</h2>
             <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
