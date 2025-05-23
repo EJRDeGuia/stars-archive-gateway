@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,53 +8,44 @@ import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMe
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
 const Index = () => {
   const navigate = useNavigate();
-  
-  const collegeData = [
-    {
-      id: '1',
-      name: 'CITE',
-      fullName: 'College of Information Technology and Engineering',
-      color: 'red',
-      thesesCount: 120,
-      icon: <Code className="h-6 w-6" />
-    },
-    {
-      id: '2',
-      name: 'CBEAM',
-      fullName: 'College of Business, Economics, Accountancy, and Management',
-      color: 'yellow',
-      thesesCount: 145,
-      icon: <Calculator className="h-6 w-6" />
-    },
-    {
-      id: '3',
-      name: 'CEAS',
-      fullName: 'College of Education, Arts, and Sciences',
-      color: 'blue',
-      thesesCount: 98,
-      icon: <Microscope className="h-6 w-6" />
-    },
-    {
-      id: '4',
-      name: 'CON',
-      fullName: 'College of Nursing',
-      color: 'gray',
-      thesesCount: 76,
-      icon: <HeartPulse className="h-6 w-6" />
-    },
-    {
-      id: '5',
-      name: 'CIHTM',
-      fullName: 'College of International Hospitality and Tourism Management',
-      color: 'green',
-      thesesCount: 110,
-      icon: <UtensilsCrossed className="h-6 w-6" />
-    }
-  ];
-
+  const collegeData = [{
+    id: '1',
+    name: 'CITE',
+    fullName: 'College of Information Technology and Engineering',
+    color: 'red',
+    thesesCount: 120,
+    icon: <Code className="h-6 w-6" />
+  }, {
+    id: '2',
+    name: 'CBEAM',
+    fullName: 'College of Business, Economics, Accountancy, and Management',
+    color: 'yellow',
+    thesesCount: 145,
+    icon: <Calculator className="h-6 w-6" />
+  }, {
+    id: '3',
+    name: 'CEAS',
+    fullName: 'College of Education, Arts, and Sciences',
+    color: 'blue',
+    thesesCount: 98,
+    icon: <Microscope className="h-6 w-6" />
+  }, {
+    id: '4',
+    name: 'CON',
+    fullName: 'College of Nursing',
+    color: 'gray',
+    thesesCount: 76,
+    icon: <HeartPulse className="h-6 w-6" />
+  }, {
+    id: '5',
+    name: 'CIHTM',
+    fullName: 'College of International Hospitality and Tourism Management',
+    color: 'green',
+    thesesCount: 110,
+    icon: <UtensilsCrossed className="h-6 w-6" />
+  }];
   const getCollegeColors = (color: string) => {
     switch (color) {
       case 'red':
@@ -100,9 +90,7 @@ const Index = () => {
         };
     }
   };
-
-  return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+  return <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -173,10 +161,7 @@ const Index = () => {
               </NavigationMenu>
             </div>
 
-            <Button 
-              onClick={() => navigate('/login')} 
-              className="bg-dlsl-green text-white hover:bg-dlsl-green-dark"
-            >
+            <Button onClick={() => navigate('/login')} className="bg-dlsl-green text-white hover:bg-dlsl-green-dark">
               Sign in
             </Button>
           </div>
@@ -200,23 +185,16 @@ const Index = () => {
                 at De La Salle Lipa.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
-                  size="lg" 
-                  className="bg-dlsl-green text-white hover:bg-dlsl-green-dark" 
-                  onClick={() => {
-                    const searchSection = document.getElementById('search-section');
-                    searchSection?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                >
+                <Button size="lg" className="bg-dlsl-green text-white hover:bg-dlsl-green-dark" onClick={() => {
+                const searchSection = document.getElementById('search-section');
+                searchSection?.scrollIntoView({
+                  behavior: 'smooth'
+                });
+              }}>
                   <Search className="mr-2 h-5 w-5" />
                   Start Searching
                 </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="border-dlsl-green text-dlsl-green hover:bg-dlsl-green/10" 
-                  onClick={() => navigate('/login')}
-                >
+                <Button size="lg" variant="outline" className="border-dlsl-green text-dlsl-green hover:bg-dlsl-green/10" onClick={() => navigate('/login')}>
                   <Book className="mr-2 h-5 w-5" />
                   Login to Browse
                 </Button>
@@ -278,13 +256,8 @@ const Index = () => {
             <TabsContent value="colleges" className="mt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {collegeData.map(college => {
-                  const colors = getCollegeColors(college.color);
-                  return (
-                    <Card 
-                      key={college.name} 
-                      className={`overflow-hidden border-t-4 ${colors.border} hover:shadow-lg transition-all ${colors.hover} cursor-pointer`} 
-                      onClick={() => navigate(`/college/${college.id}`)}
-                    >
+                const colors = getCollegeColors(college.color);
+                return <Card key={college.name} className={`overflow-hidden border-t-4 ${colors.border} hover:shadow-lg transition-all ${colors.hover} cursor-pointer`} onClick={() => navigate(`/college/${college.id}`)}>
                       <CardContent className="p-6">
                         <div className="flex items-center mb-4">
                           <div className={`${colors.bg} p-3 rounded-full`}>
@@ -308,9 +281,8 @@ const Index = () => {
                           <ChevronRight className={`h-5 w-5 ${colors.text}`} />
                         </div>
                       </CardContent>
-                    </Card>
-                  );
-                })}
+                    </Card>;
+              })}
               </div>
             </TabsContent>
             <TabsContent value="search">
@@ -319,11 +291,7 @@ const Index = () => {
                   <div className="space-y-4">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                      <input 
-                        type="text" 
-                        placeholder="Search by title, author, keywords..." 
-                        className="w-full pl-10 pr-4 py-3 text-md bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-dlsl-green focus:border-dlsl-green" 
-                      />
+                      <input type="text" placeholder="Search by title, author, keywords..." className="w-full pl-10 pr-4 py-3 text-md bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-dlsl-green focus:border-dlsl-green" />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
@@ -358,10 +326,7 @@ const Index = () => {
                         </select>
                       </div>
                     </div>
-                    <Button 
-                      className="bg-dlsl-green text-white hover:bg-dlsl-green-dark w-full md:w-auto" 
-                      onClick={() => navigate('/login')}
-                    >
+                    <Button className="bg-dlsl-green text-white hover:bg-dlsl-green-dark w-full md:w-auto" onClick={() => navigate('/login')}>
                       <Search className="mr-2 h-5 w-5" />
                       Search Theses
                     </Button>
@@ -462,18 +427,10 @@ const Index = () => {
             Sign in to access the full repository of academic theses and research papers.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button 
-              size="lg" 
-              className="bg-white text-dlsl-green hover:bg-gray-100" 
-              onClick={() => navigate('/login')}
-            >
+            <Button size="lg" className="bg-white text-dlsl-green hover:bg-gray-100" onClick={() => navigate('/login')}>
               Sign in to STARS
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="border-white text-white hover:bg-white hover:text-dlsl-green"
-            >
+            <Button size="lg" variant="outline" className="border-white text-white hover:text-dlsl-green bg-white">
               Learn More
             </Button>
           </div>
@@ -482,35 +439,26 @@ const Index = () => {
 
       {/* Footer */}
       <Footer />
-    </div>
-  );
+    </div>;
 };
 
 // ListItem component for navigation menu
-const ListItem = React.forwardRef<
-  React.ElementRef<"a">,
-  React.ComponentPropsWithoutRef<"a">
->(({ className, title, children, ...props }, ref) => {
-  return (
-    <li>
+const ListItem = React.forwardRef<React.ElementRef<"a">, React.ComponentPropsWithoutRef<"a">>(({
+  className,
+  title,
+  children,
+  ...props
+}, ref) => {
+  return <li>
       <NavigationMenuLink asChild>
-        <a
-          ref={ref}
-          className={cn(
-            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-            className
-          )}
-          {...props}
-        >
+        <a ref={ref} className={cn("block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground", className)} {...props}>
           <div className="text-sm font-medium leading-none">{title}</div>
           <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
             {children}
           </p>
         </a>
       </NavigationMenuLink>
-    </li>
-  );
+    </li>;
 });
 ListItem.displayName = "ListItem";
-
 export default Index;
