@@ -1,8 +1,24 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Home } from 'lucide-react';
+import { 
+  LogOut, 
+  User, 
+  Home,
+  GraduationCap,
+  Bell,
+  Search,
+  Menu
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const Header = () => {
   const { user, logout } = useAuth();
@@ -22,48 +38,124 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white shadow-lg border-b-4 border-dlsl-green">
+    <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-4">
+          {/* Logo and Nav */}
+          <div className="flex items-center">
             <button
               onClick={() => navigate('/dashboard')}
-              className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+              className="flex items-center hover:opacity-80 transition-opacity"
             >
-              <div className="w-8 h-8 bg-dlsl-green rounded-full flex items-center justify-center">
-                <Home className="w-4 h-4 text-white" />
-              </div>
-              <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-dlsl-green">STARS</h1>
-                <p className="text-xs text-gray-600">Smart Thesis Archival & Retrieval System</p>
-              </div>
+              <GraduationCap className="w-6 h-6 text-dlsl-green" />
+              <span className="text-xl font-bold text-dlsl-green ml-2">STARS</span>
             </button>
-          </div>
-
-          {user && (
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-3">
-                <div className="text-right hidden sm:block">
-                  <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                  <p className="text-xs text-gray-500">{user.email}</p>
-                </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleBadgeColor(user.role)}`}>
-                  {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                </span>
-                <div className="w-8 h-8 bg-dlsl-green rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-white" />
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleLogout}
-                className="text-gray-500 hover:text-dlsl-green"
+            
+            <div className="hidden md:flex ml-6 space-x-4">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-gray-600 hover:text-dlsl-green"
+                onClick={() => navigate('/dashboard')}
               >
-                <LogOut className="w-4 h-4" />
+                Home
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-gray-600 hover:text-dlsl-green"
+              >
+                Explore
               </Button>
             </div>
+          </div>
+
+          {/* Search - Desktop */}
+          <div className="hidden md:flex items-center ml-4 relative max-w-xs w-full">
+            <Search className="w-4 h-4 absolute left-3 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search theses..."
+              className="w-full pl-9 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-dlsl-green focus:border-dlsl-green"
+            />
+          </div>
+
+          {/* Mobile Menu */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="md:hidden text-gray-600"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+
+          {/* Right Side */}
+          {user ? (
+            <div className="flex items-center space-x-3">
+              {/* Notifications */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="text-gray-600 hidden md:flex"
+              >
+                <Bell className="h-5 w-5" />
+              </Button>
+              
+              {/* User Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    className="flex items-center space-x-2 hover:bg-gray-50"
+                  >
+                    <div className="w-8 h-8 bg-dlsl-green rounded-full flex items-center justify-center">
+                      <User className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="hidden md:block text-left">
+                      <p className="text-sm font-medium text-gray-700">{user.name}</p>
+                      <p className="text-xs text-gray-500">{user.role}</p>
+                    </div>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                    <Home className="mr-2 h-4 w-4" />
+                    <span>Dashboard</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          ) : (
+            <Button
+              onClick={() => navigate('/login')}
+              className="bg-dlsl-green hover:bg-dlsl-green-dark text-white"
+            >
+              Sign in
+            </Button>
           )}
+        </div>
+      </div>
+      
+      {/* Mobile Search - Only visible on mobile */}
+      <div className="md:hidden px-4 pb-3">
+        <div className="relative">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search theses..."
+            className="w-full pl-9 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-dlsl-green focus:border-dlsl-green"
+          />
         </div>
       </div>
     </header>
