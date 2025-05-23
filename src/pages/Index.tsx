@@ -104,7 +104,7 @@ const Index = () => {
       <div 
         className="fixed inset-0 z-0"
         style={{
-          backgroundImage: `url(/lovable-uploads/fd7995a2-1df9-4aeb-bbfb-6a33723b9835.png)`,
+          backgroundImage: `url(/lovable-uploads/83b8c064-b1bc-4c93-b353-78a1467e8d8d.png)`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -212,7 +212,7 @@ const Index = () => {
                 <div className="space-y-4">
                   <h1 className="text-4xl md:text-6xl font-bold leading-tight">
                     Smart Thesis
-                    <span className="block text-dlsl-gold">Archival and</span>
+                    <span className="block text-white">Archival and</span>
                     <span className="block">Retrieval System</span>
                   </h1>
                   <p className="text-xl text-green-100 leading-relaxed max-w-lg">
@@ -242,7 +242,7 @@ const Index = () => {
                   {/* Stats cards */}
                   <div className="absolute -top-4 -right-4 bg-white rounded-lg shadow-lg p-4">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-dlsl-gold to-yellow-500 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-gradient-to-br from-dlsl-green to-dlsl-green-dark rounded-full flex items-center justify-center">
                         <FileText className="h-5 w-5 text-white" />
                       </div>
                       <div>
@@ -273,7 +273,7 @@ const Index = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-dlsl-green mb-4">Find Academic Research</h2>
-              <div className="w-24 h-1 bg-gradient-to-r from-dlsl-gold to-yellow-500 mx-auto mb-4"></div>
+              <div className="w-24 h-1 bg-gradient-to-r from-dlsl-green to-dlsl-green-dark mx-auto mb-4"></div>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
                 Discover undergraduate theses from all academic departments at De La Salle Lipa.
               </p>
@@ -372,7 +372,7 @@ const Index = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-dlsl-green mb-4">Platform Features</h2>
-              <div className="w-24 h-1 bg-gradient-to-r from-dlsl-gold to-yellow-500 mx-auto mb-4"></div>
+              <div className="w-24 h-1 bg-gradient-to-r from-dlsl-green to-dlsl-green-dark mx-auto mb-4"></div>
               <p className="text-xl text-gray-600">Everything you need for academic research</p>
             </div>
             
