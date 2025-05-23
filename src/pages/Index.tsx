@@ -100,24 +100,34 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen relative">
-      {/* Campus Background Image with Blur and Depth */}
-      <div 
-        className="fixed inset-0 z-0"
-        style={{
-          backgroundImage: `url(/lovable-uploads/83b8c064-b1bc-4c93-b353-78a1467e8d8d.png)`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          filter: 'blur(8px)',
-          transform: 'scale(1.1)'
-        }}
-      />
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Enhanced Background with Depth Effect */}
+      <div className="fixed inset-0 z-0">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url(/lovable-uploads/83b8c064-b1bc-4c93-b353-78a1467e8d8d.png)`,
+            filter: 'brightness(1.05) contrast(1.05)',
+            transform: 'scale(1.1)'
+          }}
+        ></div>
+        {/* First parallax layer - adds depth */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-60"
+          style={{
+            backgroundImage: `url(/lovable-uploads/83b8c064-b1bc-4c93-b353-78a1467e8d8d.png)`,
+            filter: 'blur(12px) brightness(1.1)',
+            transform: 'scale(1.2) translateY(2%)',
+            mixBlendMode: 'overlay'
+          }}
+        ></div>
+        {/* Subtle color tint and texture */}
+        <div className="absolute inset-0 bg-gradient-to-b from-green-900/10 to-green-700/20 mix-blend-soft-light"></div>
+        <div className="absolute inset-0 bg-[url('data:image/png;base64,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')] mix-blend-color-burn opacity-10"></div>
+        <div className="absolute inset-0 bg-black opacity-25"></div>
+      </div>
       
-      {/* Subtle overlay for better text readability */}
-      <div className="fixed inset-0 bg-black/20 z-10"></div>
-      
-      {/* Content Layer */}
+      {/* Content Layer with Higher Z-Index */}
       <div className="relative z-30">
         {/* Header */}
         <header className="bg-white/95 backdrop-blur-md shadow-sm border-b border-white/30 relative z-50">
@@ -199,13 +209,13 @@ const Index = () => {
           </div>
         </header>
 
-        {/* Hero Section - Modified to use the background image directly */}
+        {/* Hero Section - Modified for better depth */}
         <section className="relative">
           <div className="absolute inset-0 bg-black/10"></div>
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 relative z-20">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div className="space-y-8">
-                <div className="inline-flex items-center bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium border border-white/20">
+                <div className="inline-flex items-center bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium border border-white/20 shadow-lg">
                   <Sparkles className="w-4 h-4 mr-2" />
                   De La Salle Lipa • Learning Resource Center
                 </div>
@@ -235,7 +245,7 @@ const Index = () => {
                 </div>
               </div>
               <div className="hidden md:flex justify-center">
-                <div className="relative">
+                <div className="relative backdrop-blur-sm">
                   <div className="w-80 h-80 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20 shadow-2xl">
                     <Star className="h-32 w-32 text-white/80" />
                   </div>
@@ -268,8 +278,8 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Search Section */}
-        <section id="search-section" className="py-16 bg-white/90 backdrop-blur-md">
+        {/* Search Section with improved glass effect */}
+        <section id="search-section" className="py-16 bg-white/80 backdrop-blur-xl relative z-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-dlsl-green mb-4">Find Academic Research</h2>
@@ -367,8 +377,8 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Features Section */}
-        <section className="py-16 bg-gray-50/90 backdrop-blur-md">
+        {/* Features Section with improved glass effect */}
+        <section className="py-16 bg-gray-50/80 backdrop-blur-xl relative z-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-dlsl-green mb-4">Platform Features</h2>
@@ -432,7 +442,7 @@ const Index = () => {
         </section>
 
         {/* CTA Section */}
-        <section className="bg-gradient-to-r from-dlsl-green to-dlsl-green-dark text-white py-16">
+        <section className="bg-gradient-to-r from-dlsl-green/90 to-dlsl-green-dark/90 backdrop-blur-sm text-white py-16 relative z-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <div className="space-y-6">
               <h2 className="text-4xl font-bold">Ready to start exploring?</h2>
