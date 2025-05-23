@@ -5,7 +5,6 @@ import {
   LogOut, 
   User, 
   Home,
-  GraduationCap,
   Bell,
   Search,
   Menu
@@ -47,7 +46,13 @@ const Header = () => {
               onClick={() => navigate('/dashboard')}
               className="flex items-center hover:opacity-80 transition-opacity"
             >
-              <GraduationCap className="w-6 h-6 text-dlsl-green" />
+              <div className="w-7 h-7 bg-dlsl-green rounded-md flex items-center justify-center">
+                <img 
+                  src="/lovable-uploads/e19f3e92-3af9-49e5-aa2b-59619f4271e9.png" 
+                  alt="STARS Logo" 
+                  className="w-6 h-6"
+                />
+              </div>
               <span className="text-xl font-bold text-dlsl-green ml-2">STARS</span>
             </button>
             

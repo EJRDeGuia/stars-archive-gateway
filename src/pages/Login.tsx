@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +11,7 @@ import { GraduationCap, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import Footer from '@/components/Footer';
 import { Separator } from '@/components/ui/separator';
+
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,6 +22,7 @@ const Login = () => {
     isLoading
   } = useAuth();
   const navigate = useNavigate();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -38,6 +41,7 @@ const Login = () => {
       setError('Invalid email or password');
     }
   };
+
   const demoCredentials = [{
     role: 'Researcher',
     email: 'researcher@dlsl.edu.ph',
@@ -51,13 +55,20 @@ const Login = () => {
     email: 'admin@dlsl.edu.ph',
     password: 'password123'
   }];
+
   return <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <GraduationCap className="w-6 h-6 text-dlsl-green" />
+              <div className="w-8 h-8 bg-dlsl-green rounded-md flex items-center justify-center">
+                <img 
+                  src="/lovable-uploads/e19f3e92-3af9-49e5-aa2b-59619f4271e9.png" 
+                  alt="STARS Logo" 
+                  className="w-7 h-7"
+                />
+              </div>
               <h1 className="text-xl font-bold text-dlsl-green">STARS</h1>
             </div>
             <Button onClick={() => navigate('/')} variant="ghost" className="text-gray-600 hover:text-gray-900">
@@ -72,7 +83,11 @@ const Login = () => {
           <CardContent className="p-6">
             <div className="flex flex-col items-center mb-6">
               <div className="w-16 h-16 bg-dlsl-green/10 rounded-full flex items-center justify-center mb-4">
-                <GraduationCap className="h-8 w-8 text-dlsl-green" />
+                <img 
+                  src="/lovable-uploads/e19f3e92-3af9-49e5-aa2b-59619f4271e9.png" 
+                  alt="STARS Logo" 
+                  className="w-10 h-10"
+                />
               </div>
               <h1 className="text-2xl font-bold text-gray-800">Log in to STARS</h1>
               <p className="text-gray-600 text-sm">Access the thesis repository system</p>
@@ -89,8 +104,6 @@ const Login = () => {
                 </svg>
                 Sign in with Google
               </Button>
-              
-              
             </div>
 
             <div className="relative my-6">
@@ -152,4 +165,5 @@ const Login = () => {
       <Footer />
     </div>;
 };
+
 export default Login;
