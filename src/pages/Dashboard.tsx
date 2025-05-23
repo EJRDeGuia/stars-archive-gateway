@@ -65,6 +65,51 @@ const Dashboard = () => {
 
   const totalTheses = colleges.reduce((sum, college) => sum + college.thesesCount, 0);
 
+  const getCollegeColors = (color: string) => {
+    switch (color) {
+      case 'red':
+        return {
+          gradient: 'from-red-500 to-red-600',
+          bg: 'bg-red-50',
+          border: 'border-red-200',
+          text: 'text-red-600',
+          hover: 'hover:shadow-red-100'
+        };
+      case 'yellow':
+        return {
+          gradient: 'from-yellow-500 to-amber-500',
+          bg: 'bg-yellow-50',
+          border: 'border-yellow-200',
+          text: 'text-yellow-600',
+          hover: 'hover:shadow-yellow-100'
+        };
+      case 'blue':
+        return {
+          gradient: 'from-blue-500 to-blue-600',
+          bg: 'bg-blue-50',
+          border: 'border-blue-200',
+          text: 'text-blue-600',
+          hover: 'hover:shadow-blue-100'
+        };
+      case 'green':
+        return {
+          gradient: 'from-green-500 to-emerald-500',
+          bg: 'bg-green-50',
+          border: 'border-green-200',
+          text: 'text-green-600',
+          hover: 'hover:shadow-green-100'
+        };
+      default:
+        return {
+          gradient: 'from-gray-500 to-gray-600',
+          bg: 'bg-gray-50',
+          border: 'border-gray-200',
+          text: 'text-gray-600',
+          hover: 'hover:shadow-gray-100'
+        };
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
@@ -214,53 +259,38 @@ const Dashboard = () => {
             </Card>
           </div>
 
-          {/* Colleges Grid - Uniform styling for all roles */}
+          {/* Colleges Grid - Same styling as homepage */}
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">Browse by College</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {colleges.map((college) => {
+                const colors = getCollegeColors(college.color);
                 const Icon = college.icon;
 
                 return (
                   <Card 
                     key={college.id} 
-                    className="hover:shadow-md transition-shadow cursor-pointer bg-white border border-gray-200"
+                    className="group cursor-pointer hover:shadow-lg transition-all duration-300 border border-gray-200 bg-white/90 backdrop-blur-sm"
                     onClick={() => navigate(`/college/${college.id}`)}
                   >
+                    <div className={`h-1 bg-gradient-to-r ${colors.gradient}`}></div>
                     <CardContent className="p-6">
                       <div className="flex items-center mb-4">
-                        <div className="bg-dlsl-green/10 p-3 rounded-full">
-                          <div className="bg-dlsl-green p-2 rounded-full">
-                            <Icon className="h-6 w-6 text-white" />
-                          </div>
+                        <div className={`${colors.bg} p-3 rounded-lg border ${colors.border}`}>
+                          <Icon className="h-6 w-6" />
                         </div>
                         <div className="ml-4">
-                          <h3 className="text-lg font-semibold text-gray-900">{college.name}</h3>
-                          <p className="text-sm text-gray-600">{college.fullName}</p>
+                          <h3 className="font-semibold text-gray-900">{college.name}</h3>
+                          <p className="text-sm text-gray-500">{college.fullName}</p>
                         </div>
                       </div>
-                      
-                      <p className="text-gray-700 mb-4">{college.description}</p>
-                      
+                      <p className="text-gray-600 mb-4">{college.description}</p>
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center text-sm text-gray-500">
-                          <BookOpen className="h-4 w-4 mr-1" />
-                          <span>{college.thesesCount} theses</span>
-                          <span className="mx-2">•</span>
-                          <span>Since {college.since}</span>
-                        </div>
-                        
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="text-dlsl-green"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/college/${college.id}`);
-                          }}
-                        >
-                          <ArrowRight className="h-4 w-4" />
-                        </Button>
+                        <span className="text-sm text-gray-500">
+                          <BookOpen className="h-4 w-4 inline mr-1" />
+                          {college.thesesCount}+ Theses
+                        </span>
+                        <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-gray-600" />
                       </div>
                     </CardContent>
                   </Card>
