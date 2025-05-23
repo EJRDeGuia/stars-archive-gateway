@@ -259,7 +259,7 @@ const Dashboard = () => {
             </Card>
           </div>
 
-          {/* Colleges Grid - Same styling as homepage */}
+          {/* Colleges Grid - Use college-specific icons */}
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">Browse by College</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -277,7 +277,7 @@ const Dashboard = () => {
                     <CardContent className="p-6">
                       <div className="flex items-center mb-4">
                         <div className={`${colors.bg} p-3 rounded-lg border ${colors.border}`}>
-                          <Icon className="h-6 w-6" />
+                          <Icon className={`h-6 w-6 ${colors.text}`} />
                         </div>
                         <div className="ml-4">
                           <h3 className="font-semibold text-gray-900">{college.name}</h3>
