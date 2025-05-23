@@ -1,51 +1,61 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { GraduationCap, Search, Book, Building, CheckCircle2, Users, BarChart3, FileText, ChevronRight, Code, Calculator, Microscope, HeartPulse, UtensilsCrossed } from 'lucide-react';
+import { GraduationCap, Search, Book, Building, CheckCircle2, Users, BarChart3, FileText, ChevronRight, Code, Calculator, Microscope, HeartPulse, UtensilsCrossed, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Footer from '@/components/Footer';
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 const Index = () => {
   const navigate = useNavigate();
-  const collegeData = [{
-    id: '1',
-    name: 'CITE',
-    fullName: 'College of Information Technology and Engineering',
-    color: 'red',
-    thesesCount: 120,
-    icon: <Code className="h-6 w-6" />
-  }, {
-    id: '2',
-    name: 'CBEAM',
-    fullName: 'College of Business, Economics, Accountancy, and Management',
-    color: 'yellow',
-    thesesCount: 145,
-    icon: <Calculator className="h-6 w-6" />
-  }, {
-    id: '3',
-    name: 'CEAS',
-    fullName: 'College of Education, Arts, and Sciences',
-    color: 'blue',
-    thesesCount: 98,
-    icon: <Microscope className="h-6 w-6" />
-  }, {
-    id: '4',
-    name: 'CON',
-    fullName: 'College of Nursing',
-    color: 'gray',
-    thesesCount: 76,
-    icon: <HeartPulse className="h-6 w-6" />
-  }, {
-    id: '5',
-    name: 'CIHTM',
-    fullName: 'College of International Hospitality and Tourism Management',
-    color: 'green',
-    thesesCount: 110,
-    icon: <UtensilsCrossed className="h-6 w-6" />
-  }];
+  
+  const collegeData = [
+    {
+      id: '1',
+      name: 'CITE',
+      fullName: 'College of Information Technology and Engineering',
+      color: 'red',
+      thesesCount: 120,
+      icon: <Code className="h-6 w-6" />
+    },
+    {
+      id: '2',
+      name: 'CBEAM',
+      fullName: 'College of Business, Economics, Accountancy, and Management',
+      color: 'yellow',
+      thesesCount: 145,
+      icon: <Calculator className="h-6 w-6" />
+    },
+    {
+      id: '3',
+      name: 'CEAS',
+      fullName: 'College of Education, Arts, and Sciences',
+      color: 'blue',
+      thesesCount: 98,
+      icon: <Microscope className="h-6 w-6" />
+    },
+    {
+      id: '4',
+      name: 'CON',
+      fullName: 'College of Nursing',
+      color: 'gray',
+      thesesCount: 76,
+      icon: <HeartPulse className="h-6 w-6" />
+    },
+    {
+      id: '5',
+      name: 'CIHTM',
+      fullName: 'College of International Hospitality and Tourism Management',
+      color: 'green',
+      thesesCount: 110,
+      icon: <UtensilsCrossed className="h-6 w-6" />
+    }
+  ];
+
   const getCollegeColors = (color: string) => {
     switch (color) {
       case 'red':
@@ -90,14 +100,16 @@ const Index = () => {
         };
     }
   };
-  return <div className="min-h-screen flex flex-col bg-gray-50">
+
+  return (
+    <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-dlsl-green rounded-md flex items-center justify-center">
-                <img src="/lovable-uploads/e19f3e92-3af9-49e5-aa2b-59619f4271e9.png" alt="STARS Logo" className="w-7 h-7" />
+                <Star className="w-5 h-5 text-white fill-white" />
               </div>
               <h1 className="text-xl font-bold text-dlsl-green">STARS</h1>
             </div>
@@ -161,7 +173,10 @@ const Index = () => {
               </NavigationMenu>
             </div>
 
-            <Button onClick={() => navigate('/login')} className="bg-dlsl-green text-white hover:bg-dlsl-green-dark">
+            <Button 
+              onClick={() => navigate('/login')} 
+              className="bg-dlsl-green text-white hover:bg-dlsl-green-dark"
+            >
               Sign in
             </Button>
           </div>
@@ -177,23 +192,31 @@ const Index = () => {
                 De La Salle Lipa • Learning Resource Center
               </div>
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-                Smart Thesis <span className="text-dlsl-green">Archival</span> and <br /><span className="text-dlsl-green">Retrieval</span> System
+                Smart Thesis <span className="text-dlsl-green">Archival</span> and <br />
+                <span className="text-dlsl-green">Retrieval</span> System
               </h1>
               <p className="text-xl text-gray-600 mb-8">
                 A modern platform for managing, discovering, and accessing academic research
                 at De La Salle Lipa.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="bg-dlsl-green text-white hover:bg-dlsl-green-dark" onClick={() => {
-                const searchSection = document.getElementById('search-section');
-                searchSection?.scrollIntoView({
-                  behavior: 'smooth'
-                });
-              }}>
+                <Button 
+                  size="lg" 
+                  className="bg-dlsl-green text-white hover:bg-dlsl-green-dark" 
+                  onClick={() => {
+                    const searchSection = document.getElementById('search-section');
+                    searchSection?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
                   <Search className="mr-2 h-5 w-5" />
                   Start Searching
                 </Button>
-                <Button size="lg" variant="outline" className="border-dlsl-green text-dlsl-green hover:bg-dlsl-green/10" onClick={() => navigate('/login')}>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="border-dlsl-green text-dlsl-green hover:bg-dlsl-green/10" 
+                  onClick={() => navigate('/login')}
+                >
                   <Book className="mr-2 h-5 w-5" />
                   Login to Browse
                 </Button>
@@ -202,7 +225,7 @@ const Index = () => {
             <div className="hidden md:flex justify-center">
               <div className="relative">
                 <div className="w-80 h-80 bg-dlsl-green/10 rounded-full flex items-center justify-center">
-                  <img src="/lovable-uploads/e19f3e92-3af9-49e5-aa2b-59619f4271e9.png" alt="STARS Logo" className="w-40 h-40" />
+                  <Star className="h-40 w-40 text-dlsl-green fill-dlsl-green/20" />
                 </div>
                 <div className="absolute -top-4 -right-4 bg-white rounded-lg shadow-md p-4 border border-gray-100">
                   <div className="flex items-center space-x-2">
@@ -250,12 +273,18 @@ const Index = () => {
           <Tabs defaultValue="colleges" className="w-full max-w-4xl mx-auto">
             <TabsList className="grid w-full grid-cols-2 mb-8">
               <TabsTrigger value="colleges">Browse by College</TabsTrigger>
+              <TabsTrigger value="search">Advanced Search</TabsTrigger>
             </TabsList>
             <TabsContent value="colleges" className="mt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {collegeData.map(college => {
-                const colors = getCollegeColors(college.color);
-                return <Card key={college.name} className={`overflow-hidden border-t-4 ${colors.border} hover:shadow-lg transition-all ${colors.hover} cursor-pointer`} onClick={() => navigate(`/college/${college.id}`)}>
+                  const colors = getCollegeColors(college.color);
+                  return (
+                    <Card 
+                      key={college.name} 
+                      className={`overflow-hidden border-t-4 ${colors.border} hover:shadow-lg transition-all ${colors.hover} cursor-pointer`} 
+                      onClick={() => navigate(`/college/${college.id}`)}
+                    >
                       <CardContent className="p-6">
                         <div className="flex items-center mb-4">
                           <div className={`${colors.bg} p-3 rounded-full`}>
@@ -279,8 +308,9 @@ const Index = () => {
                           <ChevronRight className={`h-5 w-5 ${colors.text}`} />
                         </div>
                       </CardContent>
-                    </Card>;
-              })}
+                    </Card>
+                  );
+                })}
               </div>
             </TabsContent>
             <TabsContent value="search">
@@ -289,7 +319,11 @@ const Index = () => {
                   <div className="space-y-4">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                      <input type="text" placeholder="Search by title, author, keywords..." className="w-full pl-10 pr-4 py-3 text-md bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-dlsl-green focus:border-dlsl-green" />
+                      <input 
+                        type="text" 
+                        placeholder="Search by title, author, keywords..." 
+                        className="w-full pl-10 pr-4 py-3 text-md bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-dlsl-green focus:border-dlsl-green" 
+                      />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
@@ -324,7 +358,10 @@ const Index = () => {
                         </select>
                       </div>
                     </div>
-                    <Button className="bg-dlsl-green text-white hover:bg-dlsl-green-dark w-full md:w-auto" onClick={() => navigate('/login')}>
+                    <Button 
+                      className="bg-dlsl-green text-white hover:bg-dlsl-green-dark w-full md:w-auto" 
+                      onClick={() => navigate('/login')}
+                    >
                       <Search className="mr-2 h-5 w-5" />
                       Search Theses
                     </Button>
@@ -348,7 +385,7 @@ const Index = () => {
             <div className="mt-2 w-16 h-1 bg-dlsl-gold mx-auto"></div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="bg-gray-50 p-6 rounded-lg border border-gray-100 hover:shadow-md transition-shadow">
               <div className="w-12 h-12 bg-dlsl-green/10 rounded-full flex items-center justify-center mb-4">
                 <Search className="h-6 w-6 text-dlsl-green" />
@@ -364,8 +401,6 @@ const Index = () => {
               <h3 className="font-bold text-xl mb-2">Online Reading</h3>
               <p className="text-gray-600">Access and read theses directly in your browser with our built-in document viewer.</p>
             </div>
-            
-            
           </div>
 
           <div className="mt-16">
@@ -405,7 +440,7 @@ const Index = () => {
               </div>
               <div className="bg-dlsl-green/5 p-8 rounded-lg">
                 <div className="aspect-square w-full bg-dlsl-green/10 rounded-lg flex items-center justify-center relative">
-                  <Book className="h-24 w-24 text-dlsl-green opacity-40" />
+                  <Star className="h-24 w-24 text-dlsl-green fill-dlsl-green/20" />
                   <div className="absolute -top-4 -right-4 bg-white rounded-full shadow-lg p-3">
                     <FileText className="h-6 w-6 text-dlsl-green" />
                   </div>
@@ -426,11 +461,19 @@ const Index = () => {
           <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
             Sign in to access the full repository of academic theses and research papers.
           </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Button size="lg" className="bg-white text-dlsl-green hover:bg-gray-100" onClick={() => navigate('/login')}>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Button 
+              size="lg" 
+              className="bg-white text-dlsl-green hover:bg-gray-100" 
+              onClick={() => navigate('/login')}
+            >
               Sign in to STARS
             </Button>
-            <Button size="lg" variant="outline" className="border-white bg-gray-400 hover:bg-gray-300 text-dlsl-green">
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="border-white text-white hover:bg-white hover:text-dlsl-green"
+            >
               Learn More
             </Button>
           </div>
@@ -439,26 +482,35 @@ const Index = () => {
 
       {/* Footer */}
       <Footer />
-    </div>;
+    </div>
+  );
 };
 
 // ListItem component for navigation menu
-const ListItem = React.forwardRef<React.ElementRef<"a">, React.ComponentPropsWithoutRef<"a">>(({
-  className,
-  title,
-  children,
-  ...props
-}, ref) => {
-  return <li>
+const ListItem = React.forwardRef<
+  React.ElementRef<"a">,
+  React.ComponentPropsWithoutRef<"a">
+>(({ className, title, children, ...props }, ref) => {
+  return (
+    <li>
       <NavigationMenuLink asChild>
-        <a ref={ref} className={cn("block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground", className)} {...props}>
+        <a
+          ref={ref}
+          className={cn(
+            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+            className
+          )}
+          {...props}
+        >
           <div className="text-sm font-medium leading-none">{title}</div>
           <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
             {children}
           </p>
         </a>
       </NavigationMenuLink>
-    </li>;
+    </li>
+  );
 });
 ListItem.displayName = "ListItem";
+
 export default Index;
