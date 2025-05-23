@@ -1,5 +1,4 @@
-
-import { GraduationCap, Mail, Phone, MapPin, Globe, Facebook, Twitter, Instagram } from 'lucide-react';
+import { Star, Mail, Phone, MapPin, Globe, Facebook, Twitter, Instagram } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,7 @@ const Footer = () => {
           {/* Logo and Description */}
           <div className="md:col-span-5">
             <div className="flex items-center mb-4">
-              <GraduationCap className="h-8 w-8 mr-2" />
+              <Star className="h-8 w-8 mr-2 fill-white" />
               <h3 className="text-2xl font-bold">STARS</h3>
             </div>
             <p className="text-white/90 mb-6 max-w-md">
@@ -38,7 +37,7 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/" className="text-white/80 hover:text-white transition-colors hover:underline">
+                <Link to="/" className="text-white/80 hover:text-white transition-colors">
                   Home
                 </Link>
               </li>

@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { 
@@ -7,7 +6,8 @@ import {
   Home,
   Bell,
   Search,
-  Menu
+  Menu,
+  Star
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -47,11 +47,7 @@ const Header = () => {
               className="flex items-center hover:opacity-80 transition-opacity"
             >
               <div className="w-7 h-7 bg-dlsl-green rounded-md flex items-center justify-center">
-                <img 
-                  src="/lovable-uploads/e19f3e92-3af9-49e5-aa2b-59619f4271e9.png" 
-                  alt="STARS Logo" 
-                  className="w-6 h-6"
-                />
+                <Star className="w-4 h-4 text-white fill-white" />
               </div>
               <span className="text-xl font-bold text-dlsl-green ml-2">STARS</span>
             </button>
