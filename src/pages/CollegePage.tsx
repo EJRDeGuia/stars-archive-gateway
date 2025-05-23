@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { colleges, mockTheses } from '@/data/mockData';
@@ -49,6 +48,23 @@ const CollegePage = () => {
     );
   }
 
+  const getCollegeBackgroundImage = () => {
+    switch (college.name) {
+      case 'CITE':
+        return '/lovable-uploads/65650cd1-6127-4c49-8cc6-74afa87f94b4.png';
+      case 'CBEAM':
+        return '/lovable-uploads/17b2bb63-8a6a-4ce5-af38-77d4c6f73cab.png';
+      case 'CEAS':
+        return '/lovable-uploads/ca2b4dc8-6abf-4400-baea-d3dbb3f5026a.png';
+      case 'CON':
+        return '/lovable-uploads/ab6b2d0e-87a1-4969-89c9-994de79d8a8a.png';
+      case 'CIHTM':
+        return '/lovable-uploads/97a911d3-0111-4c1a-9d25-f6a737f5ffec.png';
+      default:
+        return '';
+    }
+  };
+
   const getBgColorClass = () => {
     switch (college.color) {
       case 'red': return 'bg-red-500';
@@ -95,9 +111,22 @@ const CollegePage = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
       
-      {/* Hero Banner */}
-      <div className={`${getBgColorClass()} text-white`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      {/* Hero Banner with Background Image */}
+      <div 
+        className="relative text-white"
+        style={{
+          backgroundImage: `url(${getCollegeBackgroundImage()})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        {/* Gradient Overlay */}
+        <div className={`absolute inset-0 ${getBgColorClass()} bg-opacity-80`}></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent"></div>
+        
+        {/* Content */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <h1 className="text-4xl font-bold mb-2">{college.name}</h1>
           <h2 className="text-xl font-medium mb-4">{college.fullName}</h2>
           <p className="max-w-2xl">{college.description}</p>
