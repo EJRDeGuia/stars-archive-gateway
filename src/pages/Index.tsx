@@ -95,7 +95,7 @@ const Index = () => {
     <div 
       className="min-h-screen flex flex-col"
       style={{
-        backgroundImage: `url(/lovable-uploads/fd7995a2-1df9-4aeb-bbfb-6a33723b9835.png)`,
+        backgroundImage: `url(/lovable-uploads/e19f3e92-3af9-49e5-aa2b-59619f4271e9.png)`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
@@ -103,7 +103,7 @@ const Index = () => {
       }}
     >
       {/* Background Overlay */}
-      <div className="fixed inset-0 bg-white/85 backdrop-blur-sm z-0"></div>
+      <div className="fixed inset-0 bg-white/70 backdrop-blur-sm z-0"></div>
       
       {/* Content with relative positioning */}
       <div className="relative z-10 flex flex-col min-h-screen">
