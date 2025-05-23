@@ -97,7 +97,7 @@ const Index = () => {
       <div 
         className="fixed inset-0 z-0"
         style={{
-          backgroundImage: `url(/lovable-uploads/e19f3e92-3af9-49e5-aa2b-59619f4271e9.png)`,
+          backgroundImage: `url(/lovable-uploads/caa8dcf2-f06e-452b-823a-acc2b65b1d4b.png)`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
