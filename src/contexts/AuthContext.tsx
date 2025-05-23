@@ -19,25 +19,25 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock users for demonstration
+// Mock users for demonstration with updated names
 const mockUsers: (User & { password: string })[] = [
   {
     id: '1',
-    name: 'Dr. Maria Santos',
+    name: 'Researcher User',
     email: 'researcher@dlsl.edu.ph',
     role: 'researcher',
     password: 'password123'
   },
   {
     id: '2',
-    name: 'Prof. Juan Cruz',
+    name: 'Archivist User',
     email: 'archivist@dlsl.edu.ph',
     role: 'archivist',
     password: 'password123'
   },
   {
     id: '3',
-    name: 'Dr. Ana Reyes',
+    name: 'Admin User',
     email: 'admin@dlsl.edu.ph',
     role: 'admin',
     password: 'password123'
