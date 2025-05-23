@@ -2,12 +2,11 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { GraduationCap, Search, Book, Building, CheckCircle2, Users, BarChart3, FileText, ChevronRight, Code, Calculator, Microscope, HeartPulse, UtensilsCrossed, Star, ArrowRight, Sparkles, TrendingUp } from 'lucide-react';
+import { Search, Book, CheckCircle2, Users, BarChart3, FileText, ChevronRight, Code, Calculator, Microscope, HeartPulse, UtensilsCrossed, Star, ArrowRight, Sparkles, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Footer from '@/components/Footer';
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 import { cn } from '@/lib/utils';
-import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Index = () => {
@@ -100,416 +99,345 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-x-hidden">
-      {/* Enhanced Background */}
-      <div 
-        className="fixed inset-0 z-0"
-        style={{
-          backgroundImage: `url(/lovable-uploads/fd7995a2-1df9-4aeb-bbfb-6a33723b9835.png)`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          backgroundAttachment: 'fixed'
-        }}
-      />
-      
-      {/* Enhanced Background Overlay with gradient */}
-      <div className="fixed inset-0 bg-gradient-to-br from-white/40 via-white/20 to-dlsl-green/10 backdrop-blur-[1px] z-10"></div>
-      
-      {/* Content with relative positioning */}
-      <div className="relative z-20 flex flex-col min-h-screen">
-        {/* Enhanced Header */}
-        <header className="bg-white/95 backdrop-blur-md shadow-lg border-b border-white/20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-20">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-dlsl-green to-dlsl-green-dark rounded-xl flex items-center justify-center shadow-lg">
-                  <Star className="w-7 h-7 text-white fill-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-dlsl-green to-dlsl-green-dark bg-clip-text text-transparent">STARS</h1>
-                  <p className="text-xs text-gray-500 font-medium">De La Salle Lipa</p>
-                </div>
+    <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-blue-50">
+      {/* Header */}
+      <header className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
+                <Star className="w-6 h-6 text-white" />
               </div>
-              
-              <div className="hidden md:flex space-x-4">
-                <NavigationMenu>
-                  <NavigationMenuList>
-                    <NavigationMenuItem>
-                      <NavigationMenuTrigger className="bg-transparent hover:bg-white/50">About</NavigationMenuTrigger>
-                      <NavigationMenuContent>
-                        <ul className="grid gap-3 p-6 w-[400px] md:w-[500px] lg:w-[600px]">
-                          <li className="row-span-3">
-                            <NavigationMenuLink asChild>
-                              <a className="flex h-full w-full select-none flex-col justify-end rounded-xl bg-gradient-to-br from-dlsl-green/20 to-dlsl-green/40 p-6 no-underline outline-none focus:shadow-md hover:shadow-lg transition-all" href="#">
-                                <div className="mt-4 mb-2 text-lg font-bold text-dlsl-green">
-                                  Smart Thesis Archival and Retrieval System
-                                </div>
-                                <p className="text-sm leading-tight text-dlsl-green/90 font-medium">
-                                  STARS is a modern platform designed to store, manage, and retrieve academic research and theses at De La Salle Lipa.
-                                </p>
-                              </a>
-                            </NavigationMenuLink>
-                          </li>
-                          <ListItem href="#" title="Introduction">
-                            Learn about the system and its features
-                          </ListItem>
-                          <ListItem href="#" title="How It Works">
-                            Understand the thesis submission and retrieval process
-                          </ListItem>
-                          <ListItem href="#" title="For Researchers">
-                            Special features for academic researchers
-                          </ListItem>
-                        </ul>
-                      </NavigationMenuContent>
-                    </NavigationMenuItem>
-                    <NavigationMenuItem>
-                      <NavigationMenuTrigger className="bg-transparent hover:bg-white/50">Resources</NavigationMenuTrigger>
-                      <NavigationMenuContent>
-                        <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2">
-                          <ListItem href="#" title="User Guide">
-                            Step-by-step guides to using STARS
-                          </ListItem>
-                          <ListItem href="#" title="Help Center">
-                            FAQ and troubleshooting
-                          </ListItem>
-                          <ListItem href="#" title="Research Standards">
-                            Format and citation guidelines
-                          </ListItem>
-                          <ListItem href="#" title="Contact Support">
-                            Get help from the STARS team
-                          </ListItem>
-                        </ul>
-                      </NavigationMenuContent>
-                    </NavigationMenuItem>
-                    <NavigationMenuItem>
-                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                        Contact
-                      </NavigationMenuLink>
-                    </NavigationMenuItem>
-                  </NavigationMenuList>
-                </NavigationMenu>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">STARS</h1>
+                <p className="text-xs text-gray-500">De La Salle Lipa</p>
               </div>
-
-              <Button onClick={() => navigate('/login')} className="bg-gradient-to-r from-dlsl-green to-dlsl-green-dark text-white hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 px-6 py-2.5">
-                Sign in
-              </Button>
             </div>
-          </div>
-        </header>
+            
+            <div className="hidden md:flex space-x-8">
+              <NavigationMenu>
+                <NavigationMenuList>
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger>About</NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="grid gap-3 p-6 w-[400px] md:w-[500px] lg:w-[600px]">
+                        <li className="row-span-3">
+                          <NavigationMenuLink asChild>
+                            <a className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-blue-50 to-blue-100 p-6 no-underline outline-none focus:shadow-md" href="#">
+                              <div className="mb-2 mt-4 text-lg font-medium">
+                                Smart Thesis Archival and Retrieval System
+                              </div>
+                              <p className="text-sm leading-tight text-muted-foreground">
+                                STARS is a modern platform for storing, managing, and retrieving academic research at De La Salle Lipa.
+                              </p>
+                            </a>
+                          </NavigationMenuLink>
+                        </li>
+                        <ListItem href="#" title="Introduction">
+                          Learn about the system and its features
+                        </ListItem>
+                        <ListItem href="#" title="How It Works">
+                          Understand the thesis submission process
+                        </ListItem>
+                        <ListItem href="#" title="For Researchers">
+                          Special features for academic researchers
+                        </ListItem>
+                      </ul>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger>Resources</NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2">
+                        <ListItem href="#" title="User Guide">
+                          Step-by-step guides to using STARS
+                        </ListItem>
+                        <ListItem href="#" title="Help Center">
+                          FAQ and troubleshooting
+                        </ListItem>
+                        <ListItem href="#" title="Research Standards">
+                          Format and citation guidelines
+                        </ListItem>
+                        <ListItem href="#" title="Contact Support">
+                          Get help from the STARS team
+                        </ListItem>
+                      </ul>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                      Contact
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                </NavigationMenuList>
+              </NavigationMenu>
+            </div>
 
-        {/* Enhanced Hero Section */}
-        <div className="bg-white/80 backdrop-blur-md py-20 md:py-32 border-b border-white/30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid md:grid-cols-2 gap-16 items-center">
-              <div className="text-left space-y-8">
-                <div className="inline-flex items-center bg-gradient-to-r from-dlsl-green/10 to-dlsl-green/20 backdrop-blur-sm px-6 py-3 rounded-full text-dlsl-green font-semibold text-sm border border-dlsl-green/20">
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  De La Salle Lipa • Learning Resource Center
-                </div>
-                <h1 className="text-5xl md:text-7xl font-bold text-gray-900 leading-tight">
-                  Smart Thesis 
-                  <span className="bg-gradient-to-r from-dlsl-green to-dlsl-green-dark bg-clip-text text-transparent block">
-                    Archival
-                  </span>
-                  and{' '}
-                  <span className="bg-gradient-to-r from-dlsl-green to-dlsl-green-dark bg-clip-text text-transparent">
-                    Retrieval
-                  </span>
-                  <br />System
-                </h1>
-                <p className="text-xl text-gray-600 leading-relaxed max-w-lg">
-                  A cutting-edge platform for managing, discovering, and accessing academic research
-                  at De La Salle Lipa with AI-powered insights.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                  <Button size="lg" className="bg-gradient-to-r from-dlsl-green to-dlsl-green-dark text-white hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 px-8 py-4 text-lg" onClick={() => {
-                  const searchSection = document.getElementById('search-section');
-                  searchSection?.scrollIntoView({
-                    behavior: 'smooth'
-                  });
-                }}>
-                    <Search className="mr-2 h-5 w-5" />
-                    Start Exploring
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                  <Button size="lg" variant="outline" className="border-2 border-dlsl-green text-dlsl-green hover:bg-dlsl-green hover:text-white transition-all duration-300 px-8 py-4 text-lg backdrop-blur-sm bg-white/50" onClick={() => navigate('/login')}>
-                    <Book className="mr-2 h-5 w-5" />
-                    Login to Browse
-                  </Button>
-                </div>
+            <Button onClick={() => navigate('/login')} className="bg-blue-600 hover:bg-blue-700">
+              Sign in
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8">
+              <div className="inline-flex items-center bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium">
+                <Sparkles className="w-4 h-4 mr-2" />
+                De La Salle Lipa • Learning Resource Center
               </div>
-              <div className="hidden md:flex justify-center">
-                <div className="relative">
-                  <div className="w-96 h-96 bg-gradient-to-br from-dlsl-green/20 to-dlsl-green/40 rounded-3xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-2xl">
-                    <Star className="h-48 w-48 text-dlsl-green fill-dlsl-green/30" />
-                  </div>
-                  {/* Floating cards */}
-                  <div className="absolute -top-6 -right-6 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl p-6 border border-white/20 transform rotate-3 hover:rotate-0 transition-all duration-300">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-gradient-to-br from-dlsl-gold to-yellow-500 rounded-full flex items-center justify-center">
-                        <FileText className="h-6 w-6 text-white" />
-                      </div>
-                      <div>
-                        <p className="font-bold text-lg">500+ Theses</p>
-                        <p className="text-sm text-gray-500">Available now</p>
-                      </div>
+              <div className="space-y-4">
+                <h1 className="text-4xl md:text-6xl font-bold leading-tight">
+                  Smart Thesis
+                  <span className="block text-blue-200">Archival and</span>
+                  <span className="block">Retrieval System</span>
+                </h1>
+                <p className="text-xl text-blue-100 leading-relaxed max-w-lg">
+                  A modern platform for managing, discovering, and accessing academic research at De La Salle Lipa.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100" onClick={() => {
+                  const searchSection = document.getElementById('search-section');
+                  searchSection?.scrollIntoView({ behavior: 'smooth' });
+                }}>
+                  <Search className="mr-2 h-5 w-5" />
+                  Start Exploring
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600" onClick={() => navigate('/login')}>
+                  <Book className="mr-2 h-5 w-5" />
+                  Login to Browse
+                </Button>
+              </div>
+            </div>
+            <div className="hidden md:flex justify-center">
+              <div className="relative">
+                <div className="w-80 h-80 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                  <Star className="h-32 w-32 text-white/80" />
+                </div>
+                {/* Stats cards */}
+                <div className="absolute -top-4 -right-4 bg-white rounded-lg shadow-lg p-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                      <FileText className="h-5 w-5 text-yellow-600" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">500+ Theses</p>
+                      <p className="text-sm text-gray-500">Available now</p>
                     </div>
                   </div>
-                  <div className="absolute -bottom-6 -left-6 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl p-6 border border-white/20 transform -rotate-3 hover:rotate-0 transition-all duration-300">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-gradient-to-br from-dlsl-green to-emerald-500 rounded-full flex items-center justify-center">
-                        <Users className="h-6 w-6 text-white" />
-                      </div>
-                      <div>
-                        <p className="font-bold text-lg">5 Colleges</p>
-                        <p className="text-sm text-gray-500">Academic research</p>
-                      </div>
+                </div>
+                <div className="absolute -bottom-4 -left-4 bg-white rounded-lg shadow-lg p-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <Users className="h-5 w-5 text-green-600" />
                     </div>
-                  </div>
-                  <div className="absolute top-1/2 -left-8 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl p-4 border border-white/20">
-                    <TrendingUp className="h-8 w-8 text-dlsl-green" />
+                    <div>
+                      <p className="font-semibold text-gray-900">5 Colleges</p>
+                      <p className="text-sm text-gray-500">Academic research</p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </section>
 
-        {/* Enhanced Search Section */}
-        <section id="search-section" className="py-20 bg-white/70 backdrop-blur-md">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-dlsl-green flex items-center justify-center mb-4">
-                <Search className="mr-3 h-8 w-8" />
-                Find Academic Research
-              </h2>
-              <div className="w-24 h-1.5 bg-gradient-to-r from-dlsl-gold to-yellow-500 mx-auto rounded-full"></div>
-              <p className="mt-6 text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                Discover groundbreaking undergraduate theses from all academic departments at De La Salle Lipa.
-                Browse by college or use our advanced search to find specific research.
-              </p>
-            </div>
-
-            <Tabs defaultValue="colleges" className="w-full max-w-6xl mx-auto">
-              <TabsList className="grid w-full grid-cols-2 mb-12 bg-white/80 backdrop-blur-sm p-2 rounded-2xl shadow-lg border border-white/20">
-                <TabsTrigger value="colleges" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-dlsl-green data-[state=active]:to-dlsl-green-dark data-[state=active]:text-white py-3 px-6 font-semibold">Browse by College</TabsTrigger>
-                <TabsTrigger value="search" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-dlsl-green data-[state=active]:to-dlsl-green-dark data-[state=active]:text-white py-3 px-6 font-semibold">Advanced Search</TabsTrigger>
-              </TabsList>
-              <TabsContent value="colleges" className="mt-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {collegeData.map((college, index) => {
-                    const colors = getCollegeColors(college.color);
-                    return (
-                      <Card 
-                        key={college.name} 
-                        className={`group overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 cursor-pointer transform hover:-translate-y-2 ${colors.hover} bg-white/90 backdrop-blur-md`} 
-                        onClick={() => navigate(`/college/${college.id}`)}
-                        style={{ animationDelay: `${index * 100}ms` }}
-                      >
-                        <div className={`h-2 bg-gradient-to-r ${colors.gradient}`}></div>
-                        <CardContent className="p-8">
-                          <div className="flex items-center mb-6">
-                            <div className={`${colors.bg} p-4 rounded-2xl border ${colors.border} group-hover:scale-110 transition-transform duration-300`}>
-                              <div className={`bg-gradient-to-br ${colors.gradient} text-white p-3 rounded-xl shadow-lg`}>
-                                {college.icon}
-                              </div>
-                            </div>
-                            <div className="ml-6">
-                              <h3 className="text-2xl font-bold text-gray-800 group-hover:text-dlsl-green transition-colors">{college.name}</h3>
-                              <p className="text-sm text-gray-600 font-medium mt-1">{college.fullName}</p>
-                            </div>
-                          </div>
-                          <p className="text-gray-600 mb-6 leading-relaxed">{college.description}</p>
-                          <div className="flex items-center text-sm text-gray-500 mb-6">
-                            <Book className="h-5 w-5 mr-2" />
-                            <span className="font-semibold">{college.thesesCount}+ Theses Available</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <Button variant="link" className={`${colors.text} pl-0 hover:underline font-semibold group-hover:translate-x-1 transition-transform`}>
-                              Explore research
-                            </Button>
-                            <ChevronRight className={`h-6 w-6 ${colors.text} group-hover:translate-x-1 transition-transform`} />
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </TabsContent>
-              <TabsContent value="search">
-                <Card className="bg-white/90 backdrop-blur-md shadow-2xl border-0">
-                  <CardContent className="pt-8 p-8">
-                    <div className="space-y-8">
-                      <div className="relative">
-                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-6 w-6" />
-                        <input 
-                          type="text" 
-                          placeholder="Search by title, author, keywords, or research topic..." 
-                          className="w-full pl-14 pr-6 py-4 text-lg bg-white/80 backdrop-blur-sm border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-dlsl-green/20 focus:border-dlsl-green transition-all duration-300 shadow-lg" 
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                          <label className="block text-sm font-bold text-gray-700 mb-3">College</label>
-                          <select className="w-full p-4 bg-white/80 backdrop-blur-sm border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-dlsl-green/20 focus:border-dlsl-green transition-all duration-300 shadow-lg">
-                            <option value="">All Colleges</option>
-                            <option value="cite">CITE</option>
-                            <option value="cbeam">CBEAM</option>
-                            <option value="ceas">CEAS</option>
-                            <option value="con">CON</option>
-                            <option value="cihtm">CIHTM</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-bold text-gray-700 mb-3">Year</label>
-                          <select className="w-full p-4 bg-white/80 backdrop-blur-sm border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-dlsl-green/20 focus:border-dlsl-green transition-all duration-300 shadow-lg">
-                            <option value="">All Years</option>
-                            <option value="2025">2025</option>
-                            <option value="2024">2024</option>
-                            <option value="2023">2023</option>
-                            <option value="2022">2022</option>
-                            <option value="2021">2021</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-bold text-gray-700 mb-3">Sort By</label>
-                          <select className="w-full p-4 bg-white/80 backdrop-blur-sm border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-dlsl-green/20 focus:border-dlsl-green transition-all duration-300 shadow-lg">
-                            <option value="relevance">Relevance</option>
-                            <option value="newest">Newest First</option>
-                            <option value="oldest">Oldest First</option>
-                            <option value="title">Title (A-Z)</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-center space-y-4">
-                        <Button className="bg-gradient-to-r from-dlsl-green to-dlsl-green-dark text-white hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 px-12 py-4 text-lg rounded-2xl" onClick={() => navigate('/login')}>
-                          <Search className="mr-3 h-6 w-6" />
-                          Search Theses
-                          <ArrowRight className="ml-3 h-6 w-6" />
-                        </Button>
-                        <p className="text-center text-sm text-gray-500 font-medium">Sign in to access advanced search features and full thesis content</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+      {/* Search Section */}
+      <section id="search-section" className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Find Academic Research</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Discover undergraduate theses from all academic departments at De La Salle Lipa.
+            </p>
           </div>
-        </section>
 
-        {/* Enhanced Features Section */}
-        <section className="py-20 bg-white/60 backdrop-blur-md">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-dlsl-green flex items-center justify-center mb-4">
-                <Sparkles className="mr-3 h-8 w-8" />
-                Platform Features
-              </h2>
-              <div className="w-24 h-1.5 bg-gradient-to-r from-dlsl-gold to-yellow-500 mx-auto rounded-full"></div>
+          <Tabs defaultValue="colleges" className="w-full max-w-4xl mx-auto">
+            <TabsList className="grid w-full grid-cols-2 mb-8">
+              <TabsTrigger value="colleges">Browse by College</TabsTrigger>
+              <TabsTrigger value="search">Advanced Search</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="colleges">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {collegeData.map((college) => {
+                  const colors = getCollegeColors(college.color);
+                  return (
+                    <Card 
+                      key={college.name} 
+                      className="group cursor-pointer hover:shadow-lg transition-all duration-300 border border-gray-200" 
+                      onClick={() => navigate(`/college/${college.id}`)}
+                    >
+                      <div className={`h-1 bg-gradient-to-r ${colors.gradient}`}></div>
+                      <CardContent className="p-6">
+                        <div className="flex items-center mb-4">
+                          <div className={`${colors.bg} p-3 rounded-lg border ${colors.border}`}>
+                            {college.icon}
+                          </div>
+                          <div className="ml-4">
+                            <h3 className="font-semibold text-gray-900">{college.name}</h3>
+                            <p className="text-sm text-gray-500">{college.fullName}</p>
+                          </div>
+                        </div>
+                        <p className="text-gray-600 mb-4">{college.description}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-500">
+                            <Book className="h-4 w-4 inline mr-1" />
+                            {college.thesesCount}+ Theses
+                          </span>
+                          <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-gray-600" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="search">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="space-y-6">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                      <input 
+                        type="text" 
+                        placeholder="Search by title, author, keywords..." 
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <select className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Colleges</option>
+                        {collegeData.map(college => (
+                          <option key={college.id} value={college.id}>{college.name}</option>
+                        ))}
+                      </select>
+                      <select className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Years</option>
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                        <option value="2022">2022</option>
+                      </select>
+                      <select className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="relevance">Relevance</option>
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                      </select>
+                    </div>
+                    <div className="text-center">
+                      <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => navigate('/login')}>
+                        <Search className="mr-2 h-5 w-5" />
+                        Search Theses
+                      </Button>
+                      <p className="text-sm text-gray-500 mt-2">Sign in to access full search features</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Platform Features</h2>
+            <p className="text-xl text-gray-600">Everything you need for academic research</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+                <Search className="h-6 w-6 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Advanced Search</h3>
+              <p className="text-gray-600">Find relevant research quickly with our powerful search engine and intelligent filtering.</p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20">
-              <div className="group bg-white/80 backdrop-blur-md p-10 rounded-3xl border border-white/20 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
-                <div className="w-16 h-16 bg-gradient-to-br from-dlsl-green/20 to-dlsl-green/40 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300">
-                  <Search className="h-8 w-8 text-dlsl-green" />
-                </div>
-                <h3 className="font-bold text-2xl mb-4 text-gray-800">Advanced Search & AI</h3>
-                <p className="text-gray-600 leading-relaxed text-lg">Find relevant research quickly with our AI-powered search engine, semantic analysis, and intelligent filtering options.</p>
+            <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6">
+                <FileText className="h-6 w-6 text-green-600" />
               </div>
-              
-              <div className="group bg-white/80 backdrop-blur-md p-10 rounded-3xl border border-white/20 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-blue-600/40 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300">
-                  <FileText className="h-8 w-8 text-blue-600" />
-                </div>
-                <h3 className="font-bold text-2xl mb-4 text-gray-800">Interactive Reading</h3>
-                <p className="text-gray-600 leading-relaxed text-lg">Access and read theses directly in your browser with our enhanced document viewer and annotation tools.</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-              <div className="space-y-8">
-                <h2 className="text-4xl font-bold text-dlsl-green leading-tight">
-                  Next-Generation Academic Research Management
-                </h2>
-                <p className="text-gray-600 text-lg leading-relaxed">
-                  STARS revolutionizes how academic research is managed and accessed through cutting-edge technology,
-                  AI-powered insights, and intuitive design. Experience the future of academic archival systems.
-                </p>
-                
-                <div className="space-y-6">
-                  {[
-                    'AI-powered semantic search and thesis summarization',
-                    'Role-based access control for students, faculty, and administrators',
-                    'Advanced analytics and research trend insights',
-                    'Department-specific organization and categorization',
-                    'Secure cloud storage with automated backups',
-                    'Real-time collaboration and annotation tools'
-                  ].map((feature, index) => (
-                    <div key={index} className="flex items-start group">
-                      <CheckCircle2 className="h-7 w-7 text-dlsl-green mr-4 flex-shrink-0 group-hover:scale-110 transition-transform" />
-                      <p className="text-gray-600 text-lg leading-relaxed">{feature}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="bg-gradient-to-br from-dlsl-green/10 to-dlsl-green/20 p-12 rounded-3xl backdrop-blur-sm border border-white/20">
-                <div className="aspect-square w-full bg-gradient-to-br from-dlsl-green/20 to-dlsl-green/40 rounded-3xl flex items-center justify-center relative overflow-hidden">
-                  <Star className="h-32 w-32 text-dlsl-green fill-dlsl-green/30" />
-                  {/* Floating elements */}
-                  <div className="absolute -top-4 -right-4 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl p-4 border border-white/20 animate-bounce">
-                    <FileText className="h-8 w-8 text-dlsl-green" />
-                  </div>
-                  <div className="absolute -bottom-4 -left-4 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl p-4 border border-white/20 animate-pulse">
-                    <Search className="h-8 w-8 text-dlsl-green" />
-                  </div>
-                  <div className="absolute top-1/4 -left-6 bg-white/90 backdrop-blur-md rounded-full shadow-xl p-3 border border-white/20">
-                    <BarChart3 className="h-6 w-6 text-dlsl-green" />
-                  </div>
-                </div>
-              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Digital Library</h3>
+              <p className="text-gray-600">Access and read theses directly in your browser with our document viewer.</p>
             </div>
           </div>
-        </section>
 
-        {/* Enhanced CTA Section */}
-        <section className="py-20 bg-gradient-to-r from-dlsl-green via-dlsl-green-dark to-dlsl-green backdrop-blur-md text-white relative overflow-hidden">
-          {/* Background pattern */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-          <div className="absolute inset-0" style={{
-            backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")"
-          }}></div>
-          
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-            <div className="space-y-8">
-              <h2 className="text-5xl font-bold mb-6">Ready to start exploring?</h2>
-              <p className="text-2xl opacity-90 max-w-3xl mx-auto leading-relaxed">
-                Join thousands of researchers and students in discovering groundbreaking academic work.
-                Sign in to access the full repository of theses and research papers.
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-6">
+              <h2 className="text-3xl font-bold text-gray-900">
+                Academic Research Management
+              </h2>
+              <p className="text-lg text-gray-600">
+                STARS provides a comprehensive platform for managing and accessing academic research with modern tools and intuitive design.
               </p>
-              <div className="flex flex-col sm:flex-row justify-center gap-6 pt-8">
-                <Button size="lg" className="bg-white text-dlsl-green hover:bg-gray-100 hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 px-12 py-6 text-xl rounded-2xl font-bold" onClick={() => navigate('/login')}>
-                  <Star className="mr-3 h-6 w-6" />
-                  Sign in to STARS
-                  <ArrowRight className="ml-3 h-6 w-6" />
-                </Button>
-                <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-dlsl-green transition-all duration-300 px-12 py-6 text-xl rounded-2xl font-bold backdrop-blur-sm">
-                  <Book className="mr-3 h-6 w-6" />
-                  Learn More
-                </Button>
+              
+              <div className="space-y-4">
+                {[
+                  'Intelligent search and categorization',
+                  'Role-based access control',
+                  'Research analytics and insights',
+                  'Department-specific organization',
+                  'Secure cloud storage',
+                  'Collaborative tools'
+                ].map((feature, index) => (
+                  <div key={index} className="flex items-start">
+                    <CheckCircle2 className="h-6 w-6 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
+                    <p className="text-gray-600">{feature}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-8 rounded-2xl">
+              <div className="aspect-square w-full bg-white/50 rounded-xl flex items-center justify-center">
+                <div className="text-center">
+                  <Star className="h-24 w-24 text-blue-600 mx-auto mb-4" />
+                  <BarChart3 className="h-16 w-16 text-blue-500 mx-auto" />
+                </div>
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Footer */}
-        <Footer />
-      </div>
+      {/* CTA Section */}
+      <section className="bg-blue-600 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="space-y-6">
+            <h2 className="text-4xl font-bold">Ready to start exploring?</h2>
+            <p className="text-xl text-blue-100 max-w-2xl mx-auto">
+              Join researchers and students in discovering academic work. Sign in to access the full repository.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100" onClick={() => navigate('/login')}>
+                <Star className="mr-2 h-5 w-5" />
+                Sign in to STARS
+              </Button>
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
+                <Book className="mr-2 h-5 w-5" />
+                Learn More
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
     </div>
   );
 };
 
-// Enhanced ListItem component for navigation menu
+// ListItem component for navigation menu
 const ListItem = React.forwardRef<React.ElementRef<"a">, React.ComponentPropsWithoutRef<"a">>(({
   className,
   title,
@@ -522,13 +450,13 @@ const ListItem = React.forwardRef<React.ElementRef<"a">, React.ComponentPropsWit
         <a 
           ref={ref} 
           className={cn(
-            "block select-none space-y-1 rounded-xl p-4 leading-none no-underline outline-none transition-all hover:bg-white/80 hover:shadow-lg focus:bg-white/80 focus:shadow-lg backdrop-blur-sm", 
+            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground", 
             className
           )} 
           {...props}
         >
-          <div className="text-sm font-bold leading-none text-dlsl-green">{title}</div>
-          <p className="line-clamp-2 text-sm leading-snug text-gray-600 mt-2">
+          <div className="text-sm font-medium leading-none">{title}</div>
+          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
             {children}
           </p>
         </a>
