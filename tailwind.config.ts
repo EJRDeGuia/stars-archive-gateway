@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -69,6 +68,9 @@ export default {
 					'green-light': '#228B22',
 					'green-dark': '#003800'
 				}
+			},
+			backgroundImage: {
+				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
