@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { GraduationCap, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { Star, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import Footer from '@/components/Footer';
 import { Separator } from '@/components/ui/separator';
@@ -63,11 +63,7 @@ const Login = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-dlsl-green rounded-md flex items-center justify-center">
-                <img 
-                  src="/lovable-uploads/e19f3e92-3af9-49e5-aa2b-59619f4271e9.png" 
-                  alt="STARS Logo" 
-                  className="w-7 h-7"
-                />
+                <Star className="w-5 h-5 text-white fill-white" />
               </div>
               <h1 className="text-xl font-bold text-dlsl-green">STARS</h1>
             </div>
@@ -83,11 +79,7 @@ const Login = () => {
           <CardContent className="p-6">
             <div className="flex flex-col items-center mb-6">
               <div className="w-16 h-16 bg-dlsl-green/10 rounded-full flex items-center justify-center mb-4">
-                <img 
-                  src="/lovable-uploads/e19f3e92-3af9-49e5-aa2b-59619f4271e9.png" 
-                  alt="STARS Logo" 
-                  className="w-10 h-10"
-                />
+                <Star className="w-8 h-8 text-dlsl-green fill-dlsl-green" />
               </div>
               <h1 className="text-2xl font-bold text-gray-800">Log in to STARS</h1>
               <p className="text-gray-600 text-sm">Access the thesis repository system</p>
