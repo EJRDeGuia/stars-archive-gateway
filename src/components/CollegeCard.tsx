@@ -14,6 +14,7 @@ interface CollegeCardProps {
     borderColor: string;
     icon: any;
     image?: string;
+    description?: string;
   };
   onClick: () => void;
   size?: 'default' | 'large';
@@ -29,9 +30,9 @@ const CollegeCard = ({ college, onClick, size = 'default' }: CollegeCardProps) =
       onClick={onClick}
     >
       {/* Gradient Header with college color */}
-      <div className={`h-3 ${college.bgColor} group-hover:h-4 transition-all duration-300`}></div>
+      <div className={`h-4 ${college.bgColor} group-hover:h-5 transition-all duration-300`}></div>
       
-      <CardContent className={`${isLarge ? 'p-10' : 'p-8'} relative`}>
+      <CardContent className={`${isLarge ? 'p-12' : 'p-10'} relative`}>
         {/* Background Pattern with college color */}
         <div className="absolute inset-0 opacity-5">
           <div className={`w-full h-full bg-gradient-to-br ${college.bgColorLight} to-transparent`}></div>
@@ -39,12 +40,12 @@ const CollegeCard = ({ college, onClick, size = 'default' }: CollegeCardProps) =
         
         <div className="relative text-center">
           {/* Icon with college color */}
-          <div className={`${isLarge ? 'w-28 h-28 mb-8' : 'w-24 h-24 mb-6'} ${college.bgColorLight} rounded-3xl flex items-center justify-center mx-auto group-hover:shadow-lg transition-all duration-300 group-hover:scale-110`}>
-            <IconComponent className={`${isLarge ? 'w-12 h-12' : 'w-10 h-10'} ${college.textColor}`} />
+          <div className={`${isLarge ? 'w-32 h-32 mb-10' : 'w-28 h-28 mb-8'} ${college.bgColorLight} rounded-3xl flex items-center justify-center mx-auto group-hover:shadow-lg transition-all duration-300 group-hover:scale-110`}>
+            <IconComponent className={`${isLarge ? 'w-14 h-14' : 'w-12 h-12'} ${college.textColor}`} />
           </div>
           
           {/* College Name */}
-          <h3 className={`${isLarge ? 'text-3xl mb-5' : 'text-2xl mb-4'} font-bold text-gray-900 group-hover:${college.textColor} transition-colors duration-300 leading-tight`}>
+          <h3 className={`${isLarge ? 'text-4xl mb-6' : 'text-3xl mb-5'} font-bold text-gray-900 group-hover:${college.textColor} transition-colors duration-300 leading-tight`}>
             {college.name}
           </h3>
           
@@ -55,7 +56,7 @@ const CollegeCard = ({ college, onClick, size = 'default' }: CollegeCardProps) =
           
           {/* Description */}
           <p className={`${isLarge ? 'text-lg mb-10' : 'text-base mb-8'} text-gray-500 leading-relaxed`}>
-            Comprehensive collection of academic research and scholarly work
+            {college.description || 'Comprehensive collection of academic research and scholarly work'}
           </p>
           
           {/* Stats */}

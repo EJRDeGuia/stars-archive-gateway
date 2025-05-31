@@ -1,8 +1,8 @@
-
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import CollegeCard from '@/components/CollegeCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -40,6 +40,10 @@ const AdminDashboard = () => {
     { action: 'Thesis approved', user: 'Prof. Garcia', time: '6 hours ago', type: 'approval' },
     { action: 'College data updated', user: 'Admin', time: '1 day ago', type: 'update' }
   ];
+
+  const handleCollegeClick = (collegeId: string) => {
+    navigate(`/college/${collegeId}`);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -207,6 +211,54 @@ const AdminDashboard = () => {
                 </div>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Colleges Overview */}
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-8">Colleges Overview</h2>
+            <div className="max-w-6xl mx-auto">
+              {/* Top row: CITE, CBEAM, CEAS */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                <CollegeCard
+                  key={colleges[0].id}
+                  college={colleges[0]}
+                  onClick={() => handleCollegeClick(colleges[0].id)}
+                  size="large"
+                />
+                <CollegeCard
+                  key={colleges[1].id}
+                  college={colleges[1]}
+                  onClick={() => handleCollegeClick(colleges[1].id)}
+                  size="large"
+                />
+                <CollegeCard
+                  key={colleges[2].id}
+                  college={colleges[2]}
+                  onClick={() => handleCollegeClick(colleges[2].id)}
+                  size="large"
+                />
+              </div>
+              
+              {/* Bottom row: CON and CIHTM positioned in middle */}
+              <div className="grid grid-cols-1 lg:grid-cols-6 gap-8">
+                <div className="lg:col-start-2 lg:col-span-2">
+                  <CollegeCard
+                    key={colleges[3].id}
+                    college={colleges[3]}
+                    onClick={() => handleCollegeClick(colleges[3].id)}
+                    size="large"
+                  />
+                </div>
+                <div className="lg:col-start-4 lg:col-span-2">
+                  <CollegeCard
+                    key={colleges[4].id}
+                    college={colleges[4]}
+                    onClick={() => handleCollegeClick(colleges[4].id)}
+                    size="large"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Recent Theses Overview */}

@@ -236,15 +236,49 @@ const Dashboard = () => {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {colleges.map((college) => (
+            {/* Custom grid layout for college cards */}
+            <div className="max-w-6xl mx-auto">
+              {/* Top row: CITE, CBEAM, CEAS */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
                 <CollegeCard
-                  key={college.id}
-                  college={college}
-                  onClick={() => handleCollegeClick(college.id)}
+                  key={colleges[0].id}
+                  college={colleges[0]}
+                  onClick={() => handleCollegeClick(colleges[0].id)}
                   size="large"
                 />
-              ))}
+                <CollegeCard
+                  key={colleges[1].id}
+                  college={colleges[1]}
+                  onClick={() => handleCollegeClick(colleges[1].id)}
+                  size="large"
+                />
+                <CollegeCard
+                  key={colleges[2].id}
+                  college={colleges[2]}
+                  onClick={() => handleCollegeClick(colleges[2].id)}
+                  size="large"
+                />
+              </div>
+              
+              {/* Bottom row: CON and CIHTM positioned in middle */}
+              <div className="grid grid-cols-1 lg:grid-cols-6 gap-8">
+                <div className="lg:col-start-2 lg:col-span-2">
+                  <CollegeCard
+                    key={colleges[3].id}
+                    college={colleges[3]}
+                    onClick={() => handleCollegeClick(colleges[3].id)}
+                    size="large"
+                  />
+                </div>
+                <div className="lg:col-start-4 lg:col-span-2">
+                  <CollegeCard
+                    key={colleges[4].id}
+                    college={colleges[4]}
+                    onClick={() => handleCollegeClick(colleges[4].id)}
+                    size="large"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
