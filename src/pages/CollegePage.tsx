@@ -46,7 +46,7 @@ const CollegePage = () => {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
       <Header />
       
       <main className="flex-1">
@@ -56,20 +56,20 @@ const CollegePage = () => {
             <Button 
               onClick={() => navigate('/dashboard')} 
               variant="ghost" 
-              className="mb-8 text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+              className="mb-8 text-green-600 hover:text-green-900 hover:bg-green-50"
             >
               <ArrowLeft className="mr-2 h-5 w-5" /> Back to Dashboard
             </Button>
             
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl mb-8">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-900 to-emerald-800 rounded-2xl mb-8">
                 <BookOpen className="w-10 h-10 text-white" />
               </div>
-              <h1 className="text-5xl font-bold text-slate-900 mb-6">{college.name}</h1>
-              <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed mb-4">
+              <h1 className="text-5xl font-bold text-green-900 mb-6">{college.name}</h1>
+              <p className="text-xl text-green-600 max-w-3xl mx-auto leading-relaxed mb-4">
                 {college.fullName}
               </p>
-              <div className="flex items-center justify-center gap-8 text-slate-600">
+              <div className="flex items-center justify-center gap-8 text-green-600">
                 <div className="flex items-center gap-2">
                   <BookOpen className="h-5 w-5" />
                   <span className="font-medium">{collegeTheses.length} Theses</span>
@@ -84,17 +84,17 @@ const CollegePage = () => {
 
           {/* Search and Filter */}
           <div className="mb-12">
-            <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
-              <CardContent className="p-8">
+            <div className="bg-white border border-green-100 rounded-3xl shadow-sm">
+              <div className="p-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="md:col-span-2">
                     <div className="relative">
-                      <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+                      <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-green-400" />
                       <Input
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search theses by title, author, or keywords..."
-                        className="pl-12 h-12 bg-slate-50 border-slate-200 focus:border-slate-400 rounded-xl"
+                        className="pl-12 h-12 bg-green-50 border-green-200 focus:border-green-400 rounded-xl"
                       />
                     </div>
                   </div>
@@ -102,7 +102,7 @@ const CollegePage = () => {
                     <select
                       value={selectedYear}
                       onChange={(e) => setSelectedYear(e.target.value)}
-                      className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 focus:border-slate-400 focus:outline-none"
+                      className="w-full h-12 bg-green-50 border border-green-200 rounded-xl px-4 focus:border-green-400 focus:outline-none"
                     >
                       <option value="all">All Years</option>
                       {years.map(year => (
@@ -111,19 +111,19 @@ const CollegePage = () => {
                     </select>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
 
           {/* Results */}
           <div className="mb-8">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-slate-900">
+              <h2 className="text-2xl font-bold text-green-900">
                 {filteredTheses.length} {filteredTheses.length === 1 ? 'Thesis' : 'Theses'} Found
               </h2>
               <div className="flex items-center gap-2">
-                <Filter className="h-5 w-5 text-slate-400" />
-                <span className="text-slate-600">Sorted by Latest</span>
+                <Filter className="h-5 w-5 text-green-400" />
+                <span className="text-green-600">Sorted by Latest</span>
               </div>
             </div>
           </div>
@@ -131,18 +131,18 @@ const CollegePage = () => {
           {/* Thesis List */}
           <div className="space-y-6">
             {filteredTheses.map((thesis) => (
-              <Card 
+              <div 
                 key={thesis.id} 
-                className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-3xl hover:shadow-2xl transition-all duration-300 cursor-pointer group"
+                className="bg-white border border-green-100 rounded-3xl hover:shadow-md transition-all duration-300 cursor-pointer group shadow-sm"
                 onClick={() => navigate(`/thesis/${thesis.id}`)}
               >
-                <CardContent className="p-8">
+                <div className="p-8">
                   <div className="flex items-start justify-between mb-6">
                     <div className="flex-1">
-                      <h3 className="text-2xl font-bold text-slate-900 mb-4 group-hover:text-slate-700 transition-colors leading-tight">
+                      <h3 className="text-2xl font-bold text-green-900 mb-4 group-hover:text-green-700 transition-colors leading-tight">
                         {thesis.title}
                       </h3>
-                      <div className="flex items-center gap-6 text-slate-600 mb-4">
+                      <div className="flex items-center gap-6 text-green-600 mb-4">
                         <div className="flex items-center gap-2">
                           <User className="h-4 w-4" />
                           <span className="font-medium">{thesis.author}</span>
@@ -151,32 +151,32 @@ const CollegePage = () => {
                           <Calendar className="h-4 w-4" />
                           <span>{thesis.year}</span>
                         </div>
-                        <Badge variant="secondary" className="bg-slate-100 text-slate-700">
+                        <Badge variant="secondary" className="bg-green-100 text-green-700">
                           {thesis.college}
                         </Badge>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2 text-slate-500">
+                      <div className="flex items-center gap-2 text-green-500">
                         <Eye className="h-4 w-4" />
                         <span className="text-sm">234</span>
                       </div>
-                      <div className="flex items-center gap-2 text-slate-500">
+                      <div className="flex items-center gap-2 text-green-500">
                         <Heart className="h-4 w-4" />
                         <span className="text-sm">12</span>
                       </div>
-                      <ExternalLink className="h-5 w-5 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                      <ExternalLink className="h-5 w-5 text-green-400 group-hover:text-green-600 transition-colors" />
                     </div>
                   </div>
                   
-                  <p className="text-slate-700 leading-relaxed mb-6">
+                  <p className="text-green-700 leading-relaxed mb-6">
                     {thesis.abstract}
                   </p>
                   
                   <div className="flex items-center justify-between">
                     <div className="flex flex-wrap gap-2">
                       {thesis.keywords.map((keyword, index) => (
-                        <Badge key={index} variant="outline" className="border-slate-300 text-slate-600">
+                        <Badge key={index} variant="outline" className="border-green-300 text-green-600">
                           {keyword}
                         </Badge>
                       ))}
@@ -184,7 +184,7 @@ const CollegePage = () => {
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      className="text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                      className="text-green-600 hover:text-green-900 hover:bg-green-50"
                       onClick={(e) => {
                         e.stopPropagation();
                         console.log('Download thesis:', thesis.id);
@@ -194,30 +194,30 @@ const CollegePage = () => {
                       Download
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
 
           {filteredTheses.length === 0 && (
-            <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
-              <CardContent className="p-16 text-center">
-                <div className="w-24 h-24 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <Search className="h-12 w-12 text-slate-400" />
+            <div className="bg-white border border-green-100 rounded-3xl shadow-sm">
+              <div className="p-16 text-center">
+                <div className="w-24 h-24 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Search className="h-12 w-12 text-green-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-4">No theses found</h3>
-                <p className="text-slate-600 mb-8">Try adjusting your search terms or filters</p>
+                <h3 className="text-2xl font-bold text-green-900 mb-4">No theses found</h3>
+                <p className="text-green-600 mb-8">Try adjusting your search terms or filters</p>
                 <Button 
                   onClick={() => {
                     setSearchQuery('');
                     setSelectedYear('all');
                   }}
-                  className="bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 text-white px-8 py-4 rounded-xl"
+                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-4 rounded-xl"
                 >
                   Clear Filters
                 </Button>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
         </div>
       </main>
