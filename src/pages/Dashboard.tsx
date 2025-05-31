@@ -4,7 +4,6 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { colleges } from '@/data/mockData';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -17,12 +16,27 @@ import {
   BarChart,
   Clock,
   Bookmark,
-  ArrowRight
+  ArrowRight,
+  Code, 
+  Calculator, 
+  Microscope, 
+  HeartPulse, 
+  UtensilsCrossed
 } from 'lucide-react';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { useState } from 'react';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const quickActions = [
     {
@@ -64,6 +78,55 @@ const Dashboard = () => {
   );
 
   const totalTheses = colleges.reduce((sum, college) => sum + college.thesesCount, 0);
+
+  // Map college data with specific icons and colors like the landing page
+  const collegeData = [
+    {
+      id: '1',
+      name: 'CITE',
+      fullName: 'College of Information Technology and Engineering',
+      color: 'red',
+      thesesCount: 120,
+      icon: Code,
+      description: 'Advancing technology through innovative research'
+    },
+    {
+      id: '2',
+      name: 'CBEAM',
+      fullName: 'College of Business, Economics, Accountancy, and Management',
+      color: 'yellow',
+      thesesCount: 145,
+      icon: Calculator,
+      description: 'Driving business excellence and economic growth'
+    },
+    {
+      id: '3',
+      name: 'CEAS',
+      fullName: 'College of Education, Arts, and Sciences',
+      color: 'blue',
+      thesesCount: 98,
+      icon: Microscope,
+      description: 'Exploring knowledge across diverse disciplines'
+    },
+    {
+      id: '4',
+      name: 'CON',
+      fullName: 'College of Nursing',
+      color: 'gray',
+      thesesCount: 76,
+      icon: HeartPulse,
+      description: 'Advancing healthcare through compassionate research'
+    },
+    {
+      id: '5',
+      name: 'CIHTM',
+      fullName: 'College of International Hospitality and Tourism Management',
+      color: 'green',
+      thesesCount: 110,
+      icon: UtensilsCrossed,
+      description: 'Shaping the future of hospitality and tourism'
+    }
+  ];
 
   const getCollegeColors = (color: string) => {
     switch (color) {
@@ -110,6 +173,22 @@ const Dashboard = () => {
     }
   };
 
+  const recentSearches = [
+    "Artificial Intelligence in Education",
+    "Blockchain Technology",
+    "Digital Marketing Strategies",
+    "Sustainable Tourism",
+    "Healthcare Innovation"
+  ];
+
+  const suggestedTopics = [
+    "Machine Learning",
+    "Business Analytics",
+    "Environmental Science",
+    "Nursing Research",
+    "Hospitality Management"
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
@@ -126,19 +205,67 @@ const Dashboard = () => {
             </p>
           </div>
 
-          {/* Search */}
+          {/* Enhanced Search Section */}
           <div className="mb-8 bg-white p-6 rounded-lg shadow-sm">
             <h2 className="text-xl font-semibold mb-4 flex items-center">
               <Search className="mr-2 h-5 w-5" />
               Search Theses
             </h2>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <Input
-                type="text"
-                placeholder="Search by title, author, keywords..."
-                className="pl-10"
-              />
+              <Command className="rounded-lg border shadow-md bg-white">
+                <CommandInput 
+                  placeholder="Ask me anything about theses or search by title, author, keywords..." 
+                  className="border-0 focus:ring-0 text-base py-4"
+                />
+                <CommandList className="max-h-[400px]">
+                  <CommandEmpty className="py-6 text-center text-sm text-gray-500">
+                    <div className="flex flex-col items-center space-y-2">
+                      <Search className="h-8 w-8 text-gray-300" />
+                      <p>No results found. Try a different search term.</p>
+                    </div>
+                  </CommandEmpty>
+                  
+                  <CommandGroup heading="Recent Searches" className="px-2">
+                    {recentSearches.map((search, index) => (
+                      <CommandItem key={index} className="flex items-center space-x-2 py-2">
+                        <Clock className="h-4 w-4 text-gray-400" />
+                        <span>{search}</span>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                  
+                  <CommandGroup heading="Suggested Topics" className="px-2">
+                    {suggestedTopics.map((topic, index) => (
+                      <CommandItem key={index} className="flex items-center space-x-2 py-2">
+                        <BookOpen className="h-4 w-4 text-dlsl-green" />
+                        <span>{topic}</span>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                  
+                  <CommandGroup heading="Browse by College" className="px-2">
+                    {collegeData.map((college) => {
+                      const colors = getCollegeColors(college.color);
+                      const Icon = college.icon;
+                      return (
+                        <CommandItem 
+                          key={college.id} 
+                          className="flex items-center space-x-3 py-2"
+                          onSelect={() => navigate(`/college/${college.id}`)}
+                        >
+                          <div className={`${colors.bg} p-1.5 rounded border ${colors.border}`}>
+                            <Icon className={`h-4 w-4 ${colors.text}`} />
+                          </div>
+                          <div>
+                            <span className="font-medium">{college.name}</span>
+                            <span className="text-sm text-gray-500 ml-2">({college.thesesCount} theses)</span>
+                          </div>
+                        </CommandItem>
+                      );
+                    })}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
             </div>
           </div>
 
@@ -187,7 +314,7 @@ const Dashboard = () => {
                     <BarChart className="h-5 w-5 text-blue-600" />
                   </div>
                 </div>
-                <div className="text-3xl font-bold text-gray-900">{colleges.length}</div>
+                <div className="text-3xl font-bold text-gray-900">{collegeData.length}</div>
                 <p className="text-sm text-gray-600 mt-1">Contributing to repository</p>
               </CardContent>
             </Card>
@@ -259,11 +386,11 @@ const Dashboard = () => {
             </Card>
           </div>
 
-          {/* Colleges Grid - Use college-specific icons */}
+          {/* Colleges Grid with college-specific icons */}
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">Browse by College</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {colleges.map((college) => {
+              {collegeData.map((college) => {
                 const colors = getCollegeColors(college.color);
                 const Icon = college.icon;
 
