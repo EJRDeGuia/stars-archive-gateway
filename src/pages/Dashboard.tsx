@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -37,7 +36,7 @@ const Dashboard = () => {
   const [showNotifications, setShowNotifications] = useState(false);
 
   // Redirect admin users to admin dashboard
-  if (user?.role === 'admin') {
+  if (user && user.role === 'admin') {
     return <AdminDashboard />;
   }
 
