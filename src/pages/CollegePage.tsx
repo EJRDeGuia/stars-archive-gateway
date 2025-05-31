@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Search, BookOpen, Bookmark, Filter } from 'lucide-react';
+import { Search, BookOpen, Bookmark, Filter, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const CollegePage = () => {
@@ -38,12 +38,35 @@ const CollegePage = () => {
 
   if (!college) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <Header />
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-gray-600">College not found</p>
+      <div className="min-h-screen relative overflow-hidden">
+        <div className="fixed inset-0 z-0">
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat blur-md" 
+            style={{
+              backgroundImage: `url(/lovable-uploads/83b8c064-b1bc-4c93-b353-78a1467e8d8d.png)`,
+              filter: 'brightness(1.1) contrast(1.1)',
+              transform: 'scale(1.1)'
+            }}
+          ></div>
+          <div className="absolute inset-0 opacity-20" style={{
+            backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255,255,255,0.4) 1px, transparent 0)`,
+            backgroundSize: '20px 20px'
+          }}></div>
+          <div className="absolute inset-0 opacity-15" style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(0,100,0,0.3) 0.5px, transparent 0)`,
+            backgroundSize: '12px 12px',
+            backgroundPosition: '6px 6px'
+          }}></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-green-900/30 via-green-700/20 to-emerald-800/25"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20"></div>
         </div>
-        <Footer />
+        <div className="relative z-30">
+          <Header />
+          <div className="flex-1 flex items-center justify-center min-h-[60vh]">
+            <p className="text-white text-2xl font-medium">College not found</p>
+          </div>
+          <Footer />
+        </div>
       </div>
     );
   }
@@ -108,136 +131,169 @@ const CollegePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header />
-      
-      {/* Hero Banner with Background Image */}
-      <div 
-        className="relative text-white"
-        style={{
-          backgroundImage: `url(${getCollegeBackgroundImage()})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
-      >
-        {/* Gradient Overlay */}
-        <div className={`absolute inset-0 ${getBgColorClass()} bg-opacity-80`}></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent"></div>
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Enhanced Background */}
+      <div className="fixed inset-0 z-0">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat blur-md" 
+          style={{
+            backgroundImage: `url(/lovable-uploads/83b8c064-b1bc-4c93-b353-78a1467e8d8d.png)`,
+            filter: 'brightness(1.1) contrast(1.1)',
+            transform: 'scale(1.1)'
+          }}
+        ></div>
         
-        {/* Content */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <h1 className="text-4xl font-bold mb-2">{college.name}</h1>
-          <h2 className="text-xl font-medium mb-4">{college.fullName}</h2>
-          <p className="max-w-2xl">{college.description}</p>
-        </div>
+        <div className="absolute inset-0 opacity-20" style={{
+          backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255,255,255,0.4) 1px, transparent 0)`,
+          backgroundSize: '20px 20px'
+        }}></div>
+        
+        <div className="absolute inset-0 opacity-15" style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(0,100,0,0.3) 0.5px, transparent 0)`,
+          backgroundSize: '12px 12px',
+          backgroundPosition: '6px 6px'
+        }}></div>
+        
+        <div className="absolute inset-0 bg-gradient-to-br from-green-900/30 via-green-700/20 to-emerald-800/25"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20"></div>
       </div>
-
-      <div className="flex-1">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Search Section */}
-          <div className="mb-8 bg-white p-6 rounded-lg shadow-sm">
-            <h2 className="text-2xl font-bold mb-4 flex items-center">
-              <Search className="mr-2 h-5 w-5" />
-              Search {college.name} Theses
-            </h2>
-            <p className="text-gray-600 mb-4">Find research papers and theses from the {college.name}</p>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <Input
-                type="text"
-                placeholder={`Search ${college.name} theses...`}
-                className="pl-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+      
+      {/* Content Layer */}
+      <div className="relative z-30">
+        <Header />
+        
+        {/* Hero Banner with Background Image */}
+        <div 
+          className="relative text-white"
+          style={{
+            backgroundImage: `url(${getCollegeBackgroundImage()})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        >
+          {/* Gradient Overlay */}
+          <div className={`absolute inset-0 ${getBgColorClass()} bg-opacity-80`}></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent"></div>
+          
+          {/* Content */}
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+            <div className="inline-flex items-center backdrop-blur-xl px-6 py-3 rounded-full text-sm font-medium border border-white/30 shadow-2xl bg-transparent mb-8">
+              <Sparkles className="w-4 h-4 mr-2 text-white" />
+              <span className="text-white">Academic Research Collection</span>
             </div>
+            <h1 className="text-6xl font-bold mb-4 drop-shadow-2xl">{college.name}</h1>
+            <h2 className="text-2xl font-medium mb-6 text-white/90 drop-shadow-lg">{college.fullName}</h2>
+            <p className="max-w-3xl text-xl leading-relaxed text-white/95 drop-shadow-lg">{college.description}</p>
           </div>
+        </div>
 
-          {/* Results Section */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold flex items-center">
-                <BookOpen className="mr-2 h-5 w-5" />
-                Theses ({filteredTheses.length})
+        <div className="flex-1">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            {/* Search Section */}
+            <div className="mb-12 glass-effect p-10 rounded-3xl sleek-shadow-xl border border-white/20">
+              <h2 className="text-4xl font-bold mb-6 flex items-center text-white">
+                <Search className="mr-4 h-8 w-8" />
+                Search {college.name} Theses
               </h2>
-              <Button variant="outline" size="sm" className="text-sm">
-                <Filter className="mr-1 h-4 w-4" />
-                Filters
-              </Button>
+              <p className="text-white/80 mb-8 text-xl leading-relaxed">Find research papers and theses from the {college.name}</p>
+              <div className="relative">
+                <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-white/60 h-6 w-6" />
+                <Input
+                  type="text"
+                  placeholder={`Search ${college.name} theses...`}
+                  className="pl-16 h-16 text-xl bg-white/20 backdrop-blur-sm border-white/30 text-white placeholder:text-white/60 focus:border-white/50 transition-all duration-300 rounded-2xl"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
             </div>
 
-            {filteredTheses.length === 0 ? (
-              <div className="bg-white p-8 rounded-lg shadow-sm text-center">
-                <p className="text-gray-600">No theses found. Try adjusting your search.</p>
+            {/* Results Section */}
+            <div className="mb-12">
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-3xl font-bold flex items-center text-white">
+                  <BookOpen className="mr-4 h-8 w-8" />
+                  Theses ({filteredTheses.length})
+                </h2>
+                <Button variant="outline" size="sm" className="text-lg border-white/30 text-white hover:bg-white/10 backdrop-blur-sm">
+                  <Filter className="mr-2 h-5 w-5" />
+                  Filters
+                </Button>
               </div>
-            ) : (
-              <div className="space-y-4">
-                {filteredTheses.map((thesis) => (
-                  <Card 
-                    key={thesis.id} 
-                    className={`hover:shadow-md transition-shadow cursor-pointer border-l-4 ${getBorderColorClass()}`}
-                    onClick={() => navigate(`/thesis/${thesis.id}`)}
-                  >
-                    <CardContent className="p-6">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="text-lg font-bold text-gray-900 mb-2">
-                            {thesis.title}
-                          </h3>
-                          <p className="text-sm text-gray-600 mb-2">
-                            {thesis.authors.join(', ')} • {thesis.year}
-                          </p>
-                          <p className="text-gray-700 mb-4">{thesis.abstract}</p>
-                          <div className="flex flex-wrap gap-2">
-                            {thesis.tags.map((tag: string, index: number) => (
-                              <Badge key={index} className={getTagBgClass(tag)}>
-                                {tag}
-                              </Badge>
-                            ))}
+
+              {filteredTheses.length === 0 ? (
+                <div className="glass-effect p-12 rounded-3xl sleek-shadow-xl text-center border border-white/20">
+                  <p className="text-white text-xl">No theses found. Try adjusting your search.</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {filteredTheses.map((thesis) => (
+                    <Card 
+                      key={thesis.id} 
+                      className={`hover:sleek-shadow-2xl transition-all duration-300 cursor-pointer border-l-4 ${getBorderColorClass()} glass-effect border-white/20 rounded-2xl sleek-shadow-xl transform hover:scale-105`}
+                      onClick={() => navigate(`/thesis/${thesis.id}`)}
+                    >
+                      <CardContent className="p-8">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="text-2xl font-bold text-white mb-4 leading-relaxed">
+                              {thesis.title}
+                            </h3>
+                            <p className="text-lg text-white/80 mb-4 font-medium">
+                              {thesis.authors.join(', ')} • {thesis.year}
+                            </p>
+                            <p className="text-white/90 mb-6 text-lg leading-relaxed">{thesis.abstract}</p>
+                            <div className="flex flex-wrap gap-3">
+                              {thesis.tags.map((tag: string, index: number) => (
+                                <Badge key={index} className={`${getTagBgClass(tag)} text-sm px-3 py-1`}>
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
                           </div>
+                          <Badge 
+                            variant="outline" 
+                            className={`${thesis.approved ? 'bg-green-100 text-green-800 border-green-200' : 'bg-yellow-100 text-yellow-800 border-yellow-200'} text-sm px-3 py-1`}
+                          >
+                            {thesis.approved ? 'Approved' : 'Pending'}
+                          </Badge>
                         </div>
-                        <Badge 
-                          variant="outline" 
-                          className={thesis.approved ? 'bg-green-100 text-green-800 border-green-200' : 'bg-yellow-100 text-yellow-800 border-yellow-200'}
-                        >
-                          {thesis.approved ? 'Approved' : 'Pending'}
-                        </Badge>
-                      </div>
-                      <div className="flex justify-end mt-4">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className={`${getTextColorClass()}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/thesis/${thesis.id}`);
-                          }}
-                        >
-                          View Details
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="ml-2"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // Bookmark functionality would go here
-                          }}
-                        >
-                          <Bookmark className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
+                        <div className="flex justify-end mt-6 space-x-4">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className={`${getTextColorClass()} border-white/30 text-white hover:bg-white/10 backdrop-blur-sm`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/thesis/${thesis.id}`);
+                            }}
+                          >
+                            View Details
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-white hover:bg-white/10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // Bookmark functionality would go here
+                            }}
+                          >
+                            <Bookmark className="h-5 w-5" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      <Footer />
+        <Footer />
+      </div>
     </div>
   );
 };
