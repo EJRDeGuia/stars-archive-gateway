@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { 
@@ -5,7 +6,6 @@ import {
   User, 
   Home,
   Bell,
-  Search,
   Menu,
   Star
 } from 'lucide-react';
@@ -69,16 +69,6 @@ const Header = () => {
                 Explore
               </Button>
             </div>
-          </div>
-
-          {/* Search - Desktop */}
-          <div className="hidden md:flex items-center ml-4 relative max-w-xs w-full">
-            <Search className="w-4 h-4 absolute left-3 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search theses..."
-              className="w-full pl-9 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-dlsl-green focus:border-dlsl-green"
-            />
           </div>
 
           {/* Mobile Menu */}
@@ -145,18 +135,6 @@ const Header = () => {
               Sign in
             </Button>
           )}
-        </div>
-      </div>
-      
-      {/* Mobile Search - Only visible on mobile */}
-      <div className="md:hidden px-4 pb-3">
-        <div className="relative">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search theses..."
-            className="w-full pl-9 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-dlsl-green focus:border-dlsl-green"
-          />
         </div>
       </div>
     </header>
