@@ -22,14 +22,14 @@ import {
 } from 'lucide-react';
 
 const ThesisDetail = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
   const thesis = theses.find(t => t.id === id);
 
   if (!thesis) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-4xl font-bold text-slate-900 mb-4">Thesis not found</h1>
           <Button onClick={() => navigate('/dashboard')} className="bg-gradient-to-r from-slate-900 to-slate-800 text-white">
@@ -41,7 +41,7 @@ const ThesisDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div className="min-h-screen bg-slate-50">
       <Header />
       
       <main className="flex-1">
@@ -61,7 +61,7 @@ const ThesisDetail = () => {
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
               {/* Title and Metadata */}
-              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl">
+              <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
                 <CardContent className="p-8">
                   <div className="mb-8">
                     <h1 className="text-4xl font-bold text-slate-900 mb-6 leading-tight">
@@ -109,7 +109,7 @@ const ThesisDetail = () => {
               </Card>
 
               {/* Abstract */}
-              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl">
+              <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
                 <CardContent className="p-8">
                   <h2 className="text-2xl font-bold text-slate-900 mb-6">Abstract</h2>
                   <p className="text-slate-700 leading-relaxed text-lg">
@@ -119,7 +119,7 @@ const ThesisDetail = () => {
               </Card>
 
               {/* Research Methodology */}
-              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl">
+              <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
                 <CardContent className="p-8">
                   <h2 className="text-2xl font-bold text-slate-900 mb-6">Research Methodology</h2>
                   <p className="text-slate-700 leading-relaxed text-lg">
@@ -129,7 +129,7 @@ const ThesisDetail = () => {
               </Card>
 
               {/* Key Findings */}
-              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl">
+              <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
                 <CardContent className="p-8">
                   <h2 className="text-2xl font-bold text-slate-900 mb-6">Key Findings</h2>
                   <ul className="space-y-4 text-slate-700 text-lg">
@@ -153,7 +153,7 @@ const ThesisDetail = () => {
             {/* Sidebar */}
             <div className="space-y-6">
               {/* Actions */}
-              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl">
+              <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
                 <CardContent className="p-6">
                   <h3 className="text-xl font-bold text-slate-900 mb-6">Actions</h3>
                   <div className="space-y-4">
@@ -178,7 +178,7 @@ const ThesisDetail = () => {
               </Card>
 
               {/* Document Info */}
-              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl">
+              <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
                 <CardContent className="p-6">
                   <h3 className="text-xl font-bold text-slate-900 mb-6">Document Information</h3>
                   <div className="space-y-4 text-slate-600">
@@ -207,7 +207,7 @@ const ThesisDetail = () => {
               </Card>
 
               {/* Rating */}
-              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl">
+              <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
                 <CardContent className="p-6">
                   <h3 className="text-xl font-bold text-slate-900 mb-6">Community Rating</h3>
                   <div className="text-center">
@@ -223,7 +223,7 @@ const ThesisDetail = () => {
               </Card>
 
               {/* Related Theses */}
-              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl">
+              <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
                 <CardContent className="p-6">
                   <h3 className="text-xl font-bold text-slate-900 mb-6">Related Theses</h3>
                   <div className="space-y-4">

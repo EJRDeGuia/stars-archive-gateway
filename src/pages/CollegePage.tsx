@@ -23,7 +23,7 @@ import {
 import { useState } from 'react';
 
 const CollegePage = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedYear, setSelectedYear] = useState('all');
@@ -35,7 +35,7 @@ const CollegePage = () => {
     return <div>College not found</div>;
   }
 
-  const years = [...new Set(collegeTheses.map(thesis => thesis.year))].sort((a, b) => b - a);
+  const years = [...new Set(collegeTheses.map(thesis => Number(thesis.year)))].sort((a, b) => b - a);
   
   const filteredTheses = collegeTheses.filter(thesis => {
     const matchesSearch = thesis.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -46,7 +46,7 @@ const CollegePage = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div className="min-h-screen bg-slate-50">
       <Header />
       
       <main className="flex-1">
@@ -84,7 +84,7 @@ const CollegePage = () => {
 
           {/* Search and Filter */}
           <div className="mb-12">
-            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl">
+            <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
               <CardContent className="p-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="md:col-span-2">
@@ -133,7 +133,7 @@ const CollegePage = () => {
             {filteredTheses.map((thesis) => (
               <Card 
                 key={thesis.id} 
-                className="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl hover:shadow-xl transition-all duration-300 cursor-pointer group"
+                className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-3xl hover:shadow-2xl transition-all duration-300 cursor-pointer group"
                 onClick={() => navigate(`/thesis/${thesis.id}`)}
               >
                 <CardContent className="p-8">
@@ -200,7 +200,7 @@ const CollegePage = () => {
           </div>
 
           {filteredTheses.length === 0 && (
-            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl">
+            <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
               <CardContent className="p-16 text-center">
                 <div className="w-24 h-24 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
                   <Search className="h-12 w-12 text-slate-400" />
