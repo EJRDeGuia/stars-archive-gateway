@@ -15,7 +15,7 @@ const Index = () => {
     fullName: 'College of Information Technology and Engineering',
     color: 'red',
     thesesCount: 120,
-    icon: <Code className="h-6 w-6" />,
+    icon: <Code className="h-8 w-8" />,
     description: 'Advancing technology through innovative research'
   }, {
     id: '2',
@@ -23,7 +23,7 @@ const Index = () => {
     fullName: 'College of Business, Economics, Accountancy, and Management',
     color: 'yellow',
     thesesCount: 145,
-    icon: <Calculator className="h-6 w-6" />,
+    icon: <Calculator className="h-8 w-8" />,
     description: 'Driving business excellence and economic growth'
   }, {
     id: '3',
@@ -31,7 +31,7 @@ const Index = () => {
     fullName: 'College of Education, Arts, and Sciences',
     color: 'blue',
     thesesCount: 98,
-    icon: <Microscope className="h-6 w-6" />,
+    icon: <Microscope className="h-8 w-8" />,
     description: 'Exploring knowledge across diverse disciplines'
   }, {
     id: '4',
@@ -39,7 +39,7 @@ const Index = () => {
     fullName: 'College of Nursing',
     color: 'gray',
     thesesCount: 76,
-    icon: <HeartPulse className="h-6 w-6" />,
+    icon: <HeartPulse className="h-8 w-8" />,
     description: 'Advancing healthcare through compassionate research'
   }, {
     id: '5',
@@ -47,7 +47,7 @@ const Index = () => {
     fullName: 'College of International Hospitality and Tourism Management',
     color: 'green',
     thesesCount: 110,
-    icon: <UtensilsCrossed className="h-6 w-6" />,
+    icon: <UtensilsCrossed className="h-8 w-8" />,
     description: 'Shaping the future of hospitality and tourism'
   }];
   const getCollegeColors = (color: string) => {
@@ -168,7 +168,10 @@ const Index = () => {
                         <ul className="grid gap-3 p-6 w-[400px] md:w-[500px] lg:w-[600px]">
                           <li className="row-span-3">
                             <NavigationMenuLink asChild>
-                              <a className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-dlsl-green/10 to-dlsl-green/20 p-6 no-underline outline-none focus:shadow-md" href="#">
+                              <a 
+                                className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-dlsl-green/10 to-dlsl-green/20 p-6 no-underline outline-none focus:shadow-md cursor-pointer" 
+                                onClick={() => navigate('/about')}
+                              >
                                 <div className="mb-2 mt-4 text-lg font-medium">
                                   Smart Thesis Archival and Retrieval System
                                 </div>
@@ -178,13 +181,13 @@ const Index = () => {
                               </a>
                             </NavigationMenuLink>
                           </li>
-                          <ListItem href="#" title="Introduction">
+                          <ListItem onClick={() => navigate('/about')} title="Introduction">
                             Learn about the system and its features
                           </ListItem>
-                          <ListItem href="#" title="How It Works">
+                          <ListItem onClick={() => navigate('/about')} title="How It Works">
                             Understand the thesis submission process
                           </ListItem>
-                          <ListItem href="#" title="For Researchers">
+                          <ListItem onClick={() => navigate('/about')} title="For Researchers">
                             Special features for academic researchers
                           </ListItem>
                         </ul>
@@ -194,23 +197,26 @@ const Index = () => {
                       <NavigationMenuTrigger>Resources</NavigationMenuTrigger>
                       <NavigationMenuContent className="z-50">
                         <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2">
-                          <ListItem href="#" title="User Guide">
+                          <ListItem onClick={() => navigate('/resources')} title="User Guide">
                             Step-by-step guides to using STARS
                           </ListItem>
-                          <ListItem href="#" title="Help Center">
+                          <ListItem onClick={() => navigate('/resources')} title="Help Center">
                             FAQ and troubleshooting
                           </ListItem>
-                          <ListItem href="#" title="Research Standards">
+                          <ListItem onClick={() => navigate('/resources')} title="Research Standards">
                             Format and citation guidelines
                           </ListItem>
-                          <ListItem href="#" title="Contact Support">
+                          <ListItem onClick={() => navigate('/resources')} title="Contact Support">
                             Get help from the STARS team
                           </ListItem>
                         </ul>
                       </NavigationMenuContent>
                     </NavigationMenuItem>
                     <NavigationMenuItem>
-                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                      <NavigationMenuLink 
+                        className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
+                        onClick={() => navigate('/resources')}
+                      >
                         Contact
                       </NavigationMenuLink>
                     </NavigationMenuItem>
@@ -314,28 +320,31 @@ const Index = () => {
               </TabsList>
               
               <TabsContent value="colleges">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {collegeData.map(college => {
                   const colors = getCollegeColors(college.color);
-                  return <Card key={college.name} className="group cursor-pointer hover:shadow-lg transition-all duration-300 border border-gray-200 bg-white/90 backdrop-blur-sm" onClick={() => navigate(`/college/${college.id}`)}>
-                        <div className={`h-1 bg-gradient-to-r ${colors.gradient}`}></div>
-                        <CardContent className="p-6">
-                          <div className="flex items-center mb-4">
-                            <div className={`${colors.bg} p-3 rounded-lg border ${colors.border}`}>
+                  return <Card key={college.name} className="group cursor-pointer hover:shadow-xl transition-all duration-300 border border-gray-200 bg-white/90 backdrop-blur-sm" onClick={() => navigate(`/college/${college.id}`)}>
+                        <div className={`h-2 bg-gradient-to-r ${colors.gradient}`}></div>
+                        <CardContent className="p-8">
+                          <div className="text-center">
+                            <div className={`w-24 h-24 ${colors.bg} rounded-3xl flex items-center justify-center mx-auto mb-6 border ${colors.border} group-hover:scale-105 transition-transform`}>
                               {college.icon}
                             </div>
-                            <div className="ml-4">
-                              <h3 className="font-semibold text-gray-900">{college.name}</h3>
-                              <p className="text-sm text-gray-500">{college.fullName}</p>
+                            <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-dlsl-green transition-colors">
+                              {college.name}
+                            </h3>
+                            <p className="text-gray-600 mb-6 leading-relaxed text-lg">
+                              {college.fullName}
+                            </p>
+                            <p className="text-gray-600 mb-8 leading-relaxed">
+                              {college.description}
+                            </p>
+                            <div className="flex items-center justify-center gap-6 text-lg">
+                              <div className="flex items-center gap-2 text-dlsl-green">
+                                <Book className="h-5 w-5" />
+                                <span className="font-medium">{college.thesesCount}+ Theses</span>
+                              </div>
                             </div>
-                          </div>
-                          <p className="text-gray-600 mb-4">{college.description}</p>
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-gray-500">
-                              <Book className="h-4 w-4 inline mr-1" />
-                              {college.thesesCount}+ Theses
-                            </span>
-                            <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-gray-600" />
                           </div>
                         </CardContent>
                       </Card>;
@@ -466,22 +475,28 @@ const Index = () => {
 };
 
 // ListItem component for navigation menu
-const ListItem = React.forwardRef<React.ElementRef<"a">, React.ComponentPropsWithoutRef<"a">>(({
+const ListItem = React.forwardRef<React.ElementRef<"div">, React.ComponentPropsWithoutRef<"div"> & { title: string; onClick?: () => void }>(({
   className,
   title,
   children,
+  onClick,
   ...props
 }, ref) => {
   return <li>
-      <NavigationMenuLink asChild>
-        <a ref={ref} className={cn("block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground", className)} {...props}>
-          <div className="text-sm font-medium leading-none">{title}</div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-            {children}
-          </p>
-        </a>
-      </NavigationMenuLink>
-    </li>;
+    <NavigationMenuLink asChild>
+      <div 
+        ref={ref} 
+        className={cn("block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer", className)} 
+        onClick={onClick}
+        {...props}
+      >
+        <div className="text-sm font-medium leading-none">{title}</div>
+        <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+          {children}
+        </p>
+      </div>
+    </NavigationMenuLink>
+  </li>;
 });
 ListItem.displayName = "ListItem";
 export default Index;

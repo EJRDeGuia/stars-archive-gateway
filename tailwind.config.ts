@@ -62,6 +62,21 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				'dlsl-green': {
+					DEFAULT: '#0d5015',
+					light: '#1a6b23',
+					dark: '#083a0b',
+					50: '#f0f9f1',
+					100: '#dcf2dd',
+					200: '#bce5bf',
+					300: '#8dd293',
+					400: '#57b660',
+					500: '#339b3f',
+					600: '#267d2f',
+					700: '#1f6426',
+					800: '#1c5022',
+					900: '#18421e'
 				}
 			},
 			backgroundImage: {

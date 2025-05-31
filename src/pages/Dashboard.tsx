@@ -202,28 +202,28 @@ const Dashboard = () => {
               {colleges.map((college) => (
                 <Card 
                   key={college.id} 
-                  className="group hover:shadow-xl transition-all duration-300 cursor-pointer bg-white border-gray-200 hover:border-primary/30"
+                  className="group hover:shadow-xl transition-all duration-300 cursor-pointer bg-white border-gray-200 hover:border-dlsl-green/30"
                   onClick={() => handleCollegeClick(college.id)}
                 >
+                  <div className="h-2 bg-gradient-to-r from-dlsl-green to-dlsl-green-dark"></div>
                   <CardContent className="p-8">
                     <div className="text-center">
-                      <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/20 transition-colors">
-                        <BookOpen className="w-10 h-10 text-primary" />
+                      <div className="w-24 h-24 bg-dlsl-green/10 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:bg-dlsl-green/20 transition-colors group-hover:scale-105 transition-transform">
+                        <BookOpen className="w-10 h-10 text-dlsl-green" />
                       </div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors">
+                      <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-dlsl-green transition-colors">
                         {college.name}
                       </h3>
-                      <p className="text-gray-600 mb-6 leading-relaxed">
+                      <p className="text-gray-600 mb-6 leading-relaxed text-lg">
                         {college.fullName}
                       </p>
-                      <div className="flex items-center justify-center gap-6 text-sm">
-                        <div className="flex items-center gap-2 text-primary">
-                          <FileText className="w-4 h-4" />
-                          <span className="font-medium">{college.thesesCount} theses</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-primary">
-                          <TrendingUp className="w-4 h-4" />
-                          <span className="font-medium">Active</span>
+                      <p className="text-gray-600 mb-8 leading-relaxed">
+                        Comprehensive collection of academic research and scholarly work
+                      </p>
+                      <div className="flex items-center justify-center gap-6 text-lg">
+                        <div className="flex items-center gap-2 text-dlsl-green">
+                          <FileText className="w-5 h-5" />
+                          <span className="font-medium">{college.thesesCount}+ theses</span>
                         </div>
                       </div>
                     </div>
