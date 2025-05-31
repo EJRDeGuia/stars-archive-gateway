@@ -49,29 +49,29 @@ const Login = () => {
     <div 
       className="min-h-screen relative"
       style={{
-        backgroundImage: `linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.4) 100%), url('/lovable-uploads/fd7995a2-1df9-4aeb-bbfb-6a33723b9835.png')`,
+        backgroundImage: `linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.5) 100%), url('/lovable-uploads/fd7995a2-1df9-4aeb-bbfb-6a33723b9835.png')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed'
       }}
     >
       {/* Header */}
-      <header className="relative z-10 bg-black/20 backdrop-blur-md border-b border-white/10">
+      <header className="relative z-10 bg-black/30 backdrop-blur-md border-b border-white/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-primary/20 backdrop-blur-md border border-white/30 rounded-2xl flex items-center justify-center">
                 <Star className="w-7 h-7 text-white" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white">STARS</h1>
-                <p className="text-sm text-white/70 font-medium">De La Salle Lipa</p>
+                <p className="text-sm text-white/80 font-medium">De La Salle Lipa</p>
               </div>
             </div>
             <Button 
               onClick={() => navigate('/')} 
               variant="ghost" 
-              className="text-white/90 hover:text-white hover:bg-white/10 backdrop-blur-sm border border-white/20"
+              className="text-white/90 hover:text-white hover:bg-white/20 backdrop-blur-sm border border-white/30"
             >
               <ArrowLeft className="mr-2 h-5 w-5" /> Back to Home
             </Button>
@@ -80,23 +80,23 @@ const Login = () => {
       </header>
 
       <div className="flex-1 flex items-center justify-center p-6 relative z-10">
-        <Card className="w-full max-w-lg bg-black/20 backdrop-blur-xl border border-white/20">
+        <Card className="w-full max-w-lg bg-white/95 backdrop-blur-xl border border-gray-200 shadow-2xl">
           <CardContent className="p-10">
             <div className="flex flex-col items-center mb-10">
-              <div className="inline-flex items-center bg-white/10 backdrop-blur-md px-6 py-3 rounded-full text-sm font-medium border border-white/20 mb-6">
-                <Sparkles className="w-4 h-4 mr-2 text-white" />
-                <span className="text-white/90">Academic Research Portal</span>
+              <div className="inline-flex items-center bg-primary/10 backdrop-blur-md px-6 py-3 rounded-full text-sm font-medium border border-primary/20 mb-6">
+                <Sparkles className="w-4 h-4 mr-2 text-primary" />
+                <span className="text-primary">Academic Research Portal</span>
               </div>
-              <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mb-6 border border-white/20">
-                <Star className="w-10 h-10 text-white" />
+              <div className="w-20 h-20 bg-primary/10 backdrop-blur-md rounded-3xl flex items-center justify-center mb-6 border border-primary/20">
+                <Star className="w-10 h-10 text-primary" />
               </div>
-              <h1 className="text-3xl font-bold text-white mb-3 tracking-tight">Welcome back</h1>
-              <p className="text-white/70 text-lg font-medium">Sign in to access the repository</p>
+              <h1 className="text-3xl font-bold text-gray-900 mb-3 tracking-tight">Welcome back</h1>
+              <p className="text-gray-600 text-lg font-medium">Sign in to access the repository</p>
             </div>
             
             {/* Social Logins */}
             <div className="space-y-4 mb-6">
-              <Button variant="outline" className="w-full flex items-center justify-center h-14 border-white/30 hover:border-white/50 transition-all duration-300 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white" type="button">
+              <Button variant="outline" className="w-full flex items-center justify-center h-14 border-gray-300 hover:border-primary/50 transition-all duration-300 bg-white hover:bg-gray-50 text-gray-700" type="button">
                 <svg viewBox="0 0 24 24" className="h-6 w-6 mr-3" aria-hidden="true">
                   <path d="M12.0003 4.75C13.7703 4.75 15.3553 5.36002 16.6053 6.54998L20.0303 3.125C17.9502 1.19 15.2353 0 12.0003 0C7.31028 0 3.25527 2.69 1.28027 6.60998L5.27028 9.70498C6.21525 6.86002 8.87028 4.75 12.0003 4.75Z" fill="#EA4335" />
                   <path d="M23.49 12.275C23.49 11.49 23.415 10.73 23.3 10H12V14.51H18.47C18.18 15.99 17.34 17.25 16.08 18.1L19.945 21.1C22.2 19.01 23.49 15.92 23.49 12.275Z" fill="#4285F4" />
@@ -108,29 +108,29 @@ const Login = () => {
             </div>
 
             <div className="relative my-8">
-              <Separator className="bg-white/20" />
-              <span className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/40 backdrop-blur-md px-4 text-sm text-white/70 font-medium">
+              <Separator className="bg-gray-200" />
+              <span className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-4 text-sm text-gray-500 font-medium">
                 OR CONTINUE WITH EMAIL
               </span>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-3">
-                <Label htmlFor="email" className="text-lg font-medium text-white">Email Address</Label>
+                <Label htmlFor="email" className="text-lg font-medium text-gray-700">Email Address</Label>
                 <Input 
                   id="email" 
                   type="email" 
                   placeholder="your.email@dlsl.edu.ph" 
                   value={email} 
                   onChange={e => setEmail(e.target.value)}
-                  className="h-14 text-lg bg-white/10 backdrop-blur-md border-white/30 focus:border-white/50 transition-all duration-300 text-white placeholder-white/50"
+                  className="h-14 text-lg bg-white border-gray-300 focus:border-primary transition-all duration-300 text-gray-900 placeholder-gray-400"
                 />
               </div>
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-lg font-medium text-white">Password</Label>
-                  <Button variant="link" className="text-white/70 text-sm p-0 h-auto font-medium hover:text-white" type="button">
+                  <Label htmlFor="password" className="text-lg font-medium text-gray-700">Password</Label>
+                  <Button variant="link" className="text-primary text-sm p-0 h-auto font-medium hover:text-primary/80" type="button">
                     Forgot password?
                   </Button>
                 </div>
@@ -141,50 +141,50 @@ const Login = () => {
                     placeholder="Enter your password" 
                     value={password} 
                     onChange={e => setPassword(e.target.value)}
-                    className="h-14 text-lg bg-white/10 backdrop-blur-md border-white/30 focus:border-white/50 transition-all duration-300 text-white placeholder-white/50 pr-14"
+                    className="h-14 text-lg bg-white border-gray-300 focus:border-primary transition-all duration-300 text-gray-900 placeholder-gray-400 pr-14"
                   />
                   <Button 
                     type="button" 
                     variant="ghost" 
                     size="sm" 
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 w-10 hover:bg-white/10" 
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 w-10 hover:bg-gray-100" 
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <EyeOff className="h-5 w-5 text-white/60" /> : <Eye className="h-5 w-5 text-white/60" />}
+                    {showPassword ? <EyeOff className="h-5 w-5 text-gray-500" /> : <Eye className="h-5 w-5 text-gray-500" />}
                   </Button>
                 </div>
               </div>
 
               {error && (
-                <Alert variant="destructive" className="bg-red-500/20 border-red-500/30 backdrop-blur-md">
-                  <AlertDescription className="text-lg text-white">{error}</AlertDescription>
+                <Alert variant="destructive" className="bg-red-50 border-red-200">
+                  <AlertDescription className="text-lg text-red-700">{error}</AlertDescription>
                 </Alert>
               )}
 
               <Button 
                 type="submit" 
-                className="w-full h-14 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white text-lg font-semibold border border-white/30 transition-all duration-300" 
+                className="w-full h-14 bg-primary hover:bg-primary/90 text-white text-lg font-semibold transition-all duration-300" 
                 disabled={isLoading}
               >
                 {isLoading ? 'Signing in...' : 'Sign in to STARS'}
               </Button>
               
-              <div className="text-center text-lg text-white/70 font-medium">
-                Don't have an account? <a href="#" className="text-white hover:text-white/80 font-semibold hover:underline transition-colors">Sign up →</a>
+              <div className="text-center text-lg text-gray-600 font-medium">
+                Don't have an account? <a href="#" className="text-primary hover:text-primary/80 font-semibold hover:underline transition-colors">Sign up →</a>
               </div>
             </form>
 
             {/* Demo Credentials */}
-            <div className="mt-8 p-6 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20">
-              <h3 className="text-lg font-semibold text-white mb-4">Demo Credentials:</h3>
+            <div className="mt-8 p-6 bg-gray-50 rounded-2xl border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Demo Credentials:</h3>
               <div className="space-y-2 text-sm">
                 {demoCredentials.map(cred => (
                   <div key={cred.role} className="flex justify-between">
-                    <span className="font-medium text-white/70">{cred.role}:</span>
-                    <span className="text-white/60">{cred.email}</span>
+                    <span className="font-medium text-gray-600">{cred.role}:</span>
+                    <span className="text-gray-500">{cred.email}</span>
                   </div>
                 ))}
-                <p className="text-white/60 mt-4 font-medium">Password: password123 (for all roles)</p>
+                <p className="text-gray-500 mt-4 font-medium">Password: password123 (for all roles)</p>
               </div>
             </div>
           </CardContent>

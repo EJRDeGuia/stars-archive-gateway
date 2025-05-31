@@ -11,6 +11,9 @@ import Dashboard from "./pages/Dashboard";
 import CollegePage from "./pages/CollegePage";
 import ThesisDetail from "./pages/ThesisDetail";
 import Upload from "./pages/Upload";
+import Profile from "./pages/Profile";
+import Library from "./pages/Library";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -31,12 +34,12 @@ const App = () => (
                 <Dashboard />
               </ProtectedRoute>
             } />
-            <Route path="/college/:collegeId" element={
+            <Route path="/college/:id" element={
               <ProtectedRoute>
                 <CollegePage />
               </ProtectedRoute>
             } />
-            <Route path="/thesis/:thesisId" element={
+            <Route path="/thesis/:id" element={
               <ProtectedRoute>
                 <ThesisDetail />
               </ProtectedRoute>
@@ -44,6 +47,21 @@ const App = () => (
             <Route path="/upload" element={
               <ProtectedRoute requiredRole="archivist">
                 <Upload />
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            } />
+            <Route path="/library" element={
+              <ProtectedRoute>
+                <Library />
+              </ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <Settings />
               </ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />
