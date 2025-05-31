@@ -28,45 +28,46 @@ const Header = () => {
     navigate('/');
   };
 
-  const getRoleBadgeColor = (role: string) => {
-    switch (role) {
-      case 'admin': return 'bg-dlsl-gold text-dlsl-green-dark';
-      case 'archivist': return 'bg-dlsl-green-light text-white';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <header className="bg-white/95 backdrop-blur-lg sleek-shadow border-b border-slate-200/60 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="flex justify-between items-center h-20">
           {/* Logo and Nav */}
           <div className="flex items-center">
             <button
               onClick={() => navigate('/dashboard')}
-              className="flex items-center hover:opacity-80 transition-opacity"
+              className="flex items-center hover:opacity-80 transition-all duration-200 group"
             >
-              <div className="w-7 h-7 bg-dlsl-green rounded-md flex items-center justify-center">
-                <Star className="w-4 h-4 text-white fill-white" />
+              <div className="w-10 h-10 bg-gradient-to-br from-dlsl-green via-dlsl-green-light to-emerald-400 rounded-xl flex items-center justify-center sleek-shadow-lg group-hover:sleek-shadow-xl transition-all duration-200">
+                <Star className="w-5 h-5 text-white fill-white" />
               </div>
-              <span className="text-xl font-bold text-dlsl-green ml-2">STARS</span>
+              <span className="text-2xl font-bold bg-gradient-to-r from-dlsl-green to-dlsl-green-light bg-clip-text text-transparent ml-3 tracking-tight">
+                STARS
+              </span>
             </button>
             
-            <div className="hidden md:flex ml-6 space-x-4">
+            <div className="hidden md:flex ml-8 space-x-1">
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="text-gray-600 hover:text-dlsl-green"
+                className="text-slate-600 hover:text-dlsl-green hover:bg-dlsl-green/10 rounded-xl px-4 py-2 font-medium transition-all duration-200"
                 onClick={() => navigate('/dashboard')}
               >
-                Home
+                Dashboard
               </Button>
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="text-gray-600 hover:text-dlsl-green"
+                className="text-slate-600 hover:text-dlsl-green hover:bg-dlsl-green/10 rounded-xl px-4 py-2 font-medium transition-all duration-200"
               >
                 Explore
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-slate-600 hover:text-dlsl-green hover:bg-dlsl-green/10 rounded-xl px-4 py-2 font-medium transition-all duration-200"
+              >
+                Collections
               </Button>
             </div>
           </div>
@@ -75,7 +76,7 @@ const Header = () => {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="md:hidden text-gray-600"
+            className="md:hidden text-slate-600 hover:text-dlsl-green hover:bg-dlsl-green/10 rounded-xl"
           >
             <Menu className="h-5 w-5" />
           </Button>
@@ -87,9 +88,10 @@ const Header = () => {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="text-gray-600 hidden md:flex"
+                className="text-slate-600 hover:text-dlsl-green hover:bg-dlsl-green/10 rounded-xl hidden md:flex relative"
               >
                 <Bell className="h-5 w-5" />
+                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
               </Button>
               
               {/* User Menu */}
@@ -97,32 +99,38 @@ const Header = () => {
                 <DropdownMenuTrigger asChild>
                   <Button 
                     variant="ghost" 
-                    className="flex items-center space-x-2 hover:bg-gray-50"
+                    className="flex items-center space-x-3 hover:bg-slate-50 rounded-xl px-3 py-2 transition-all duration-200 sleek-shadow-sm hover:sleek-shadow"
                   >
-                    <div className="w-8 h-8 bg-dlsl-green rounded-full flex items-center justify-center">
-                      <User className="w-4 h-4 text-white" />
+                    <div className="w-10 h-10 bg-gradient-to-br from-dlsl-green to-dlsl-green-light rounded-xl flex items-center justify-center sleek-shadow">
+                      <User className="w-5 h-5 text-white" />
                     </div>
                     <div className="hidden md:block text-left">
-                      <p className="text-sm font-medium text-gray-700">{user.name}</p>
-                      <p className="text-xs text-gray-500">{user.role}</p>
+                      <p className="text-sm font-semibold text-slate-800">{user.name}</p>
+                      <p className="text-xs text-slate-500 capitalize">{user.role}</p>
                     </div>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate('/dashboard')}>
-                    <Home className="mr-2 h-4 w-4" />
+                <DropdownMenuContent align="end" className="w-56 sleek-shadow-xl border-0 bg-white/95 backdrop-blur-lg">
+                  <DropdownMenuLabel className="text-slate-700 font-semibold">My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-slate-200" />
+                  <DropdownMenuItem 
+                    onClick={() => navigate('/dashboard')}
+                    className="cursor-pointer hover:bg-dlsl-green/10 hover:text-dlsl-green transition-colors rounded-lg mx-1"
+                  >
+                    <Home className="mr-3 h-4 w-4" />
                     <span>Dashboard</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
+                  <DropdownMenuItem className="cursor-pointer hover:bg-dlsl-green/10 hover:text-dlsl-green transition-colors rounded-lg mx-1">
+                    <User className="mr-3 h-4 w-4" />
+                    <span>Profile Settings</span>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
+                  <DropdownMenuSeparator className="bg-slate-200" />
+                  <DropdownMenuItem 
+                    onClick={handleLogout} 
+                    className="text-red-600 cursor-pointer hover:bg-red-50 hover:text-red-700 transition-colors rounded-lg mx-1"
+                  >
+                    <LogOut className="mr-3 h-4 w-4" />
+                    <span>Sign out</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -130,7 +138,7 @@ const Header = () => {
           ) : (
             <Button
               onClick={() => navigate('/login')}
-              className="bg-dlsl-green hover:bg-dlsl-green-dark text-white"
+              className="bg-gradient-to-r from-dlsl-green to-dlsl-green-light hover:from-dlsl-green-dark hover:to-dlsl-green text-white sleek-shadow-lg hover:sleek-shadow-xl transition-all duration-200 transform hover:scale-105 rounded-xl px-6 py-2 font-semibold"
             >
               Sign in
             </Button>
