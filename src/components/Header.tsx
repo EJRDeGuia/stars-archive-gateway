@@ -1,4 +1,5 @@
 
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { 
@@ -10,6 +11,7 @@ import {
   Star
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import NotificationPanel from './NotificationPanel';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,10 +24,19 @@ import {
 const Header = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const handleExploreClick = () => {
+    navigate('/explore');
+  };
+
+  const handleCollectionsClick = () => {
+    navigate('/collections');
   };
 
   return (
@@ -59,6 +70,7 @@ const Header = () => {
                 variant="ghost" 
                 size="sm" 
                 className="text-slate-600 hover:text-dlsl-green hover:bg-dlsl-green/10 rounded-xl px-4 py-2 font-medium transition-all duration-200"
+                onClick={handleExploreClick}
               >
                 Explore
               </Button>
@@ -66,6 +78,7 @@ const Header = () => {
                 variant="ghost" 
                 size="sm" 
                 className="text-slate-600 hover:text-dlsl-green hover:bg-dlsl-green/10 rounded-xl px-4 py-2 font-medium transition-all duration-200"
+                onClick={handleCollectionsClick}
               >
                 Collections
               </Button>
@@ -89,6 +102,7 @@ const Header = () => {
                 variant="ghost" 
                 size="icon" 
                 className="text-slate-600 hover:text-dlsl-green hover:bg-dlsl-green/10 rounded-xl hidden md:flex relative"
+                onClick={() => setShowNotifications(!showNotifications)}
               >
                 <Bell className="h-5 w-5" />
                 <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
@@ -106,7 +120,7 @@ const Header = () => {
                     </div>
                     <div className="hidden md:block text-left">
                       <p className="text-sm font-semibold text-slate-800">{user.name}</p>
-                      <p className="text-xs text-slate-500 capitalize">{user.role}</p>
+                      <p className="text-xs text-slate-500 capitalize">{user.role.replace('_', ' ')}</p>
                     </div>
                   </Button>
                 </DropdownMenuTrigger>
@@ -120,7 +134,10 @@ const Header = () => {
                     <Home className="mr-3 h-4 w-4" />
                     <span>Dashboard</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer hover:bg-dlsl-green/10 hover:text-dlsl-green transition-colors rounded-lg mx-1">
+                  <DropdownMenuItem 
+                    onClick={() => navigate('/profile')}
+                    className="cursor-pointer hover:bg-dlsl-green/10 hover:text-dlsl-green transition-colors rounded-lg mx-1"
+                  >
                     <User className="mr-3 h-4 w-4" />
                     <span>Profile Settings</span>
                   </DropdownMenuItem>
@@ -145,6 +162,8 @@ const Header = () => {
           )}
         </div>
       </div>
+      
+      <NotificationPanel isOpen={showNotifications} onClose={() => setShowNotifications(false)} />
     </header>
   );
 };

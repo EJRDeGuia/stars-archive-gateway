@@ -1,5 +1,6 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { theses } from '@/data/mockData';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -9,7 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { 
   ArrowLeft, 
   Download, 
-  Share2, 
   Bookmark, 
   User, 
   Calendar, 
@@ -18,11 +18,12 @@ import {
   Eye,
   Heart,
   MessageCircle,
-  Star
+  Lock
 } from 'lucide-react';
 
 const ThesisDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const navigate = useNavigate();
   
   const thesis = theses.find(t => t.id === id);
@@ -39,6 +40,8 @@ const ThesisDetail = () => {
       </div>
     );
   }
+
+  const canViewPDF = user?.role && ['researcher', 'archivist', 'admin'].includes(user.role);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -77,7 +80,7 @@ const ThesisDetail = () => {
                         <Calendar className="h-5 w-5" />
                         <span className="text-lg">{thesis.year}</span>
                       </div>
-                      <Badge variant="secondary" className="bg-primary/10 text-primary border-0 text-sm">
+                      <Badge variant="secondary" className="bg-dlsl-green/10 text-dlsl-green border-0 text-sm">
                         {thesis.college}
                       </Badge>
                     </div>
@@ -118,6 +121,31 @@ const ThesisDetail = () => {
                 </div>
               </div>
 
+              {/* PDF Preview */}
+              <div className="bg-white border border-gray-200 rounded-2xl shadow-sm">
+                <div className="p-8">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Document Preview</h2>
+                  {canViewPDF ? (
+                    <div className="bg-gray-100 rounded-xl p-8 text-center">
+                      <FileText className="w-16 h-16 text-dlsl-green mx-auto mb-4" />
+                      <p className="text-gray-700 text-lg mb-4">PDF document preview would appear here</p>
+                      <p className="text-gray-500">Full document access available for DLSL community members</p>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-100 rounded-xl p-8 text-center">
+                      <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">Access Restricted</h3>
+                      <p className="text-gray-600 mb-4">
+                        Full document access is available only to DLSL researchers, archivists, and administrators.
+                      </p>
+                      <p className="text-gray-500 text-sm">
+                        Contact your institution to upgrade your access level.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Research Methodology */}
               <div className="bg-white border border-gray-200 rounded-2xl shadow-sm">
                 <div className="p-8">
@@ -134,15 +162,15 @@ const ThesisDetail = () => {
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Key Findings</h2>
                   <ul className="space-y-4 text-gray-700 text-lg">
                     <li className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-primary rounded-full mt-3 flex-shrink-0"></div>
+                      <div className="w-2 h-2 bg-dlsl-green rounded-full mt-3 flex-shrink-0"></div>
                       <span>The implementation of AI-driven educational technologies showed a 35% improvement in student engagement rates.</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-primary rounded-full mt-3 flex-shrink-0"></div>
+                      <div className="w-2 h-2 bg-dlsl-green rounded-full mt-3 flex-shrink-0"></div>
                       <span>Students demonstrated increased retention rates when using adaptive learning platforms compared to traditional methods.</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-primary rounded-full mt-3 flex-shrink-0"></div>
+                      <div className="w-2 h-2 bg-dlsl-green rounded-full mt-3 flex-shrink-0"></div>
                       <span>The cost-effectiveness of implementing these technologies showed positive ROI within 18 months.</span>
                     </li>
                   </ul>
@@ -157,17 +185,20 @@ const ThesisDetail = () => {
                 <div className="p-6">
                   <h3 className="text-xl font-bold text-gray-900 mb-6">Actions</h3>
                   <div className="space-y-4">
-                    <Button className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl py-3">
-                      <Download className="mr-2 h-5 w-5" />
-                      Download PDF
-                    </Button>
+                    {canViewPDF ? (
+                      <Button className="w-full bg-dlsl-green hover:bg-dlsl-green/90 text-white rounded-xl py-3">
+                        <Download className="mr-2 h-5 w-5" />
+                        Download PDF
+                      </Button>
+                    ) : (
+                      <Button disabled className="w-full bg-gray-300 text-gray-500 rounded-xl py-3 cursor-not-allowed">
+                        <Lock className="mr-2 h-5 w-5" />
+                        Access Restricted
+                      </Button>
+                    )}
                     <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl py-3">
                       <Bookmark className="mr-2 h-5 w-5" />
                       Save to Library
-                    </Button>
-                    <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl py-3">
-                      <Share2 className="mr-2 h-5 w-5" />
-                      Share Thesis
                     </Button>
                     <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl py-3">
                       <MessageCircle className="mr-2 h-5 w-5" />
@@ -206,22 +237,6 @@ const ThesisDetail = () => {
                 </div>
               </div>
 
-              {/* Rating */}
-              <div className="bg-white border border-gray-200 rounded-2xl shadow-sm">
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-6">Community Rating</h3>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1 mb-4">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`w-6 h-6 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
-                      ))}
-                    </div>
-                    <div className="text-3xl font-bold text-gray-900 mb-2">4.2</div>
-                    <div className="text-gray-600">Based on 28 reviews</div>
-                  </div>
-                </div>
-              </div>
-
               {/* Related Theses */}
               <div className="bg-white border border-gray-200 rounded-2xl shadow-sm">
                 <div className="p-6">
@@ -233,7 +248,7 @@ const ThesisDetail = () => {
                         className="cursor-pointer group"
                         onClick={() => navigate(`/thesis/${relatedThesis.id}`)}
                       >
-                        <h4 className="font-medium text-gray-900 group-hover:text-primary transition-colors leading-tight mb-2">
+                        <h4 className="font-medium text-gray-900 group-hover:text-dlsl-green transition-colors leading-tight mb-2">
                           {relatedThesis.title.substring(0, 60)}...
                         </h4>
                         <p className="text-sm text-gray-600">{relatedThesis.author} • {relatedThesis.year}</p>

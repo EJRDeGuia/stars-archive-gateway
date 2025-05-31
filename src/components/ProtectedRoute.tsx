@@ -4,7 +4,7 @@ import { Navigate } from 'react-router-dom';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: 'researcher' | 'archivist' | 'admin';
+  requiredRole?: 'researcher' | 'archivist' | 'admin' | 'guest_researcher';
 }
 
 const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
@@ -23,7 +23,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   }
 
   if (requiredRole) {
-    const roleHierarchy = { researcher: 1, archivist: 2, admin: 3 };
+    const roleHierarchy = { guest_researcher: 1, researcher: 2, archivist: 3, admin: 4 };
     const userLevel = roleHierarchy[user.role];
     const requiredLevel = roleHierarchy[requiredRole];
     

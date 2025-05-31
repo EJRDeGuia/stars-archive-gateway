@@ -1,8 +1,11 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import CollegeCard from '@/components/CollegeCard';
+import NotificationPanel from '@/components/NotificationPanel';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,9 +21,12 @@ import {
   FileText,
   TrendingUp,
   ExternalLink,
-  Calendar
+  Calendar,
+  Bell,
+  Upload
 } from 'lucide-react';
 import { colleges, theses } from '@/data/mockData';
+import AdminDashboard from './AdminDashboard';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -28,6 +34,12 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  // Redirect admin users to admin dashboard
+  if (user?.role === 'admin') {
+    return <AdminDashboard />;
+  }
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) {
@@ -68,6 +80,18 @@ const Dashboard = () => {
     navigate('/settings');
   };
 
+  const handleExploreClick = () => {
+    navigate('/explore');
+  };
+
+  const handleCollectionsClick = () => {
+    navigate('/collections');
+  };
+
+  const handleUploadClick = () => {
+    navigate('/upload');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -90,7 +114,7 @@ const Dashboard = () => {
               <div className="relative">
                 <div className="bg-white rounded-3xl shadow-lg border border-gray-200 p-6">
                   <div className="flex items-center gap-4">
-                    <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div className="w-8 h-8 bg-dlsl-green rounded-lg flex items-center justify-center flex-shrink-0">
                       <Search className="w-4 h-4 text-white" />
                     </div>
                     <div className="flex-1">
@@ -105,7 +129,7 @@ const Dashboard = () => {
                       />
                     </div>
                     {isSearching && (
-                      <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-6 h-6 border-2 border-dlsl-green border-t-transparent rounded-full animate-spin"></div>
                     )}
                   </div>
                   
@@ -124,7 +148,7 @@ const Dashboard = () => {
                               <span>•</span>
                               <span>{thesis.year}</span>
                               <span>•</span>
-                              <Badge variant="secondary" className="bg-primary/10 text-primary border-0">
+                              <Badge variant="secondary" className="bg-dlsl-green/10 text-dlsl-green border-0">
                                 {thesis.college}
                               </Badge>
                             </div>
@@ -137,7 +161,7 @@ const Dashboard = () => {
                 
                 <div className="flex items-center justify-center gap-2 mt-4 text-sm text-gray-500">
                   <span>Powered by semantic search</span>
-                  <Sparkles className="w-4 h-4 text-primary" />
+                  <Sparkles className="w-4 h-4 text-dlsl-green" />
                 </div>
               </div>
             </div>
@@ -146,45 +170,60 @@ const Dashboard = () => {
           {/* Quick Actions */}
           <div className="mb-16">
             <h2 className="text-2xl font-bold text-gray-900 mb-8">Quick Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card 
                 className="hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-gray-200"
                 onClick={handleLibraryClick}
               >
                 <CardContent className="p-8 text-center">
-                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <Bookmark className="w-8 h-8 text-primary" />
+                  <div className="w-16 h-16 bg-dlsl-green/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <Bookmark className="w-8 h-8 text-dlsl-green" />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-3">My Library</h3>
-                  <p className="text-gray-600">Access your saved and bookmarked research papers</p>
+                  <p className="text-gray-600">Access your saved research</p>
                 </CardContent>
               </Card>
 
               <Card 
                 className="hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-gray-200"
-                onClick={handleProfileClick}
+                onClick={handleExploreClick}
               >
                 <CardContent className="p-8 text-center">
-                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <User className="w-8 h-8 text-primary" />
+                  <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <Search className="w-8 h-8 text-blue-600" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">My Profile</h3>
-                  <p className="text-gray-600">Manage your account settings and preferences</p>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Explore</h3>
+                  <p className="text-gray-600">Discover new research</p>
                 </CardContent>
               </Card>
 
               <Card 
                 className="hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-gray-200"
-                onClick={handleSettingsClick}
+                onClick={handleCollectionsClick}
               >
                 <CardContent className="p-8 text-center">
-                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <Settings className="w-8 h-8 text-primary" />
+                  <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <BookOpen className="w-8 h-8 text-purple-600" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">Settings</h3>
-                  <p className="text-gray-600">Customize your experience and notifications</p>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Collections</h3>
+                  <p className="text-gray-600">Browse curated content</p>
                 </CardContent>
               </Card>
+
+              {(user?.role === 'archivist' || user?.role === 'admin') && (
+                <Card 
+                  className="hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-gray-200"
+                  onClick={handleUploadClick}
+                >
+                  <CardContent className="p-8 text-center">
+                    <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                      <Upload className="w-8 h-8 text-green-600" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">Upload</h3>
+                    <p className="text-gray-600">Add new thesis</p>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
 
@@ -200,35 +239,12 @@ const Dashboard = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {colleges.map((college) => (
-                <Card 
-                  key={college.id} 
-                  className="group hover:shadow-xl transition-all duration-300 cursor-pointer bg-white border-gray-200 hover:border-dlsl-green/30"
+                <CollegeCard
+                  key={college.id}
+                  college={college}
                   onClick={() => handleCollegeClick(college.id)}
-                >
-                  <div className="h-2 bg-gradient-to-r from-dlsl-green to-dlsl-green-dark"></div>
-                  <CardContent className="p-8">
-                    <div className="text-center">
-                      <div className="w-24 h-24 bg-dlsl-green/10 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:bg-dlsl-green/20 transition-colors group-hover:scale-105 transition-transform">
-                        <BookOpen className="w-10 h-10 text-dlsl-green" />
-                      </div>
-                      <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-dlsl-green transition-colors">
-                        {college.name}
-                      </h3>
-                      <p className="text-gray-600 mb-6 leading-relaxed text-lg">
-                        {college.fullName}
-                      </p>
-                      <p className="text-gray-600 mb-8 leading-relaxed">
-                        Comprehensive collection of academic research and scholarly work
-                      </p>
-                      <div className="flex items-center justify-center gap-6 text-lg">
-                        <div className="flex items-center gap-2 text-dlsl-green">
-                          <FileText className="w-5 h-5" />
-                          <span className="font-medium">{college.thesesCount}+ theses</span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                  size="large"
+                />
               ))}
             </div>
           </div>
@@ -246,7 +262,7 @@ const Dashboard = () => {
                   <CardContent className="p-8">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h3 className="text-xl font-bold text-gray-900 mb-3 hover:text-primary transition-colors">
+                        <h3 className="text-xl font-bold text-gray-900 mb-3 hover:text-dlsl-green transition-colors">
                           {thesis.title}
                         </h3>
                         <div className="flex items-center gap-6 text-gray-600 mb-4">
@@ -258,7 +274,7 @@ const Dashboard = () => {
                             <Calendar className="w-4 h-4" />
                             <span>{thesis.year}</span>
                           </div>
-                          <Badge variant="secondary" className="bg-primary/10 text-primary border-0">
+                          <Badge variant="secondary" className="bg-dlsl-green/10 text-dlsl-green border-0">
                             {thesis.college}
                           </Badge>
                         </div>
@@ -274,7 +290,7 @@ const Dashboard = () => {
                         </div>
                       </div>
                       <div className="ml-6">
-                        <ExternalLink className="w-6 h-6 text-gray-400 group-hover:text-primary transition-colors" />
+                        <ExternalLink className="w-6 h-6 text-gray-400 group-hover:text-dlsl-green transition-colors" />
                       </div>
                     </div>
                   </CardContent>
@@ -285,6 +301,7 @@ const Dashboard = () => {
         </div>
       </main>
 
+      <NotificationPanel isOpen={showNotifications} onClose={() => setShowNotifications(false)} />
       <Footer />
     </div>
   );

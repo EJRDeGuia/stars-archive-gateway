@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-type UserRole = 'researcher' | 'archivist' | 'admin';
+type UserRole = 'researcher' | 'archivist' | 'admin' | 'guest_researcher';
 
 interface User {
   id: string;
@@ -40,6 +40,13 @@ const mockUsers: (User & { password: string })[] = [
     name: 'Admin User',
     email: 'admin@dlsl.edu.ph',
     role: 'admin',
+    password: 'password123'
+  },
+  {
+    id: '4',
+    name: 'Guest Researcher',
+    email: 'guest@dlsl.edu.ph',
+    role: 'guest_researcher',
     password: 'password123'
   }
 ];

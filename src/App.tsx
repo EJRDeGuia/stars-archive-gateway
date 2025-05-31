@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,12 +8,15 @@ import { AuthProvider } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 import CollegePage from "./pages/CollegePage";
 import ThesisDetail from "./pages/ThesisDetail";
 import Upload from "./pages/Upload";
 import Profile from "./pages/Profile";
 import Library from "./pages/Library";
 import Settings from "./pages/Settings";
+import Explore from "./pages/Explore";
+import Collections from "./pages/Collections";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import About from "./pages/About";
@@ -35,6 +39,21 @@ const App = () => (
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin" element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/explore" element={
+              <ProtectedRoute>
+                <Explore />
+              </ProtectedRoute>
+            } />
+            <Route path="/collections" element={
+              <ProtectedRoute>
+                <Collections />
               </ProtectedRoute>
             } />
             <Route path="/college/:id" element={
