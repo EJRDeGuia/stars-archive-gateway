@@ -41,6 +41,7 @@ const Login = () => {
 
   const demoCredentials = [
     { role: 'Researcher', email: 'researcher@dlsl.edu.ph', password: 'password123' },
+    { role: 'Guest Researcher', email: 'guest@dlsl.edu.ph', password: 'password123' },
     { role: 'Archivist', email: 'archivist@dlsl.edu.ph', password: 'password123' },
     { role: 'Admin', email: 'admin@dlsl.edu.ph', password: 'password123' }
   ];

@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { colleges, theses } from '@/data/mockData';
 import Header from '@/components/Header';
@@ -62,8 +61,8 @@ const CollegePage = () => {
             </Button>
             
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-primary/10 rounded-2xl mb-8">
-                <BookOpen className="w-10 h-10 text-primary" />
+              <div className={`inline-flex items-center justify-center w-20 h-20 ${college.bgColorLight} rounded-2xl mb-8`}>
+                <college.icon className={`w-10 h-10 ${college.textColor}`} />
               </div>
               <h1 className="text-5xl font-bold text-gray-900 mb-6">{college.name}</h1>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-4">
@@ -71,11 +70,11 @@ const CollegePage = () => {
               </p>
               <div className="flex items-center justify-center gap-8 text-gray-600">
                 <div className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-primary" />
+                  <college.icon className={`h-5 w-5 ${college.textColor}`} />
                   <span className="font-medium">{collegeTheses.length} Theses</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-primary" />
+                  <TrendingUp className={`h-5 w-5 ${college.textColor}`} />
                   <span className="font-medium">Active Research</span>
                 </div>
               </div>
@@ -133,72 +132,85 @@ const CollegePage = () => {
             {filteredTheses.map((thesis) => (
               <div 
                 key={thesis.id} 
-                className="bg-white border border-gray-200 rounded-2xl hover:shadow-lg transition-all duration-300 cursor-pointer group shadow-sm"
+                className="bg-white border border-gray-200 rounded-2xl hover:shadow-lg transition-all duration-300 cursor-pointer group shadow-sm overflow-hidden"
                 onClick={() => navigate(`/thesis/${thesis.id}`)}
               >
-                <div className="p-8">
-                  <div className="flex items-start justify-between mb-6">
-                    <div className="flex-1">
-                      <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-primary transition-colors leading-tight">
-                        {thesis.title}
-                      </h3>
-                      <div className="flex items-center gap-6 text-gray-600 mb-4">
-                        <div className="flex items-center gap-2">
-                          <User className="h-4 w-4" />
-                          <span className="font-medium">{thesis.author}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4" />
-                          <span>{thesis.year}</span>
-                        </div>
-                        <Badge variant="secondary" className="bg-primary/10 text-primary border-0">
-                          {thesis.college}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2 text-gray-500">
-                        <Eye className="h-4 w-4" />
-                        <span className="text-sm">234</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-gray-500">
-                        <Heart className="h-4 w-4" />
-                        <span className="text-sm">12</span>
-                      </div>
-                      <ExternalLink className="h-5 w-5 text-gray-400 group-hover:text-primary transition-colors" />
-                    </div>
+                <div className="flex">
+                  {/* College Image */}
+                  <div className="w-48 h-48 flex-shrink-0">
+                    <img 
+                      src={college.image} 
+                      alt={college.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   
-                  <p className="text-gray-700 leading-relaxed mb-6">
-                    {thesis.abstract}
-                  </p>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-wrap gap-2">
-                      {thesis.keywords.map((keyword, index) => (
-                        <Badge key={index} variant="outline" className="border-gray-300 text-gray-600">
-                          {keyword}
-                        </Badge>
-                      ))}
+                  {/* Content */}
+                  <div className="flex-1 p-8">
+                    <div className="flex items-start justify-between mb-6">
+                      <div className="flex-1">
+                        <h3 className={`text-2xl font-bold text-gray-900 mb-4 group-hover:${college.textColor} transition-colors leading-tight`}>
+                          {thesis.title}
+                        </h3>
+                        <div className="flex items-center gap-6 text-gray-600 mb-4">
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4" />
+                            <span className="font-medium">{thesis.author}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4" />
+                            <span>{thesis.year}</span>
+                          </div>
+                          <Badge variant="secondary" className={`${college.bgColorLight} ${college.textColor} border-0`}>
+                            {thesis.college}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 text-gray-500">
+                          <Eye className="h-4 w-4" />
+                          <span className="text-sm">234</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-500">
+                          <Heart className="h-4 w-4" />
+                          <span className="text-sm">12</span>
+                        </div>
+                        <ExternalLink className={`h-5 w-5 text-gray-400 group-hover:${college.textColor} transition-colors`} />
+                      </div>
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        console.log('Download thesis:', thesis.id);
-                      }}
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Download
-                    </Button>
+                    
+                    <p className="text-gray-700 leading-relaxed mb-6">
+                      {thesis.abstract}
+                    </p>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap gap-2">
+                        {thesis.keywords.map((keyword, index) => (
+                          <Badge key={index} variant="outline" className={`${college.borderColor} ${college.textColor}`}>
+                            {keyword}
+                          </Badge>
+                        ))}
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          console.log('Download thesis:', thesis.id);
+                        }}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
             ))}
           </div>
 
+          {/* No results section */}
           {filteredTheses.length === 0 && (
             <div className="bg-white border border-gray-200 rounded-2xl shadow-sm">
               <div className="p-16 text-center">

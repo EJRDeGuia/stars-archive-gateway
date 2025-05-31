@@ -1,5 +1,5 @@
 
-import { GraduationCap, BookOpen, Building, PenTool, HeartPulse } from 'lucide-react';
+import { GraduationCap, BookOpen, Building, PenTool, HeartPulse, Cpu, TrendingUp, Users, Plane } from 'lucide-react';
 
 export const colleges = [
   {
@@ -8,8 +8,13 @@ export const colleges = [
     fullName: 'College of Information Technology & Engineering',
     description: 'Focuses on engineering and IT-related studies.',
     thesesCount: 120,
-    color: 'red',
-    icon: GraduationCap,
+    color: 'blue',
+    bgColor: 'bg-blue-500',
+    bgColorLight: 'bg-blue-100',
+    textColor: 'text-blue-600',
+    borderColor: 'border-blue-500',
+    icon: Cpu,
+    image: '/lovable-uploads/17b2bb63-8a6a-4ce5-af38-77d4c6f73cab.png',
     since: '2020'
   },
   {
@@ -18,8 +23,13 @@ export const colleges = [
     fullName: 'College of Business, Economics, Accountancy & Management',
     description: 'Dedicated to business and financial disciplines.',
     thesesCount: 145,
-    color: 'yellow',
-    icon: Building,
+    color: 'emerald',
+    bgColor: 'bg-emerald-500',
+    bgColorLight: 'bg-emerald-100',
+    textColor: 'text-emerald-600',
+    borderColor: 'border-emerald-500',
+    icon: TrendingUp,
+    image: '/lovable-uploads/65650cd1-6127-4c49-8cc6-74afa87f94b4.png',
     since: '2020'
   },
   {
@@ -28,8 +38,13 @@ export const colleges = [
     fullName: 'College of Education, Arts & Sciences',
     description: 'Covers educational, artistic, and scientific research areas.',
     thesesCount: 168,
-    color: 'blue',
+    color: 'purple',
+    bgColor: 'bg-purple-500',
+    bgColorLight: 'bg-purple-100',
+    textColor: 'text-purple-600',
+    borderColor: 'border-purple-500',
     icon: BookOpen,
+    image: '/lovable-uploads/83b8c064-b1bc-4c93-b353-78a1467e8d8d.png',
     since: '2020'
   },
   {
@@ -38,8 +53,13 @@ export const colleges = [
     fullName: 'College of Nursing',
     description: 'Pertains to nursing and healthcare-focused research.',
     thesesCount: 94,
-    color: 'gray',
+    color: 'rose',
+    bgColor: 'bg-rose-500',
+    bgColorLight: 'bg-rose-100',
+    textColor: 'text-rose-600',
+    borderColor: 'border-rose-500',
     icon: HeartPulse,
+    image: '/lovable-uploads/97a911d3-0111-4c1a-9d25-f6a737f5ffec.png',
     since: '2020'
   },
   {
@@ -48,8 +68,13 @@ export const colleges = [
     fullName: 'College of International Hospitality and Tourism Management',
     description: 'Highlights hospitality and tourism studies.',
     thesesCount: 87,
-    color: 'green',
-    icon: Building,
+    color: 'orange',
+    bgColor: 'bg-orange-500',
+    bgColorLight: 'bg-orange-100',
+    textColor: 'text-orange-600',
+    borderColor: 'border-orange-500',
+    icon: Plane,
+    image: '/lovable-uploads/ab6b2d0e-87a1-4969-89c9-994de79d8a8a.png',
     since: '2020'
   }
 ];
