@@ -1,7 +1,7 @@
+
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import SearchInterface from '@/components/SearchInterface';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { colleges } from '@/data/mockData';
@@ -23,12 +23,19 @@ import {
   UtensilsCrossed,
   TrendingUp,
   Award,
-  Sparkles
+  Sparkles,
+  Send,
+  Search,
+  MessageCircle,
+  Zap
 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { useState } from 'react';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const quickActions = [
     {
@@ -37,7 +44,7 @@ const Dashboard = () => {
       icon: Upload,
       action: () => navigate('/upload'),
       roles: ['archivist', 'admin'],
-      color: 'from-dlsl-green via-dlsl-green-light to-emerald-400'
+      color: 'from-emerald-600 to-emerald-700'
     },
     {
       title: 'System Settings',
@@ -45,7 +52,7 @@ const Dashboard = () => {
       icon: Settings,
       action: () => console.log('Navigate to settings'),
       roles: ['admin'],
-      color: 'from-dlsl-gold via-yellow-400 to-amber-400'
+      color: 'from-amber-600 to-amber-700'
     },
     {
       title: 'User Management',
@@ -53,7 +60,7 @@ const Dashboard = () => {
       icon: Users,
       action: () => console.log('Navigate to user management'),
       roles: ['admin'],
-      color: 'from-blue-500 via-blue-600 to-indigo-500'
+      color: 'from-blue-600 to-blue-700'
     },
     {
       title: 'Database Tools',
@@ -61,7 +68,7 @@ const Dashboard = () => {
       icon: Database,
       action: () => console.log('Navigate to backup'),
       roles: ['admin'],
-      color: 'from-purple-500 via-purple-600 to-violet-500'
+      color: 'from-purple-600 to-purple-700'
     }
   ];
 
@@ -80,7 +87,7 @@ const Dashboard = () => {
       thesesCount: 120,
       icon: Code,
       description: 'Advancing technology through innovative research',
-      gradient: 'from-red-500 to-red-600'
+      gradient: 'from-red-600 to-red-700'
     },
     {
       id: '2',
@@ -90,7 +97,7 @@ const Dashboard = () => {
       thesesCount: 145,
       icon: Calculator,
       description: 'Driving business excellence and economic growth',
-      gradient: 'from-yellow-500 to-amber-500'
+      gradient: 'from-amber-600 to-amber-700'
     },
     {
       id: '3',
@@ -100,7 +107,7 @@ const Dashboard = () => {
       thesesCount: 98,
       icon: Microscope,
       description: 'Exploring knowledge across diverse disciplines',
-      gradient: 'from-blue-500 to-blue-600'
+      gradient: 'from-blue-600 to-blue-700'
     },
     {
       id: '4',
@@ -110,7 +117,7 @@ const Dashboard = () => {
       thesesCount: 76,
       icon: HeartPulse,
       description: 'Advancing healthcare through compassionate research',
-      gradient: 'from-gray-500 to-gray-600'
+      gradient: 'from-gray-600 to-gray-700'
     },
     {
       id: '5',
@@ -120,65 +127,98 @@ const Dashboard = () => {
       thesesCount: 110,
       icon: UtensilsCrossed,
       description: 'Shaping the future of hospitality and tourism',
-      gradient: 'from-green-500 to-emerald-500'
+      gradient: 'from-emerald-600 to-emerald-700'
     }
   ];
 
-  const getCollegeColors = (color: string) => {
-    const colorMap = {
-      red: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-600' },
-      yellow: { bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-600' },
-      blue: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-600' },
-      green: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-600' },
-      gray: { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-600' }
-    };
-    return colorMap[color] || colorMap.gray;
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('Search:', searchQuery);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       <Header />
       
-      <main className="flex-1 animate-fade-in">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-20">
+      <main className="flex-1">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
           {/* Hero Section */}
-          <div className="text-center mb-24 animate-slide-up">
-            <div className="inline-flex items-center justify-center w-28 h-28 bg-gradient-to-br from-dlsl-green via-dlsl-green-light to-emerald-400 rounded-3xl shadow-xl mb-10 transform hover:scale-105 transition-all duration-300">
-              <Award className="w-14 h-14 text-white" />
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl mb-8">
+              <Award className="w-10 h-10 text-white" />
             </div>
-            <h1 className="text-7xl font-bold bg-gradient-to-r from-gray-800 via-dlsl-green to-gray-700 bg-clip-text text-transparent mb-10 leading-tight tracking-tight">
-              Welcome back, {user?.name}!
+            <h1 className="text-5xl font-bold text-slate-900 mb-6 leading-tight tracking-tight">
+              Welcome back, {user?.name}
             </h1>
-            <p className="text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed font-medium">
-              Discover and explore thesis repositories across all De La Salle Lipa colleges with our AI-powered research assistant
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
+              Discover and explore thesis repositories with our AI-powered research assistant
             </p>
           </div>
 
-          {/* Enhanced Search Section */}
-          <div className="mb-24 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-            <SearchInterface 
-              onSearch={(query) => console.log('Search:', query)}
-              className="max-w-6xl mx-auto"
-            />
+          {/* ChatGPT-style Search Interface */}
+          <div className="mb-16">
+            <div className="max-w-4xl mx-auto">
+              <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-12 h-12 bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl flex items-center justify-center">
+                      <MessageCircle className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-slate-900">AI Research Assistant</h3>
+                      <p className="text-slate-600">Ask questions about theses, search by keywords, or explore topics</p>
+                    </div>
+                  </div>
+                  
+                  <form onSubmit={handleSearch} className="relative">
+                    <div className="flex items-center bg-slate-50 rounded-2xl border-2 border-slate-200 focus-within:border-slate-400 focus-within:bg-white transition-all duration-200">
+                      <div className="pl-6">
+                        <MessageCircle className="h-5 w-5 text-slate-400" />
+                      </div>
+                      <Input
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Ask anything about the research repository..."
+                        className="flex-1 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-lg py-6 px-4 placeholder-slate-500"
+                      />
+                      <div className="pr-4">
+                        <Button 
+                          type="submit"
+                          size="sm"
+                          className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl px-6 py-3 transition-all duration-200"
+                        >
+                          <Send className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </form>
+                  
+                  <div className="flex items-center gap-2 mt-4">
+                    <Zap className="h-4 w-4 text-slate-400" />
+                    <span className="text-sm text-slate-500">Try: "Show me AI research from CITE" or "Find nursing theses from 2023"</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
           {/* Quick Actions */}
           {availableActions.length > 0 && (
-            <div className="mb-24 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-              <h2 className="text-5xl font-bold text-gray-800 mb-16 text-center tracking-tight">Quick Actions</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-slate-900 mb-8 text-center">Quick Actions</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {availableActions.map((action, index) => (
                   <Button
                     key={index}
                     onClick={action.action}
-                    className={`bg-gradient-to-br ${action.color} text-white h-auto p-10 flex flex-col items-start space-y-8 transition-all duration-300 transform hover:scale-105 border-0 rounded-3xl shadow-xl hover:shadow-2xl group`}
+                    className={`bg-gradient-to-br ${action.color} text-white h-auto p-8 flex flex-col items-start space-y-6 transition-all duration-300 border-0 rounded-2xl shadow-lg hover:shadow-xl group`}
                   >
-                    <div className="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center group-hover:bg-white/30 transition-colors">
-                      <action.icon className="h-10 w-10" />
+                    <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                      <action.icon className="h-8 w-8" />
                     </div>
-                    <div className="text-left space-y-4">
-                      <div className="font-bold text-2xl tracking-tight">{action.title}</div>
-                      <div className="text-sm opacity-90 leading-relaxed font-medium">{action.description}</div>
+                    <div className="text-left space-y-3">
+                      <div className="font-bold text-xl">{action.title}</div>
+                      <div className="text-sm opacity-90 leading-relaxed">{action.description}</div>
                     </div>
                   </Button>
                 ))}
@@ -187,50 +227,50 @@ const Dashboard = () => {
           )}
 
           {/* Statistics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-24 animate-slide-up" style={{ animationDelay: '0.3s' }}>
-            <Card className="bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl rounded-3xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-105 group">
-              <CardContent className="p-10">
-                <div className="flex items-center justify-between mb-10">
-                  <h3 className="text-2xl font-bold text-gray-800 tracking-tight">Total Theses</h3>
-                  <div className="w-20 h-20 bg-gradient-to-br from-dlsl-green to-dlsl-green-light rounded-3xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all">
-                    <BookOpen className="h-10 w-10 text-white" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl overflow-hidden group">
+              <CardContent className="p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-xl font-bold text-slate-900">Total Theses</h3>
+                  <div className="w-16 h-16 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl flex items-center justify-center shadow-lg">
+                    <BookOpen className="h-8 w-8 text-white" />
                   </div>
                 </div>
-                <div className="text-6xl font-bold text-gray-800 mb-6 tracking-tight">{totalTheses.toLocaleString()}</div>
-                <div className="flex items-center text-lg text-green-600 font-medium">
-                  <TrendingUp className="h-5 w-5 mr-3" />
+                <div className="text-4xl font-bold text-slate-900 mb-4">{totalTheses.toLocaleString()}</div>
+                <div className="flex items-center text-emerald-600 font-medium">
+                  <TrendingUp className="h-4 w-4 mr-2" />
                   <span>Across all colleges</span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl rounded-3xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-105 group">
-              <CardContent className="p-10">
-                <div className="flex items-center justify-between mb-10">
-                  <h3 className="text-2xl font-bold text-gray-800 tracking-tight">Active Colleges</h3>
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all">
-                    <BarChart className="h-10 w-10 text-white" />
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl overflow-hidden group">
+              <CardContent className="p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-xl font-bold text-slate-900">Active Colleges</h3>
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center shadow-lg">
+                    <BarChart className="h-8 w-8 text-white" />
                   </div>
                 </div>
-                <div className="text-6xl font-bold text-gray-800 mb-6 tracking-tight">{collegeData.length}</div>
-                <div className="flex items-center text-lg text-blue-600 font-medium">
-                  <TrendingUp className="h-5 w-5 mr-3" />
+                <div className="text-4xl font-bold text-slate-900 mb-4">{collegeData.length}</div>
+                <div className="flex items-center text-blue-600 font-medium">
+                  <TrendingUp className="h-4 w-4 mr-2" />
                   <span>Contributing to repository</span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl rounded-3xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-105 group">
-              <CardContent className="p-10">
-                <div className="flex items-center justify-between mb-10">
-                  <h3 className="text-2xl font-bold text-gray-800 tracking-tight">Your Access</h3>
-                  <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all">
-                    <Users className="h-10 w-10 text-white" />
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl overflow-hidden group">
+              <CardContent className="p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-xl font-bold text-slate-900">Your Access</h3>
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl flex items-center justify-center shadow-lg">
+                    <Users className="h-8 w-8 text-white" />
                   </div>
                 </div>
-                <div className="text-6xl font-bold text-gray-800 mb-6 capitalize tracking-tight">{user?.role}</div>
-                <div className="flex items-center text-lg text-purple-600 font-medium">
-                  <Award className="h-5 w-5 mr-3" />
+                <div className="text-4xl font-bold text-slate-900 mb-4 capitalize">{user?.role}</div>
+                <div className="flex items-center text-purple-600 font-medium">
+                  <Award className="h-4 w-4 mr-2" />
                   <span>Current permissions</span>
                 </div>
               </CardContent>
@@ -238,57 +278,57 @@ const Dashboard = () => {
           </div>
 
           {/* Recent & Bookmarked */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-24 animate-slide-up" style={{ animationDelay: '0.4s' }}>
-            <Card className="bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl rounded-3xl">
-              <CardContent className="p-10">
-                <div className="flex items-center justify-between mb-10">
-                  <h3 className="text-3xl font-bold flex items-center text-gray-800">
-                    <div className="w-16 h-16 bg-gradient-to-br from-dlsl-green to-dlsl-green-light rounded-2xl flex items-center justify-center mr-6 shadow-lg">
-                      <Clock className="h-8 w-8 text-white" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl">
+              <CardContent className="p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-2xl font-bold flex items-center text-slate-900">
+                    <div className="w-12 h-12 bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl flex items-center justify-center mr-4">
+                      <Clock className="h-6 w-6 text-white" />
                     </div>
                     Recently Viewed
                   </h3>
-                  <Button variant="ghost" size="sm" className="text-dlsl-green hover:bg-dlsl-green/10 rounded-xl text-lg">
+                  <Button variant="ghost" size="sm" className="text-slate-600 hover:bg-slate-100 rounded-xl">
                     View all
                   </Button>
                 </div>
-                <div className="space-y-8">
-                  <div className="border-b border-gray-200 pb-8">
-                    <h4 className="font-bold text-gray-800 mb-4 text-xl leading-relaxed">Artificial Intelligence Applications in Educational Technology</h4>
-                    <p className="text-lg text-gray-500">Viewed 2 hours ago • CITE</p>
+                <div className="space-y-6">
+                  <div className="border-b border-slate-200 pb-6">
+                    <h4 className="font-bold text-slate-900 mb-3 leading-relaxed">Artificial Intelligence Applications in Educational Technology</h4>
+                    <p className="text-slate-500">Viewed 2 hours ago • CITE</p>
                   </div>
-                  <div className="border-b border-gray-200 pb-8">
-                    <h4 className="font-bold text-gray-800 mb-4 text-xl leading-relaxed">Blockchain Technology for Secure Academic Credential Verification</h4>
-                    <p className="text-lg text-gray-500">Viewed 5 hours ago • CITE</p>
+                  <div className="border-b border-slate-200 pb-6">
+                    <h4 className="font-bold text-slate-900 mb-3 leading-relaxed">Blockchain Technology for Secure Academic Credential Verification</h4>
+                    <p className="text-slate-500">Viewed 5 hours ago • CITE</p>
                   </div>
                   <div>
-                    <h4 className="font-bold text-gray-800 mb-4 text-xl leading-relaxed">Impact of Digital Marketing Strategies on SMEs in the Philippines</h4>
-                    <p className="text-lg text-gray-500">Viewed yesterday • CBEAM</p>
+                    <h4 className="font-bold text-slate-900 mb-3 leading-relaxed">Impact of Digital Marketing Strategies on SMEs in the Philippines</h4>
+                    <p className="text-slate-500">Viewed yesterday • CBEAM</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl rounded-3xl">
-              <CardContent className="p-10">
-                <div className="flex items-center justify-between mb-10">
-                  <h3 className="text-3xl font-bold flex items-center text-gray-800">
-                    <div className="w-16 h-16 bg-gradient-to-br from-dlsl-green to-dlsl-green-light rounded-2xl flex items-center justify-center mr-6 shadow-lg">
-                      <Bookmark className="h-8 w-8 text-white" />
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl">
+              <CardContent className="p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-2xl font-bold flex items-center text-slate-900">
+                    <div className="w-12 h-12 bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl flex items-center justify-center mr-4">
+                      <Bookmark className="h-6 w-6 text-white" />
                     </div>
                     Bookmarked Theses
                   </h3>
-                  <Button variant="ghost" size="sm" className="text-dlsl-green hover:bg-dlsl-green/10 rounded-xl text-lg">
+                  <Button variant="ghost" size="sm" className="text-slate-600 hover:bg-slate-100 rounded-xl">
                     View all
                   </Button>
                 </div>
-                <div className="text-center py-20">
-                  <div className="w-32 h-32 bg-gray-50 glass-effect rounded-3xl flex items-center justify-center mx-auto mb-8 border border-gray-200">
-                    <Bookmark className="h-16 w-16 text-white/60" />
+                <div className="text-center py-16">
+                  <div className="w-24 h-24 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <Bookmark className="h-12 w-12 text-slate-400" />
                   </div>
-                  <h4 className="text-3xl font-bold text-gray-800 mb-6">No bookmarks yet</h4>
-                  <p className="text-gray-600/80 mb-10 leading-relaxed text-xl">You haven't saved any theses to your bookmarks</p>
-                  <Button className="bg-gradient-to-r from-dlsl-green to-dlsl-green-dark hover:from-dlsl-green-dark hover:to-dlsl-green text-white px-10 py-6 rounded-2xl text-xl sleek-shadow-xl hover:sleek-shadow-2xl transition-all duration-300 transform hover:scale-105">
+                  <h4 className="text-xl font-bold text-slate-900 mb-4">No bookmarks yet</h4>
+                  <p className="text-slate-600 mb-8">You haven't saved any theses to your bookmarks</p>
+                  <Button className="bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 text-white px-8 py-4 rounded-xl transition-all duration-300">
                     Browse Theses
                   </Button>
                 </div>
@@ -297,41 +337,41 @@ const Dashboard = () => {
           </div>
 
           {/* Colleges Grid */}
-          <div className="animate-slide-up" style={{ animationDelay: '0.5s' }}>
-            <h2 className="text-5xl font-bold text-gray-800 mb-16 text-center tracking-tight">Browse by College</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+          <div>
+            <h2 className="text-3xl font-bold text-slate-900 mb-8 text-center">Browse by College</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {collegeData.map((college) => {
                 const Icon = college.icon;
 
                 return (
                   <Card 
                     key={college.id} 
-                    className="group cursor-pointer hover:shadow-2xl transition-all duration-300 border border-gray-200 bg-white/95 backdrop-blur-sm rounded-3xl transform hover:scale-105 shadow-xl overflow-hidden"
+                    className="group cursor-pointer hover:shadow-xl transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm rounded-2xl transform hover:scale-105 shadow-lg overflow-hidden"
                     onClick={() => navigate(`/college/${college.id}`)}
                   >
-                    <div className={`h-3 bg-gradient-to-r ${college.gradient} rounded-t-3xl`}></div>
-                    <CardContent className="p-10">
-                      <div className="flex items-center mb-10">
-                        <div className={`bg-gray-50 p-8 rounded-3xl border border-gray-200 shadow-lg group-hover:shadow-xl transition-all`}>
-                          <Icon className={`h-10 w-10 text-gray-700`} />
+                    <div className={`h-2 bg-gradient-to-r ${college.gradient}`}></div>
+                    <CardContent className="p-8">
+                      <div className="flex items-center mb-8">
+                        <div className="bg-slate-100 p-6 rounded-2xl shadow-lg group-hover:shadow-xl transition-all">
+                          <Icon className="h-8 w-8 text-slate-700" />
                         </div>
-                        <div className="ml-8 flex-1">
-                          <h3 className="text-3xl font-bold text-gray-800 tracking-tight">{college.name}</h3>
-                          <p className="text-lg text-gray-600 leading-relaxed mt-3 font-medium">{college.fullName}</p>
+                        <div className="ml-6 flex-1">
+                          <h3 className="text-2xl font-bold text-slate-900">{college.name}</h3>
+                          <p className="text-slate-600 leading-relaxed mt-2">{college.fullName}</p>
                         </div>
                       </div>
-                      <p className="text-gray-600 mb-10 leading-relaxed text-xl font-medium">{college.description}</p>
+                      <p className="text-slate-600 mb-8 leading-relaxed">{college.description}</p>
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-6">
-                          <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center border border-gray-200">
-                            <BookOpen className="h-8 w-8 text-gray-700" />
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center">
+                            <BookOpen className="h-6 w-6 text-slate-700" />
                           </div>
-                          <span className="text-xl font-bold text-gray-800 tracking-tight">
+                          <span className="text-lg font-bold text-slate-900">
                             {college.thesesCount}+ Theses
                           </span>
                         </div>
-                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center group-hover:bg-dlsl-green/10 transition-colors border border-gray-200">
-                          <ArrowRight className="h-8 w-8 text-gray-600 group-hover:text-dlsl-green transition-colors" />
+                        <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center group-hover:bg-slate-200 transition-colors">
+                          <ArrowRight className="h-6 w-6 text-slate-600" />
                         </div>
                       </div>
                     </CardContent>
