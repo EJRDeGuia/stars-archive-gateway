@@ -7,6 +7,7 @@ import Footer from '@/components/Footer';
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import CollegeCard from '@/components/CollegeCard';
 const Index = () => {
   const navigate = useNavigate();
   const collegeData = [{
@@ -15,7 +16,11 @@ const Index = () => {
     fullName: 'College of Information Technology and Engineering',
     color: 'red',
     thesesCount: 120,
-    icon: <Code className="h-8 w-8" />,
+    icon: Code,
+    bgColor: 'bg-red-500',
+    bgColorLight: 'bg-red-50',
+    textColor: 'text-red-600',
+    borderColor: 'border-red-200',
     description: 'Advancing technology through innovative research'
   }, {
     id: '2',
@@ -23,7 +28,11 @@ const Index = () => {
     fullName: 'College of Business, Economics, Accountancy, and Management',
     color: 'yellow',
     thesesCount: 145,
-    icon: <Calculator className="h-8 w-8" />,
+    icon: Calculator,
+    bgColor: 'bg-yellow-500',
+    bgColorLight: 'bg-yellow-50',
+    textColor: 'text-yellow-600',
+    borderColor: 'border-yellow-200',
     description: 'Driving business excellence and economic growth'
   }, {
     id: '3',
@@ -31,7 +40,11 @@ const Index = () => {
     fullName: 'College of Education, Arts, and Sciences',
     color: 'blue',
     thesesCount: 98,
-    icon: <Microscope className="h-8 w-8" />,
+    icon: Microscope,
+    bgColor: 'bg-blue-500',
+    bgColorLight: 'bg-blue-50',
+    textColor: 'text-blue-600',
+    borderColor: 'border-blue-200',
     description: 'Exploring knowledge across diverse disciplines'
   }, {
     id: '4',
@@ -39,7 +52,11 @@ const Index = () => {
     fullName: 'College of Nursing',
     color: 'gray',
     thesesCount: 76,
-    icon: <HeartPulse className="h-8 w-8" />,
+    icon: HeartPulse,
+    bgColor: 'bg-gray-500',
+    bgColorLight: 'bg-gray-50',
+    textColor: 'text-gray-600',
+    borderColor: 'border-gray-200',
     description: 'Advancing healthcare through compassionate research'
   }, {
     id: '5',
@@ -47,7 +64,11 @@ const Index = () => {
     fullName: 'College of International Hospitality and Tourism Management',
     color: 'green',
     thesesCount: 110,
-    icon: <UtensilsCrossed className="h-8 w-8" />,
+    icon: UtensilsCrossed,
+    bgColor: 'bg-green-500',
+    bgColorLight: 'bg-green-50',
+    textColor: 'text-green-600',
+    borderColor: 'border-green-200',
     description: 'Shaping the future of hospitality and tourism'
   }];
   const getCollegeColors = (color: string) => {
@@ -320,35 +341,30 @@ const Index = () => {
               </TabsList>
               
               <TabsContent value="colleges">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {collegeData.map(college => {
-                  const colors = getCollegeColors(college.color);
-                  return <Card key={college.name} className="group cursor-pointer hover:shadow-xl transition-all duration-300 border border-gray-200 bg-white/90 backdrop-blur-sm" onClick={() => navigate(`/college/${college.id}`)}>
-                        <div className={`h-2 bg-gradient-to-r ${colors.gradient}`}></div>
-                        <CardContent className="p-8">
-                          <div className="text-center">
-                            <div className={`w-24 h-24 ${colors.bg} rounded-3xl flex items-center justify-center mx-auto mb-6 border ${colors.border} group-hover:scale-105 transition-transform`}>
-                              {college.icon}
-                            </div>
-                            <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-dlsl-green transition-colors">
-                              {college.name}
-                            </h3>
-                            <p className="text-gray-600 mb-6 leading-relaxed text-lg">
-                              {college.fullName}
-                            </p>
-                            <p className="text-gray-600 mb-8 leading-relaxed">
-                              {college.description}
-                            </p>
-                            <div className="flex items-center justify-center gap-6 text-lg">
-                              <div className="flex items-center gap-2 text-dlsl-green">
-                                <Book className="h-5 w-5" />
-                                <span className="font-medium">{college.thesesCount}+ Theses</span>
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>;
-                })}
+                <div className="max-w-5xl mx-auto">
+                  {/* Top row: CITE, CBEAM, CEAS */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    {collegeData.slice(0, 3).map(college => (
+                      <CollegeCard
+                        key={college.id}
+                        college={college}
+                        onClick={() => navigate(`/college/${college.id}`)}
+                        size="large"
+                      />
+                    ))}
+                  </div>
+                  
+                  {/* Bottom row: CON and CIHTM centered */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+                    {collegeData.slice(3, 5).map(college => (
+                      <CollegeCard
+                        key={college.id}
+                        college={college}
+                        onClick={() => navigate(`/college/${college.id}`)}
+                        size="large"
+                      />
+                    ))}
+                  </div>
                 </div>
               </TabsContent>
               

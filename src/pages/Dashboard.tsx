@@ -237,47 +237,29 @@ const Dashboard = () => {
             </div>
             
             {/* Custom grid layout for college cards */}
-            <div className="max-w-6xl mx-auto">
+            <div className="max-w-5xl mx-auto">
               {/* Top row: CITE, CBEAM, CEAS */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-                <CollegeCard
-                  key={colleges[0].id}
-                  college={colleges[0]}
-                  onClick={() => handleCollegeClick(colleges[0].id)}
-                  size="large"
-                />
-                <CollegeCard
-                  key={colleges[1].id}
-                  college={colleges[1]}
-                  onClick={() => handleCollegeClick(colleges[1].id)}
-                  size="large"
-                />
-                <CollegeCard
-                  key={colleges[2].id}
-                  college={colleges[2]}
-                  onClick={() => handleCollegeClick(colleges[2].id)}
-                  size="large"
-                />
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                {colleges.slice(0, 3).map((college) => (
+                  <CollegeCard
+                    key={college.id}
+                    college={college}
+                    onClick={() => handleCollegeClick(college.id)}
+                    size="large"
+                  />
+                ))}
               </div>
               
-              {/* Bottom row: CON and CIHTM positioned in middle */}
-              <div className="grid grid-cols-1 lg:grid-cols-6 gap-8">
-                <div className="lg:col-start-2 lg:col-span-2">
+              {/* Bottom row: CON and CIHTM centered */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-3xl mx-auto">
+                {colleges.slice(3, 5).map((college) => (
                   <CollegeCard
-                    key={colleges[3].id}
-                    college={colleges[3]}
-                    onClick={() => handleCollegeClick(colleges[3].id)}
+                    key={college.id}
+                    college={college}
+                    onClick={() => handleCollegeClick(college.id)}
                     size="large"
                   />
-                </div>
-                <div className="lg:col-start-4 lg:col-span-2">
-                  <CollegeCard
-                    key={colleges[4].id}
-                    college={colleges[4]}
-                    onClick={() => handleCollegeClick(colleges[4].id)}
-                    size="large"
-                  />
-                </div>
+                ))}
               </div>
             </div>
           </div>
