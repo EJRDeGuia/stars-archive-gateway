@@ -26,13 +26,21 @@ const CollegeCard = ({ college, onClick, size = 'default' }: CollegeCardProps) =
   
   return (
     <Card 
-      className="group hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-0 overflow-hidden"
+      className="group hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-0 overflow-hidden relative"
       onClick={onClick}
     >
-      {/* Colored top bar */}
-      <div className={`h-3 ${college.bgColor}`}></div>
+      {/* Background Image */}
+      {college.image && (
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10"
+          style={{ backgroundImage: `url(${college.image})` }}
+        />
+      )}
       
-      <CardContent className={`${isLarge ? 'p-8' : 'p-6'} text-center`}>
+      {/* Colored top bar */}
+      <div className={`h-3 ${college.bgColor} relative z-10`}></div>
+      
+      <CardContent className={`${isLarge ? 'p-8' : 'p-6'} text-center relative z-10`}>
         {/* Icon with colored background */}
         <div className={`${isLarge ? 'w-20 h-20 mb-6' : 'w-16 h-16 mb-4'} ${college.bgColorLight} rounded-2xl flex items-center justify-center mx-auto`}>
           <IconComponent className={`${isLarge ? 'w-10 h-10' : 'w-8 h-8'} ${college.textColor}`} />

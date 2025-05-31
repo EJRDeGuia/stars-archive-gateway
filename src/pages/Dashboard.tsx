@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -22,7 +23,8 @@ import {
   ExternalLink,
   Calendar,
   Bell,
-  Upload
+  Upload,
+  AlertCircle
 } from 'lucide-react';
 import { colleges, theses } from '@/data/mockData';
 import AdminDashboard from './AdminDashboard';
@@ -108,6 +110,27 @@ const Dashboard = () => {
               </p>
             </div>
 
+            {/* Guest Researcher Notice */}
+            {user?.role === 'guest_researcher' && (
+              <div className="max-w-4xl mx-auto mb-12">
+                <Card className="bg-blue-50 border-blue-200">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <AlertCircle className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-blue-900 mb-2">Access to Research</h3>
+                        <p className="text-blue-700">
+                          If you are a guest researcher, you need to contact the LRC to access the research materials.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
             {/* ChatGPT-style Search */}
             <div className="max-w-4xl mx-auto mb-12">
               <div className="relative">
@@ -166,65 +189,67 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Quick Actions */}
-          <div className="mb-16">
-            <h2 className="text-2xl font-bold text-gray-900 mb-8">Quick Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card 
-                className="hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-gray-200"
-                onClick={handleLibraryClick}
-              >
-                <CardContent className="p-8 text-center">
-                  <div className="w-16 h-16 bg-dlsl-green/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <Bookmark className="w-8 h-8 text-dlsl-green" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">My Library</h3>
-                  <p className="text-gray-600">Access your saved research</p>
-                </CardContent>
-              </Card>
-
-              <Card 
-                className="hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-gray-200"
-                onClick={handleExploreClick}
-              >
-                <CardContent className="p-8 text-center">
-                  <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <Search className="w-8 h-8 text-blue-600" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">Explore</h3>
-                  <p className="text-gray-600">Discover new research</p>
-                </CardContent>
-              </Card>
-
-              <Card 
-                className="hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-gray-200"
-                onClick={handleCollectionsClick}
-              >
-                <CardContent className="p-8 text-center">
-                  <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <BookOpen className="w-8 h-8 text-purple-600" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">Collections</h3>
-                  <p className="text-gray-600">Browse curated content</p>
-                </CardContent>
-              </Card>
-
-              {(user?.role === 'archivist' || user?.role === 'admin') && (
+          {/* Quick Actions - Only show for non-guest researchers */}
+          {user?.role !== 'guest_researcher' && (
+            <div className="mb-16">
+              <h2 className="text-2xl font-bold text-gray-900 mb-8">Quick Actions</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <Card 
                   className="hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-gray-200"
-                  onClick={handleUploadClick}
+                  onClick={handleLibraryClick}
                 >
                   <CardContent className="p-8 text-center">
-                    <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                      <Upload className="w-8 h-8 text-green-600" />
+                    <div className="w-16 h-16 bg-dlsl-green/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                      <Bookmark className="w-8 h-8 text-dlsl-green" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-3">Upload</h3>
-                    <p className="text-gray-600">Add new thesis</p>
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">My Library</h3>
+                    <p className="text-gray-600">Access your saved research</p>
                   </CardContent>
                 </Card>
-              )}
+
+                <Card 
+                  className="hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-gray-200"
+                  onClick={handleExploreClick}
+                >
+                  <CardContent className="p-8 text-center">
+                    <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                      <Search className="w-8 h-8 text-blue-600" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">Explore</h3>
+                    <p className="text-gray-600">Discover new research</p>
+                  </CardContent>
+                </Card>
+
+                <Card 
+                  className="hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-gray-200"
+                  onClick={handleCollectionsClick}
+                >
+                  <CardContent className="p-8 text-center">
+                    <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                      <BookOpen className="w-8 h-8 text-purple-600" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">Collections</h3>
+                    <p className="text-gray-600">Browse curated content</p>
+                  </CardContent>
+                </Card>
+
+                {(user?.role === 'archivist' || user?.role === 'admin') && (
+                  <Card 
+                    className="hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-gray-200"
+                    onClick={handleUploadClick}
+                  >
+                    <CardContent className="p-8 text-center">
+                      <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <Upload className="w-8 h-8 text-green-600" />
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-3">Upload</h3>
+                      <p className="text-gray-600">Add new thesis</p>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Colleges Grid */}
           <div className="mb-16">
