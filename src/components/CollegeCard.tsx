@@ -24,15 +24,43 @@ const CollegeCard = ({ college, onClick, size = 'default' }: CollegeCardProps) =
   const isLarge = size === 'large';
   const IconComponent = college.icon;
   
+  // Map college names to their respective uploaded images
+  const getCollegeBackgroundImage = (collegeName: string) => {
+    switch (collegeName.toLowerCase()) {
+      case 'cite':
+        return '/lovable-uploads/27c09e44-0b10-429b-bc06-05f3a5124d36.png';
+      case 'cbeam':
+        return '/lovable-uploads/1b0681ef-72c8-4649-9b12-47e3d1fc6239.png';
+      case 'ceas':
+        return '/lovable-uploads/35ad8e3f-40aa-4c24-bc92-5393417d2379.png';
+      case 'con':
+        return '/lovable-uploads/ba5d37d3-1cc2-4915-93bc-1f698e36177b.png';
+      case 'cihtm':
+        return '/lovable-uploads/442339ca-fa3b-43f5-bb23-46791d131f12.png';
+      default:
+        return '';
+    }
+  };
+
+  const backgroundImage = getCollegeBackgroundImage(college.name);
+  
   return (
     <Card 
-      className="group hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-0 overflow-hidden"
+      className="group hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-0 overflow-hidden relative"
       onClick={onClick}
     >
-      {/* Colored top bar */}
-      <div className={`h-3 ${college.bgColor}`}></div>
+      {/* Background image */}
+      {backgroundImage && (
+        <div 
+          className="absolute inset-0 opacity-5 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${backgroundImage})` }}
+        ></div>
+      )}
       
-      <CardContent className={`${isLarge ? 'p-8' : 'p-6'} text-center`}>
+      {/* Colored top bar */}
+      <div className={`h-3 ${college.bgColor} relative z-10`}></div>
+      
+      <CardContent className={`${isLarge ? 'p-8' : 'p-6'} text-center relative z-10`}>
         {/* Icon with colored background */}
         <div className={`${isLarge ? 'w-20 h-20 mb-6' : 'w-16 h-16 mb-4'} ${college.bgColorLight} rounded-2xl flex items-center justify-center mx-auto`}>
           <IconComponent className={`${isLarge ? 'w-10 h-10' : 'w-8 h-8'} ${college.textColor}`} />

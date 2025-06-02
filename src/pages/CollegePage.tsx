@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { colleges, theses } from '@/data/mockData';
 import Header from '@/components/Header';
@@ -34,6 +35,24 @@ const CollegePage = () => {
     return <div>College not found</div>;
   }
 
+  // Map college names to their respective uploaded images
+  const getCollegeBackgroundImage = (collegeName: string) => {
+    switch (collegeName.toLowerCase()) {
+      case 'cite':
+        return '/lovable-uploads/27c09e44-0b10-429b-bc06-05f3a5124d36.png';
+      case 'cbeam':
+        return '/lovable-uploads/1b0681ef-72c8-4649-9b12-47e3d1fc6239.png';
+      case 'ceas':
+        return '/lovable-uploads/35ad8e3f-40aa-4c24-bc92-5393417d2379.png';
+      case 'con':
+        return '/lovable-uploads/ba5d37d3-1cc2-4915-93bc-1f698e36177b.png';
+      case 'cihtm':
+        return '/lovable-uploads/442339ca-fa3b-43f5-bb23-46791d131f12.png';
+      default:
+        return '';
+    }
+  };
+
   const years = [...new Set(collegeTheses.map(thesis => Number(thesis.year)))].sort((a, b) => b - a);
   
   const filteredTheses = collegeTheses.filter(thesis => {
@@ -44,13 +63,15 @@ const CollegePage = () => {
     return matchesSearch && matchesYear;
   });
 
+  const backgroundImage = getCollegeBackgroundImage(college.name);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
-          {/* Header */}
+          {/* Header with College Background */}
           <div className="mb-12">
             <Button 
               onClick={() => navigate('/dashboard')} 
@@ -60,55 +81,67 @@ const CollegePage = () => {
               <ArrowLeft className="mr-2 h-5 w-5" /> Back to Dashboard
             </Button>
             
-            <div className="text-center">
-              <div className={`inline-flex items-center justify-center w-20 h-20 ${college.bgColorLight} rounded-2xl mb-8`}>
-                <college.icon className={`w-10 h-10 ${college.textColor}`} />
-              </div>
-              <h1 className="text-5xl font-bold text-gray-900 mb-6">{college.name}</h1>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-4">
-                {college.fullName}
-              </p>
-              <div className="flex items-center justify-center gap-8 text-gray-600">
-                <div className="flex items-center gap-2">
-                  <college.icon className={`h-5 w-5 ${college.textColor}`} />
-                  <span className="font-medium">{collegeTheses.length} Theses</span>
+            <div 
+              className="text-center relative bg-cover bg-center bg-no-repeat rounded-3xl overflow-hidden"
+              style={{ 
+                backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
+                minHeight: '300px'
+              }}
+            >
+              {/* Overlay for better text readability */}
+              <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/30"></div>
+              
+              <div className="relative z-10 py-16">
+                <div className={`inline-flex items-center justify-center w-20 h-20 ${college.bgColorLight} rounded-2xl mb-8 shadow-xl`}>
+                  <college.icon className={`w-10 h-10 ${college.textColor}`} />
                 </div>
-                <div className="flex items-center gap-2">
-                  <TrendingUp className={`h-5 w-5 ${college.textColor}`} />
-                  <span className="font-medium">Active Research</span>
+                <h1 className="text-5xl font-bold text-white mb-6 drop-shadow-lg">{college.name}</h1>
+                <p className="text-xl text-white/95 max-w-3xl mx-auto leading-relaxed mb-4 drop-shadow-md">
+                  {college.fullName}
+                </p>
+                <div className="flex items-center justify-center gap-8 text-white/90">
+                  <div className="flex items-center gap-2">
+                    <college.icon className={`h-5 w-5`} />
+                    <span className="font-medium">{collegeTheses.length} Theses</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className={`h-5 w-5`} />
+                    <span className="font-medium">Active Research</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Search and Filter */}
+          {/* Search and Filter - ChatGPT Style */}
           <div className="mb-12">
-            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm">
-              <div className="p-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="md:col-span-2">
-                    <div className="relative">
-                      <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                      <Input
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search theses by title, author, or keywords..."
-                        className="pl-12 h-12 bg-gray-50 border-gray-300 focus:border-primary rounded-xl"
-                      />
-                    </div>
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-white rounded-3xl shadow-lg border border-gray-200 p-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-8 h-8 bg-dlsl-green rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Search className="w-4 h-4 text-white" />
                   </div>
-                  <div>
-                    <select
-                      value={selectedYear}
-                      onChange={(e) => setSelectedYear(e.target.value)}
-                      className="w-full h-12 bg-gray-50 border border-gray-300 rounded-xl px-4 focus:border-primary focus:outline-none"
-                    >
-                      <option value="all">All Years</option>
-                      {years.map(year => (
-                        <option key={year} value={year.toString()}>{year}</option>
-                      ))}
-                    </select>
+                  <div className="flex-1">
+                    <Input
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search theses by title, author, or keywords..."
+                      className="border-0 text-lg placeholder-gray-400 focus:ring-0 focus:border-0 h-auto py-3 px-0 bg-transparent"
+                    />
                   </div>
+                </div>
+                <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
+                  <Filter className="h-5 w-5 text-gray-400" />
+                  <select
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(e.target.value)}
+                    className="flex-1 h-10 bg-gray-50 border border-gray-300 rounded-xl px-4 focus:border-dlsl-green focus:outline-none"
+                  >
+                    <option value="all">All Years</option>
+                    {years.map(year => (
+                      <option key={year} value={year.toString()}>{year}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>
@@ -127,86 +160,74 @@ const CollegePage = () => {
             </div>
           </div>
 
-          {/* Thesis List */}
+          {/* Thesis List - No individual thesis images */}
           <div className="space-y-6">
             {filteredTheses.map((thesis) => (
-              <div 
+              <Card 
                 key={thesis.id} 
-                className="bg-white border border-gray-200 rounded-2xl hover:shadow-lg transition-all duration-300 cursor-pointer group shadow-sm overflow-hidden"
+                className="bg-white border border-gray-200 rounded-2xl hover:shadow-lg transition-all duration-300 cursor-pointer group shadow-sm"
                 onClick={() => navigate(`/thesis/${thesis.id}`)}
               >
-                <div className="flex">
-                  {/* College Image */}
-                  <div className="w-48 h-48 flex-shrink-0">
-                    <img 
-                      src={college.image} 
-                      alt={college.name}
-                      className="w-full h-full object-cover"
-                    />
+                <CardContent className="p-8">
+                  <div className="flex items-start justify-between mb-6">
+                    <div className="flex-1">
+                      <h3 className={`text-2xl font-bold text-gray-900 mb-4 group-hover:${college.textColor} transition-colors leading-tight`}>
+                        {thesis.title}
+                      </h3>
+                      <div className="flex items-center gap-6 text-gray-600 mb-4">
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4" />
+                          <span className="font-medium">{thesis.author}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4" />
+                          <span>{thesis.year}</span>
+                        </div>
+                        <Badge variant="secondary" className={`${college.bgColorLight} ${college.textColor} border-0`}>
+                          {thesis.college}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2 text-gray-500">
+                        <Eye className="h-4 w-4" />
+                        <span className="text-sm">234</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-500">
+                        <Heart className="h-4 w-4" />
+                        <span className="text-sm">12</span>
+                      </div>
+                      <ExternalLink className={`h-5 w-5 text-gray-400 group-hover:${college.textColor} transition-colors`} />
+                    </div>
                   </div>
                   
-                  {/* Content */}
-                  <div className="flex-1 p-8">
-                    <div className="flex items-start justify-between mb-6">
-                      <div className="flex-1">
-                        <h3 className={`text-2xl font-bold text-gray-900 mb-4 group-hover:${college.textColor} transition-colors leading-tight`}>
-                          {thesis.title}
-                        </h3>
-                        <div className="flex items-center gap-6 text-gray-600 mb-4">
-                          <div className="flex items-center gap-2">
-                            <User className="h-4 w-4" />
-                            <span className="font-medium">{thesis.author}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4" />
-                            <span>{thesis.year}</span>
-                          </div>
-                          <Badge variant="secondary" className={`${college.bgColorLight} ${college.textColor} border-0`}>
-                            {thesis.college}
-                          </Badge>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 text-gray-500">
-                          <Eye className="h-4 w-4" />
-                          <span className="text-sm">234</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-500">
-                          <Heart className="h-4 w-4" />
-                          <span className="text-sm">12</span>
-                        </div>
-                        <ExternalLink className={`h-5 w-5 text-gray-400 group-hover:${college.textColor} transition-colors`} />
-                      </div>
+                  <p className="text-gray-700 leading-relaxed mb-6">
+                    {thesis.abstract}
+                  </p>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap gap-2">
+                      {thesis.keywords.map((keyword, index) => (
+                        <Badge key={index} variant="outline" className={`${college.borderColor} ${college.textColor}`}>
+                          {keyword}
+                        </Badge>
+                      ))}
                     </div>
-                    
-                    <p className="text-gray-700 leading-relaxed mb-6">
-                      {thesis.abstract}
-                    </p>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-wrap gap-2">
-                        {thesis.keywords.map((keyword, index) => (
-                          <Badge key={index} variant="outline" className={`${college.borderColor} ${college.textColor}`}>
-                            {keyword}
-                          </Badge>
-                        ))}
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          console.log('Download thesis:', thesis.id);
-                        }}
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        Download
-                      </Button>
-                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        console.log('Download thesis:', thesis.id);
+                      }}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download
+                    </Button>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
 

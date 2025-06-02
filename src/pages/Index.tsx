@@ -463,8 +463,8 @@ const Index = () => {
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className="bg-gradient-to-r from-dlsl-green/95 to-dlsl-green-dark/95 backdrop-blur-xl text-white py-16 relative z-20 border-t border-white/10">
+        {/* CTA Section - Made transparent to show background */}
+        <section className="bg-gradient-to-r from-dlsl-green/80 to-dlsl-green-dark/80 backdrop-blur-xl text-white py-16 relative z-20 border-t border-white/10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <div className="space-y-6">
               <h2 className="text-4xl font-bold drop-shadow-lg">Ready to start exploring?</h2>
