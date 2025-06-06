@@ -96,7 +96,7 @@ const Collections = () => {
                   key={college.id}
                   college={college}
                   onClick={() => navigate(`/college/${college.id}`)}
-                  size="large"
+                  size="default"
                 />
               ))}
             </div>
