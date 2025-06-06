@@ -18,7 +18,8 @@ import {
   ExternalLink,
   TrendingUp,
   Eye,
-  Heart
+  Heart,
+  Sparkles
 } from 'lucide-react';
 import { useState } from 'react';
 
