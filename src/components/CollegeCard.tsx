@@ -24,39 +24,11 @@ const CollegeCard = ({ college, onClick, size = 'default' }: CollegeCardProps) =
   const isLarge = size === 'large';
   const IconComponent = college.icon;
   
-  // Map college names to their respective uploaded images
-  const getCollegeBackgroundImage = (collegeName: string) => {
-    switch (collegeName.toLowerCase()) {
-      case 'cite':
-        return '/lovable-uploads/27c09e44-0b10-429b-bc06-05f3a5124d36.png';
-      case 'cbeam':
-        return '/lovable-uploads/1b0681ef-72c8-4649-9b12-47e3d1fc6239.png';
-      case 'ceas':
-        return '/lovable-uploads/35ad8e3f-40aa-4c24-bc92-5393417d2379.png';
-      case 'con':
-        return '/lovable-uploads/ba5d37d3-1cc2-4915-93bc-1f698e36177b.png';
-      case 'cihtm':
-        return '/lovable-uploads/442339ca-fa3b-43f5-bb23-46791d131f12.png';
-      default:
-        return '';
-    }
-  };
-
-  const backgroundImage = getCollegeBackgroundImage(college.name);
-  
   return (
     <Card 
       className="group hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-0 overflow-hidden relative"
       onClick={onClick}
     >
-      {/* Background image */}
-      {backgroundImage && (
-        <div 
-          className="absolute inset-0 opacity-5 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${backgroundImage})` }}
-        ></div>
-      )}
-      
       {/* Colored top bar */}
       <div className={`h-3 ${college.bgColor} relative z-10`}></div>
       

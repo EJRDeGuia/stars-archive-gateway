@@ -89,7 +89,7 @@ const CollegePage = () => {
               }}
             >
               {/* Overlay for better text readability */}
-              <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/30"></div>
+              <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40"></div>
               
               <div className="relative z-10 py-16">
                 <div className={`inline-flex items-center justify-center w-20 h-20 ${college.bgColorLight} rounded-2xl mb-8 shadow-xl`}>
@@ -125,7 +125,7 @@ const CollegePage = () => {
                     <Input
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search theses by title, author, or keywords..."
+                      placeholder="What would you like to research in this college? Ask me anything about the theses..."
                       className="border-0 text-lg placeholder-gray-400 focus:ring-0 focus:border-0 h-auto py-3 px-0 bg-transparent"
                     />
                   </div>
@@ -135,7 +135,7 @@ const CollegePage = () => {
                   <select
                     value={selectedYear}
                     onChange={(e) => setSelectedYear(e.target.value)}
-                    className="flex-1 h-10 bg-gray-50 border border-gray-300 rounded-xl px-4 focus:border-dlsl-green focus:outline-none"
+                    className="flex-1 h-12 bg-gray-50 border border-gray-300 rounded-xl px-4 focus:border-dlsl-green focus:outline-none text-base"
                   >
                     <option value="all">All Years</option>
                     {years.map(year => (
@@ -143,6 +143,11 @@ const CollegePage = () => {
                     ))}
                   </select>
                 </div>
+              </div>
+              
+              <div className="flex items-center justify-center gap-2 mt-4 text-sm text-gray-500">
+                <span>Powered by semantic search</span>
+                <Sparkles className="w-4 h-4 text-dlsl-green" />
               </div>
             </div>
           </div>
