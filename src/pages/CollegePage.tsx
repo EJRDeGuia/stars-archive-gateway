@@ -19,7 +19,12 @@ import {
   TrendingUp,
   Eye,
   Heart,
-  Sparkles
+  Sparkles,
+  Code,
+  Calculator,
+  Microscope,
+  HeartPulse,
+  UtensilsCrossed
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -36,7 +41,7 @@ const CollegePage = () => {
     return <div>College not found</div>;
   }
 
-  // Map college names to their respective uploaded images
+  // Map college names to their respective uploaded images and icons
   const getCollegeBackgroundImage = (collegeName: string) => {
     switch (collegeName.toLowerCase()) {
       case 'cite':
@@ -54,6 +59,40 @@ const CollegePage = () => {
     }
   };
 
+  const getCollegeIcon = (collegeName: string) => {
+    switch (collegeName.toLowerCase()) {
+      case 'cite':
+        return Code;
+      case 'cbeam':
+        return Calculator;
+      case 'ceas':
+        return Microscope;
+      case 'con':
+        return HeartPulse;
+      case 'cihtm':
+        return UtensilsCrossed;
+      default:
+        return Code;
+    }
+  };
+
+  const getCollegeGradient = (collegeName: string) => {
+    switch (collegeName.toLowerCase()) {
+      case 'cite':
+        return 'from-red-900/60 via-red-700/40 to-red-500/60';
+      case 'cbeam':
+        return 'from-yellow-900/60 via-yellow-700/40 to-yellow-500/60';
+      case 'ceas':
+        return 'from-blue-900/60 via-blue-700/40 to-blue-500/60';
+      case 'con':
+        return 'from-gray-900/60 via-gray-700/40 to-gray-500/60';
+      case 'cihtm':
+        return 'from-green-900/60 via-green-700/40 to-green-500/60';
+      default:
+        return 'from-gray-900/60 via-gray-700/40 to-gray-500/60';
+    }
+  };
+
   const years = [...new Set(collegeTheses.map(thesis => Number(thesis.year)))].sort((a, b) => b - a);
   
   const filteredTheses = collegeTheses.filter(thesis => {
@@ -65,6 +104,8 @@ const CollegePage = () => {
   });
 
   const backgroundImage = getCollegeBackgroundImage(college.name);
+  const CollegeIcon = getCollegeIcon(college.name);
+  const gradientOverlay = getCollegeGradient(college.name);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -83,18 +124,18 @@ const CollegePage = () => {
             </Button>
             
             <div 
-              className="text-center relative bg-cover bg-center bg-no-repeat rounded-3xl overflow-hidden"
+              className="text-center relative bg-cover bg-right bg-no-repeat rounded-3xl overflow-hidden"
               style={{ 
                 backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
                 minHeight: '300px'
               }}
             >
-              {/* Overlay for better text readability */}
-              <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40"></div>
+              {/* Gradient overlay for better text readability and color matching */}
+              <div className={`absolute inset-0 bg-gradient-to-r ${gradientOverlay}`}></div>
               
               <div className="relative z-10 py-16">
                 <div className={`inline-flex items-center justify-center w-20 h-20 ${college.bgColorLight} rounded-2xl mb-8 shadow-xl`}>
-                  <college.icon className={`w-10 h-10 ${college.textColor}`} />
+                  <CollegeIcon className={`w-10 h-10 ${college.textColor}`} />
                 </div>
                 <h1 className="text-5xl font-bold text-white mb-6 drop-shadow-lg">{college.name}</h1>
                 <p className="text-xl text-white/95 max-w-3xl mx-auto leading-relaxed mb-4 drop-shadow-md">
@@ -102,7 +143,7 @@ const CollegePage = () => {
                 </p>
                 <div className="flex items-center justify-center gap-8 text-white/90">
                   <div className="flex items-center gap-2">
-                    <college.icon className={`h-5 w-5`} />
+                    <CollegeIcon className={`h-5 w-5`} />
                     <span className="font-medium">{collegeTheses.length} Theses</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -114,11 +155,11 @@ const CollegePage = () => {
             </div>
           </div>
 
-          {/* Search and Filter - ChatGPT Style */}
+          {/* Search and Filter - Dashboard Style */}
           <div className="mb-12">
             <div className="max-w-4xl mx-auto">
-              <div className="bg-white rounded-3xl shadow-lg border border-gray-200 p-6">
-                <div className="flex items-center gap-4 mb-4">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-1">
+                <div className="flex items-center gap-4 p-4">
                   <div className="w-8 h-8 bg-dlsl-green rounded-lg flex items-center justify-center flex-shrink-0">
                     <Search className="w-4 h-4 text-white" />
                   </div>
@@ -127,11 +168,11 @@ const CollegePage = () => {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="What would you like to research in this college? Ask me anything about the theses..."
-                      className="border-0 text-lg placeholder-gray-400 focus:ring-0 focus:border-0 h-auto py-3 px-0 bg-transparent"
+                      className="border-0 text-lg placeholder-gray-400 focus:ring-0 focus:border-0 h-auto py-2 px-0 bg-transparent"
                     />
                   </div>
                 </div>
-                <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
+                <div className="flex items-center gap-4 px-4 pb-4 pt-2 border-t border-gray-100">
                   <Filter className="h-5 w-5 text-gray-400" />
                   <select
                     value={selectedYear}
