@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -42,7 +41,7 @@ const Dashboard = () => {
     return <AdminDashboard />;
   }
 
-  const isGuestResearcher = user?.role === 'guest';
+  const isGuestResearcher = user?.role === 'guest_researcher';
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) {
