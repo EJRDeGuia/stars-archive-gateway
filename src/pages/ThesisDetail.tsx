@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   ArrowLeft, 
-  Download, 
   Bookmark, 
   User, 
   Calendar, 
@@ -185,17 +184,6 @@ const ThesisDetail = () => {
                 <div className="p-6">
                   <h3 className="text-xl font-bold text-gray-900 mb-6">Actions</h3>
                   <div className="space-y-4">
-                    {canViewPDF ? (
-                      <Button className="w-full bg-dlsl-green hover:bg-dlsl-green/90 text-white rounded-xl py-3">
-                        <Download className="mr-2 h-5 w-5" />
-                        Download PDF
-                      </Button>
-                    ) : (
-                      <Button disabled className="w-full bg-gray-300 text-gray-500 rounded-xl py-3 cursor-not-allowed">
-                        <Lock className="mr-2 h-5 w-5" />
-                        Access Restricted
-                      </Button>
-                    )}
                     <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl py-3">
                       <Bookmark className="mr-2 h-5 w-5" />
                       Save to Library

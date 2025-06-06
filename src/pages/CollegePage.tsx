@@ -14,7 +14,6 @@ import {
   User, 
   Search,
   Filter,
-  Download,
   ExternalLink,
   TrendingUp,
   Eye,
@@ -93,6 +92,23 @@ const CollegePage = () => {
     }
   };
 
+  const getIconColor = (collegeName: string) => {
+    switch (collegeName.toLowerCase()) {
+      case 'cite':
+        return 'text-red-600';
+      case 'cbeam':
+        return 'text-yellow-600';
+      case 'ceas':
+        return 'text-blue-600';
+      case 'con':
+        return 'text-gray-600';
+      case 'cihtm':
+        return 'text-green-600';
+      default:
+        return 'text-gray-600';
+    }
+  };
+
   const years = [...new Set(collegeTheses.map(thesis => Number(thesis.year)))].sort((a, b) => b - a);
   
   const filteredTheses = collegeTheses.filter(thesis => {
@@ -106,6 +122,7 @@ const CollegePage = () => {
   const backgroundImage = getCollegeBackgroundImage(college.name);
   const CollegeIcon = getCollegeIcon(college.name);
   const gradientOverlay = getCollegeGradient(college.name);
+  const iconColor = getIconColor(college.name);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -127,6 +144,7 @@ const CollegePage = () => {
               className="text-center relative bg-cover bg-right bg-no-repeat rounded-3xl overflow-hidden"
               style={{ 
                 backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
+                backgroundPosition: 'center right',
                 minHeight: '300px'
               }}
             >
@@ -134,8 +152,8 @@ const CollegePage = () => {
               <div className={`absolute inset-0 bg-gradient-to-r ${gradientOverlay}`}></div>
               
               <div className="relative z-10 py-16">
-                <div className={`inline-flex items-center justify-center w-20 h-20 ${college.bgColorLight} rounded-2xl mb-8 shadow-xl`}>
-                  <CollegeIcon className={`w-10 h-10 ${college.textColor}`} />
+                <div className={`inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl mb-8 shadow-xl border border-white/30`}>
+                  <CollegeIcon className={`w-10 h-10 ${iconColor}`} />
                 </div>
                 <h1 className="text-5xl font-bold text-white mb-6 drop-shadow-lg">{college.name}</h1>
                 <p className="text-xl text-white/95 max-w-3xl mx-auto leading-relaxed mb-4 drop-shadow-md">
@@ -207,7 +225,7 @@ const CollegePage = () => {
             </div>
           </div>
 
-          {/* Thesis List - No individual thesis images */}
+          {/* Thesis List - No individual thesis images and no download button */}
           <div className="space-y-6">
             {filteredTheses.map((thesis) => (
               <Card 
@@ -260,18 +278,6 @@ const CollegePage = () => {
                         </Badge>
                       ))}
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        console.log('Download thesis:', thesis.id);
-                      }}
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Download
-                    </Button>
                   </div>
                 </CardContent>
               </Card>
