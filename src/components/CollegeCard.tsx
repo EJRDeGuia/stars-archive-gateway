@@ -26,37 +26,37 @@ const CollegeCard = ({ college, onClick, size = 'default' }: CollegeCardProps) =
   
   return (
     <Card 
-      className="group hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-0 overflow-hidden relative"
+      className="group hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-0 overflow-hidden rounded-2xl"
       onClick={onClick}
     >
       {/* Colored top bar */}
-      <div className={`h-3 ${college.bgColor} relative z-10`}></div>
+      <div className={`h-4 ${college.bgColor} relative z-10`}></div>
       
-      <CardContent className={`${isLarge ? 'p-8' : 'p-6'} text-center relative z-10`}>
+      <CardContent className="p-8 text-center relative z-10">
         {/* Icon with colored background */}
-        <div className={`${isLarge ? 'w-20 h-20 mb-6' : 'w-16 h-16 mb-4'} ${college.bgColorLight} rounded-2xl flex items-center justify-center mx-auto`}>
-          <IconComponent className={`${isLarge ? 'w-10 h-10' : 'w-8 h-8'} ${college.textColor}`} />
+        <div className={`w-16 h-16 ${college.bgColorLight} rounded-2xl flex items-center justify-center mx-auto mb-6`}>
+          <IconComponent className={`w-8 h-8 ${college.textColor}`} />
         </div>
         
         {/* College Name */}
-        <h3 className={`${isLarge ? 'text-2xl mb-4' : 'text-xl mb-3'} font-bold text-gray-900`}>
+        <h3 className="text-xl font-bold text-gray-900 mb-3">
           {college.name}
         </h3>
         
         {/* Full Name */}
-        <p className={`${isLarge ? 'text-base mb-4' : 'text-sm mb-3'} text-gray-600 leading-relaxed`}>
+        <p className="text-sm text-gray-600 leading-relaxed mb-4 min-h-[40px]">
           {college.fullName}
         </p>
         
         {/* Description */}
-        <p className={`${isLarge ? 'text-sm mb-6' : 'text-xs mb-4'} text-gray-500 leading-relaxed`}>
+        <p className="text-xs text-gray-500 leading-relaxed mb-6 min-h-[32px]">
           {college.description || 'Comprehensive collection of academic research and scholarly work'}
         </p>
         
-        {/* Thesis Count with icon */}
+        {/* Thesis Count with colored indicator */}
         <div className="flex items-center justify-center gap-2">
-          <div className={`w-4 h-4 ${college.bgColor} rounded`}></div>
-          <span className={`${isLarge ? 'text-base' : 'text-sm'} text-gray-700 font-medium`}>
+          <div className={`w-3 h-3 ${college.bgColor} rounded`}></div>
+          <span className="text-sm text-gray-700 font-medium">
             {college.thesesCount}+ Theses
           </span>
         </div>
