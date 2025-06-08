@@ -4,12 +4,81 @@ import Footer from '@/components/Footer';
 import CollegeCard from '@/components/CollegeCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Users, Calendar, TrendingUp } from 'lucide-react';
-import { colleges, theses } from '@/data/mockData';
+import { BookOpen, Users, Calendar, TrendingUp, Code, Calculator, Microscope, HeartPulse, UtensilsCrossed } from 'lucide-react';
+import { theses } from '@/data/mockData';
 import { useNavigate } from 'react-router-dom';
 
 const Collections = () => {
   const navigate = useNavigate();
+
+  // Use the same college data structure as Dashboard
+  const colleges = [
+    {
+      id: '1',
+      name: 'CITE',
+      fullName: 'College of Information Technology and Engineering',
+      color: 'blue',
+      thesesCount: 120,
+      icon: Code,
+      bgColor: 'bg-blue-500',
+      bgColorLight: 'bg-blue-50',
+      textColor: 'text-blue-600',
+      borderColor: 'border-blue-200',
+      description: 'Focuses on engineering and IT-related studies.'
+    },
+    {
+      id: '2',
+      name: 'CBEAM',
+      fullName: 'College of Business, Economics, Accountancy, and Management',
+      color: 'green',
+      thesesCount: 145,
+      icon: Calculator,
+      bgColor: 'bg-green-500',
+      bgColorLight: 'bg-green-50',
+      textColor: 'text-green-600',
+      borderColor: 'border-green-200',
+      description: 'Dedicated to business and financial disciplines.'
+    },
+    {
+      id: '3',
+      name: 'CEAS',
+      fullName: 'College of Education, Arts, and Sciences',
+      color: 'purple',
+      thesesCount: 168,
+      icon: Microscope,
+      bgColor: 'bg-purple-500',
+      bgColorLight: 'bg-purple-50',
+      textColor: 'text-purple-600',
+      borderColor: 'border-purple-200',
+      description: 'Covers educational, artistic, and scientific research areas.'
+    },
+    {
+      id: '4',
+      name: 'CON',
+      fullName: 'College of Nursing',
+      color: 'red',
+      thesesCount: 94,
+      icon: HeartPulse,
+      bgColor: 'bg-red-500',
+      bgColorLight: 'bg-red-50',
+      textColor: 'text-red-600',
+      borderColor: 'border-red-200',
+      description: 'Pertains to nursing and healthcare-focused research.'
+    },
+    {
+      id: '5',
+      name: 'CIHTM',
+      fullName: 'College of International Hospitality and Tourism Management',
+      color: 'orange',
+      thesesCount: 87,
+      icon: UtensilsCrossed,
+      bgColor: 'bg-orange-500',
+      bgColorLight: 'bg-orange-50',
+      textColor: 'text-orange-600',
+      borderColor: 'border-orange-200',
+      description: 'Highlights hospitality and tourism studies.'
+    }
+  ];
 
   const collections = [
     {
@@ -90,15 +159,28 @@ const Collections = () => {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {colleges.map((college) => (
-                <CollegeCard
-                  key={college.id}
-                  college={college}
-                  onClick={() => navigate(`/college/${college.id}`)}
-                  size="default"
-                />
-              ))}
+            <div className="max-w-5xl mx-auto">
+              {/* Top row: CITE, CBEAM, CEAS */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                {colleges.slice(0, 3).map(college => (
+                  <CollegeCard
+                    key={college.id}
+                    college={college}
+                    onClick={() => navigate(`/college/${college.id}`)}
+                  />
+                ))}
+              </div>
+              
+              {/* Bottom row: CON and CIHTM centered */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+                {colleges.slice(3, 5).map(college => (
+                  <CollegeCard
+                    key={college.id}
+                    college={college}
+                    onClick={() => navigate(`/college/${college.id}`)}
+                  />
+                ))}
+              </div>
             </div>
           </div>
 
