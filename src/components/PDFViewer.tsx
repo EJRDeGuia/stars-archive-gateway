@@ -2,7 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, Download, ExternalLink, Lock } from 'lucide-react';
+import { FileText, ExternalLink, Lock } from 'lucide-react';
 
 interface PDFViewerProps {
   pdfUrl?: string;
@@ -55,7 +55,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, title, canView, className
         focusOnRendering: false,
         showAnnotationTools: false,
         showLeftHandPanel: true,
-        showDownloadPDF: true,
+        showDownloadPDF: false,
         showPrintPDF: true,
         showZoomControl: true,
         defaultViewMode: 'FIT_PAGE',
@@ -102,10 +102,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, title, canView, className
               PDF document preview would appear here. This is a demonstration version.
             </p>
             <div className="flex justify-center gap-4">
-              <Button variant="outline">
-                <Download className="w-4 h-4 mr-2" />
-                Download PDF
-              </Button>
               <Button>
                 <ExternalLink className="w-4 h-4 mr-2" />
                 Open in New Tab

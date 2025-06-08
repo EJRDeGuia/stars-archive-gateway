@@ -18,8 +18,7 @@ import {
   Eye,
   Heart,
   MessageCircle,
-  Share2,
-  Download
+  Share2
 } from 'lucide-react';
 
 const ThesisDetail = () => {
@@ -62,12 +61,6 @@ const ThesisDetail = () => {
     const shareUrl = window.location.href;
     navigator.clipboard.writeText(shareUrl);
     console.log('Share URL copied:', shareUrl);
-  };
-
-  const handleDownload = () => {
-    // Implementation for downloading
-    console.log('Downloading thesis:', thesis.id);
-    // In a real implementation, this would trigger a PDF download
   };
 
   return (
@@ -223,15 +216,6 @@ const ThesisDetail = () => {
                       <Share2 className="mr-2 h-5 w-5" />
                       Share
                     </Button>
-                    {canViewPDF && (
-                      <Button 
-                        className="w-full bg-dlsl-green hover:bg-dlsl-green/90 text-white rounded-xl py-3"
-                        onClick={handleDownload}
-                      >
-                        <Download className="mr-2 h-5 w-5" />
-                        Download PDF
-                      </Button>
-                    )}
                   </div>
                 </div>
               </div>
