@@ -21,7 +21,6 @@ interface CollegeCardProps {
 }
 
 const CollegeCard = ({ college, onClick, size = 'default' }: CollegeCardProps) => {
-  const isLarge = size === 'large';
   const IconComponent = college.icon;
   
   return (
@@ -30,27 +29,27 @@ const CollegeCard = ({ college, onClick, size = 'default' }: CollegeCardProps) =
       onClick={onClick}
     >
       {/* Colored top bar */}
-      <div className={`h-4 ${college.bgColor} relative z-10`}></div>
+      <div className={`h-4 ${college.bgColor}`}></div>
       
-      <CardContent className="p-8 text-center relative z-10">
+      <CardContent className="p-8 text-center">
         {/* Icon with colored background */}
-        <div className={`w-16 h-16 ${college.bgColorLight} rounded-2xl flex items-center justify-center mx-auto mb-6`}>
+        <div className={`w-16 h-16 ${college.bgColorLight} rounded-2xl flex items-center justify-center mx-auto mb-8`}>
           <IconComponent className={`w-8 h-8 ${college.textColor}`} />
         </div>
         
-        {/* College Name */}
-        <h3 className="text-xl font-bold text-gray-900 mb-3">
+        {/* College Abbreviation */}
+        <h3 className="text-2xl font-bold text-gray-900 mb-4">
           {college.name}
         </h3>
         
-        {/* Full Name */}
-        <p className="text-sm text-gray-600 leading-relaxed mb-4 min-h-[40px]">
+        {/* Full College Name */}
+        <h4 className="text-base font-medium text-gray-800 mb-4 leading-relaxed">
           {college.fullName}
-        </p>
+        </h4>
         
         {/* Description */}
-        <p className="text-xs text-gray-500 leading-relaxed mb-6 min-h-[32px]">
-          {college.description || 'Comprehensive collection of academic research and scholarly work'}
+        <p className="text-sm text-gray-600 leading-relaxed mb-8 min-h-[48px]">
+          {college.description || 'Advancing knowledge through innovative research and academic excellence'}
         </p>
         
         {/* Thesis Count with colored indicator */}
