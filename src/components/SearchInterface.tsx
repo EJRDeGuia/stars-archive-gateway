@@ -21,6 +21,9 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { semanticSearchService } from '@/services/semanticSearch';
+import APIKeyConfig from './APIKeyConfig';
+import { useNavigate } from 'react-router-dom';
 
 interface Thesis {
   id: string;
@@ -38,40 +41,11 @@ interface SearchInterfaceProps {
 }
 
 const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearch, className = "" }) => {
+  const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState('');
   const [searchResults, setSearchResults] = useState<Thesis[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-
-  // Mock thesis data for demonstration
-  const mockTheses: Thesis[] = [
-    {
-      id: '1',
-      title: 'Artificial Intelligence Applications in Educational Technology: A Comprehensive Study',
-      author: 'Maria Santos',
-      year: 2023,
-      college: 'CITE',
-      abstract: 'This study explores the integration of AI technologies in educational platforms and their impact on learning outcomes.',
-      keywords: ['artificial intelligence', 'education', 'technology', 'learning']
-    },
-    {
-      id: '2',
-      title: 'Blockchain Technology for Secure Academic Credential Verification',
-      author: 'John Cruz',
-      year: 2023,
-      college: 'CITE',
-      abstract: 'An innovative approach to academic credential verification using blockchain technology to ensure security and authenticity.',
-      keywords: ['blockchain', 'security', 'credentials', 'verification']
-    },
-    {
-      id: '3',
-      title: 'Digital Marketing Strategies for SMEs in the Philippines',
-      author: 'Ana Rodriguez',
-      year: 2022,
-      college: 'CBEAM',
-      abstract: 'Analysis of effective digital marketing strategies for small and medium enterprises in the Philippine market.',
-      keywords: ['digital marketing', 'SME', 'Philippines', 'business strategy']
-    }
-  ];
+  const [searchMode, setSearchMode] = useState<'semantic' | 'keyword'>('semantic');
 
   const recentSearches = [
     "Machine Learning in Healthcare",
@@ -95,17 +69,25 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearch, className =
     setIsSearching(true);
     setSearchValue(query);
     
-    // Simulate API call delay
-    setTimeout(() => {
-      const filtered = mockTheses.filter(thesis =>
-        thesis.title.toLowerCase().includes(query.toLowerCase()) ||
-        thesis.author.toLowerCase().includes(query.toLowerCase()) ||
-        thesis.keywords.some(keyword => keyword.toLowerCase().includes(query.toLowerCase())) ||
-        thesis.abstract.toLowerCase().includes(query.toLowerCase())
-      );
-      setSearchResults(filtered);
+    try {
+      let results: Thesis[] = [];
+      
+      if (searchMode === 'semantic') {
+        const semanticResults = await semanticSearchService.semanticSearch(query, 10);
+        results = semanticResults.map(result => result.thesis);
+      } else {
+        results = semanticSearchService.keywordSearch(query);
+      }
+      
+      setSearchResults(results);
+    } catch (error) {
+      console.error('Search error:', error);
+      // Fallback to keyword search
+      const results = semanticSearchService.keywordSearch(query);
+      setSearchResults(results);
+    } finally {
       setIsSearching(false);
-    }, 500);
+    }
     
     onSearch?.(query);
   };
@@ -116,8 +98,14 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearch, className =
     }
   };
 
+  const handleThesisClick = (thesisId: string) => {
+    navigate(`/thesis/${thesisId}`);
+  };
+
   return (
     <div className={`w-full ${className}`}>
+      <APIKeyConfig onApiKeySet={() => setSearchMode('semantic')} />
+      
       <Card className="sleek-shadow-xl border-0 overflow-hidden bg-white/95 backdrop-blur-lg">
         {/* Header */}
         <div className="p-8 pb-6 bg-gradient-to-r from-slate-50 to-white">
@@ -131,6 +119,28 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearch, className =
             </div>
           </div>
           
+          {/* Search Mode Toggle */}
+          <div className="flex items-center gap-2 mb-4">
+            <Button
+              variant={searchMode === 'semantic' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSearchMode('semantic')}
+              className="text-xs"
+            >
+              <Sparkles className="w-3 h-3 mr-1" />
+              Semantic
+            </Button>
+            <Button
+              variant={searchMode === 'keyword' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSearchMode('keyword')}
+              className="text-xs"
+            >
+              <Search className="w-3 h-3 mr-1" />
+              Keyword
+            </Button>
+          </div>
+          
           {/* Search Input */}
           <div className="relative">
             <div className="flex items-center bg-white rounded-2xl border-2 border-slate-200/60 focus-within:border-dlsl-green focus-within:bg-white transition-all duration-300 sleek-shadow hover:sleek-shadow-lg group">
@@ -139,7 +149,7 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearch, className =
               </div>
               <input
                 type="text"
-                placeholder="Search for theses, ask questions, or explore topics..."
+                placeholder={searchMode === 'semantic' ? "Search semantically: 'AI applications in education'..." : "Search by keywords: title, author, topic..."}
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
                 onKeyPress={handleKeyPress}
@@ -172,7 +182,11 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearch, className =
             </h3>
             <div className="space-y-4 max-h-96 overflow-y-auto">
               {searchResults.map((thesis) => (
-                <Card key={thesis.id} className="bg-white sleek-shadow hover:sleek-shadow-lg transition-all duration-200 border-0 cursor-pointer group">
+                <Card 
+                  key={thesis.id} 
+                  className="bg-white sleek-shadow hover:sleek-shadow-lg transition-all duration-200 border-0 cursor-pointer group"
+                  onClick={() => handleThesisClick(thesis.id)}
+                >
                   <CardContent className="p-6">
                     <div className="flex justify-between items-start mb-3">
                       <h4 className="font-semibold text-slate-900 text-lg leading-tight group-hover:text-dlsl-green transition-colors">
@@ -197,11 +211,16 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearch, className =
                       {thesis.abstract.substring(0, 150)}...
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {thesis.keywords.map((keyword, index) => (
+                      {thesis.keywords.slice(0, 3).map((keyword, index) => (
                         <span key={index} className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs">
                           {keyword}
                         </span>
                       ))}
+                      {thesis.keywords.length > 3 && (
+                        <span className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs">
+                          +{thesis.keywords.length - 3} more
+                        </span>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

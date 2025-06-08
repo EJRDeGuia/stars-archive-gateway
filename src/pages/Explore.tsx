@@ -2,18 +2,20 @@
 import { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import SearchInterface from '@/components/SearchInterface';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, BookOpen, TrendingUp, Clock, Star } from 'lucide-react';
+import { Filter, BookOpen, TrendingUp, Clock, Star } from 'lucide-react';
 import { theses } from '@/data/mockData';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const Explore = () => {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchParams] = useSearchParams();
+  const initialQuery = searchParams.get('q') || '';
   const [selectedFilter, setSelectedFilter] = useState('all');
+  const [filteredTheses, setFilteredTheses] = useState(theses);
 
   const filters = [
     { id: 'all', label: 'All Theses', count: theses.length },
@@ -22,11 +24,31 @@ const Explore = () => {
     { id: 'trending', label: 'Trending', count: 12 }
   ];
 
-  const filteredTheses = theses.filter(thesis => 
-    thesis.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    thesis.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    thesis.keywords.some(keyword => keyword.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const handleSearch = (query: string) => {
+    console.log('Search query:', query);
+    // The SearchInterface component handles the actual search
+    // This is just for logging purposes
+  };
+
+  const handleFilterChange = (filterId: string) => {
+    setSelectedFilter(filterId);
+    
+    let filtered = [...theses];
+    switch (filterId) {
+      case 'recent':
+        filtered = theses.filter(thesis => thesis.year >= 2023);
+        break;
+      case 'popular':
+        filtered = theses.slice(0, 18); // Mock popular theses
+        break;
+      case 'trending':
+        filtered = theses.slice(0, 12); // Mock trending theses
+        break;
+      default:
+        filtered = theses;
+    }
+    setFilteredTheses(filtered);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -42,42 +64,35 @@ const Explore = () => {
             </p>
           </div>
 
-          {/* Search and Filters */}
+          {/* Search Interface */}
           <div className="mb-12">
-            <div className="max-w-2xl mx-auto mb-8">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <Input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search theses, authors, keywords..."
-                  className="pl-12 pr-4 py-6 text-lg border-gray-300 rounded-2xl focus:ring-dlsl-green focus:border-dlsl-green"
-                />
-              </div>
-            </div>
+            <SearchInterface 
+              onSearch={handleSearch}
+              className="max-w-4xl mx-auto"
+            />
+          </div>
 
-            {/* Filter Tabs */}
-            <div className="flex justify-center mb-8">
-              <div className="bg-white rounded-2xl p-2 shadow-sm border border-gray-200">
-                <div className="flex gap-2">
-                  {filters.map((filter) => (
-                    <Button
-                      key={filter.id}
-                      variant={selectedFilter === filter.id ? "default" : "ghost"}
-                      className={`px-6 py-3 rounded-xl transition-all duration-200 ${
-                        selectedFilter === filter.id 
-                          ? 'bg-dlsl-green text-white shadow-sm' 
-                          : 'text-gray-600 hover:text-dlsl-green hover:bg-dlsl-green/10'
-                      }`}
-                      onClick={() => setSelectedFilter(filter.id)}
-                    >
-                      {filter.label}
-                      <Badge variant="secondary" className="ml-2 bg-gray-100 text-gray-600">
-                        {filter.count}
-                      </Badge>
-                    </Button>
-                  ))}
-                </div>
+          {/* Filter Tabs */}
+          <div className="flex justify-center mb-8">
+            <div className="bg-white rounded-2xl p-2 shadow-sm border border-gray-200">
+              <div className="flex gap-2">
+                {filters.map((filter) => (
+                  <Button
+                    key={filter.id}
+                    variant={selectedFilter === filter.id ? "default" : "ghost"}
+                    className={`px-6 py-3 rounded-xl transition-all duration-200 ${
+                      selectedFilter === filter.id 
+                        ? 'bg-dlsl-green text-white shadow-sm' 
+                        : 'text-gray-600 hover:text-dlsl-green hover:bg-dlsl-green/10'
+                    }`}
+                    onClick={() => handleFilterChange(filter.id)}
+                  >
+                    {filter.label}
+                    <Badge variant="secondary" className="ml-2 bg-gray-100 text-gray-600">
+                      {filter.count}
+                    </Badge>
+                  </Button>
+                ))}
               </div>
             </div>
           </div>

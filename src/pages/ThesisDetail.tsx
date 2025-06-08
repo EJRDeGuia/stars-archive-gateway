@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { theses } from '@/data/mockData';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import PDFViewer from '@/components/PDFViewer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,7 +18,8 @@ import {
   Eye,
   Heart,
   MessageCircle,
-  Lock
+  Share2,
+  Download
 } from 'lucide-react';
 
 const ThesisDetail = () => {
@@ -41,6 +43,32 @@ const ThesisDetail = () => {
   }
 
   const canViewPDF = user?.role && ['researcher', 'archivist', 'admin'].includes(user.role);
+
+  const handleSaveToLibrary = () => {
+    // Implementation for saving to library
+    console.log('Saving to library:', thesis.id);
+    // You could use localStorage or make an API call here
+  };
+
+  const handleCite = () => {
+    // Implementation for citing
+    const citation = `${thesis.author}. (${thesis.year}). ${thesis.title}. De La Salle Lipa University.`;
+    navigator.clipboard.writeText(citation);
+    console.log('Citation copied:', citation);
+  };
+
+  const handleShare = () => {
+    // Implementation for sharing
+    const shareUrl = window.location.href;
+    navigator.clipboard.writeText(shareUrl);
+    console.log('Share URL copied:', shareUrl);
+  };
+
+  const handleDownload = () => {
+    // Implementation for downloading
+    console.log('Downloading thesis:', thesis.id);
+    // In a real implementation, this would trigger a PDF download
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -124,24 +152,11 @@ const ThesisDetail = () => {
               <div className="bg-white border border-gray-200 rounded-2xl shadow-sm">
                 <div className="p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Document Preview</h2>
-                  {canViewPDF ? (
-                    <div className="bg-gray-100 rounded-xl p-8 text-center">
-                      <FileText className="w-16 h-16 text-dlsl-green mx-auto mb-4" />
-                      <p className="text-gray-700 text-lg mb-4">PDF document preview would appear here</p>
-                      <p className="text-gray-500">Full document access available for DLSL community members</p>
-                    </div>
-                  ) : (
-                    <div className="bg-gray-100 rounded-xl p-8 text-center">
-                      <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">Access Restricted</h3>
-                      <p className="text-gray-600 mb-4">
-                        Full document access is available only to DLSL researchers, archivists, and administrators.
-                      </p>
-                      <p className="text-gray-500 text-sm">
-                        Contact your institution to upgrade your access level.
-                      </p>
-                    </div>
-                  )}
+                  <PDFViewer
+                    pdfUrl={canViewPDF ? "/sample-thesis.pdf" : undefined}
+                    title={thesis.title}
+                    canView={canViewPDF}
+                  />
                 </div>
               </div>
 
@@ -184,14 +199,39 @@ const ThesisDetail = () => {
                 <div className="p-6">
                   <h3 className="text-xl font-bold text-gray-900 mb-6">Actions</h3>
                   <div className="space-y-4">
-                    <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl py-3">
+                    <Button 
+                      variant="outline" 
+                      className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl py-3"
+                      onClick={handleSaveToLibrary}
+                    >
                       <Bookmark className="mr-2 h-5 w-5" />
                       Save to Library
                     </Button>
-                    <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl py-3">
+                    <Button 
+                      variant="outline" 
+                      className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl py-3"
+                      onClick={handleCite}
+                    >
                       <MessageCircle className="mr-2 h-5 w-5" />
                       Cite This Work
                     </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl py-3"
+                      onClick={handleShare}
+                    >
+                      <Share2 className="mr-2 h-5 w-5" />
+                      Share
+                    </Button>
+                    {canViewPDF && (
+                      <Button 
+                        className="w-full bg-dlsl-green hover:bg-dlsl-green/90 text-white rounded-xl py-3"
+                        onClick={handleDownload}
+                      >
+                        <Download className="mr-2 h-5 w-5" />
+                        Download PDF
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>

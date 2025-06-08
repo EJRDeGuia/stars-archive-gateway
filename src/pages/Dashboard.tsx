@@ -17,7 +17,10 @@ import {
   Calculator,
   Microscope,
   HeartPulse,
-  UtensilsCrossed
+  UtensilsCrossed,
+  Upload,
+  Library,
+  Users
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
@@ -104,7 +107,38 @@ const Dashboard = () => {
     return 'Good evening';
   };
 
-  const canUpload = user?.role === 'researcher' || user?.role === 'admin';
+  const canUpload = user?.role === 'archivist' || user?.role === 'admin';
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      navigate(`/explore?q=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
+  const handleQuickAction = (action: string) => {
+    switch (action) {
+      case 'upload':
+        navigate('/upload');
+        break;
+      case 'collections':
+        navigate('/collections');
+        break;
+      case 'library':
+        navigate('/library');
+        break;
+      case 'trending':
+        navigate('/explore');
+        break;
+      case 'profile':
+        navigate('/profile');
+        break;
+      case 'settings':
+        navigate('/settings');
+        break;
+      default:
+        console.log('Unknown action:', action);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -137,18 +171,14 @@ const Dashboard = () => {
                       placeholder="What would you like to research today? Ask me anything..."
                       className="border-0 text-lg placeholder-gray-400 focus:ring-0 focus:border-0 h-auto py-2 px-0 bg-transparent"
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter' && searchQuery.trim()) {
-                          navigate(`/explore?q=${encodeURIComponent(searchQuery)}`);
+                        if (e.key === 'Enter') {
+                          handleSearch();
                         }
                       }}
                     />
                   </div>
                   <Button 
-                    onClick={() => {
-                      if (searchQuery.trim()) {
-                        navigate(`/explore?q=${encodeURIComponent(searchQuery)}`);
-                      }
-                    }}
+                    onClick={handleSearch}
                     className="bg-dlsl-green hover:bg-dlsl-green-dark text-white rounded-xl"
                   >
                     Search
@@ -159,42 +189,52 @@ const Dashboard = () => {
           </div>
 
           {/* Quick Actions */}
-          {canUpload && (
-            <div className="mb-12">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Actions</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/upload')}>
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Actions</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {canUpload && (
+                <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleQuickAction('upload')}>
                   <CardContent className="p-6 text-center">
                     <div className="w-12 h-12 bg-dlsl-green/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                      <BookOpen className="h-6 w-6 text-dlsl-green" />
+                      <Upload className="h-6 w-6 text-dlsl-green" />
                     </div>
                     <h3 className="font-semibold text-gray-900 mb-2">Upload Thesis</h3>
                     <p className="text-sm text-gray-600">Submit new research work</p>
                   </CardContent>
                 </Card>
-                
-                <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/collections')}>
-                  <CardContent className="p-6 text-center">
-                    <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mx-auto mb-4">
-                      <Star className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">My Collections</h3>
-                    <p className="text-sm text-gray-600">View saved research</p>
-                  </CardContent>
-                </Card>
-                
-                <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/explore')}>
-                  <CardContent className="p-6 text-center">
-                    <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mx-auto mb-4">
-                      <TrendingUp className="h-6 w-6 text-purple-600" />
-                    </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Trending Research</h3>
-                    <p className="text-sm text-gray-600">Popular theses</p>
-                  </CardContent>
-                </Card>
-              </div>
+              )}
+              
+              <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleQuickAction('collections')}>
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <Star className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-2">Collections</h3>
+                  <p className="text-sm text-gray-600">Browse curated research</p>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleQuickAction('library')}>
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <Library className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-2">My Library</h3>
+                  <p className="text-sm text-gray-600">View saved research</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleQuickAction('trending')}>
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <TrendingUp className="h-6 w-6 text-green-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-2">Trending Research</h3>
+                  <p className="text-sm text-gray-600">Popular theses</p>
+                </CardContent>
+              </Card>
             </div>
-          )}
+          </div>
 
           {/* Browse by College */}
           <div className="mb-12">
@@ -241,9 +281,15 @@ const Dashboard = () => {
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">No recent activity</h3>
                 <p className="text-gray-600 mb-6">Start exploring to see your activity here</p>
-                <Button onClick={() => navigate('/explore')}>
-                  Start Exploring
-                </Button>
+                <div className="flex justify-center gap-4">
+                  <Button onClick={() => navigate('/explore')}>
+                    Start Exploring
+                  </Button>
+                  <Button variant="outline" onClick={() => handleQuickAction('profile')}>
+                    <Users className="mr-2 h-4 w-4" />
+                    View Profile
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
