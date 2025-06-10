@@ -20,16 +20,24 @@ import {
   UtensilsCrossed,
   Upload,
   Library,
-  Users
+  Users,
+  Shield
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import CollegeCard from '@/components/CollegeCard';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Redirect admin users to admin dashboard
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      navigate('/admin');
+    }
+  }, [user, navigate]);
 
   // College data matching the landing page order and icons
   const collegeData = [
@@ -108,6 +116,7 @@ const Dashboard = () => {
   };
 
   const canUpload = user?.role === 'archivist' || user?.role === 'admin';
+  const isAdmin = user?.role === 'admin';
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -135,6 +144,9 @@ const Dashboard = () => {
       case 'settings':
         navigate('/settings');
         break;
+      case 'admin':
+        navigate('/admin');
+        break;
       default:
         console.log('Unknown action:', action);
     }
@@ -154,6 +166,17 @@ const Dashboard = () => {
             <p className="text-xl text-gray-600">
               Welcome back to STARS. What would you like to explore today?
             </p>
+            {isAdmin && (
+              <div className="mt-4">
+                <Button 
+                  onClick={() => navigate('/admin')}
+                  className="bg-dlsl-green hover:bg-dlsl-green/90 text-white"
+                >
+                  <Shield className="mr-2 h-4 w-4" />
+                  Go to Admin Dashboard
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Search Section */}
@@ -191,8 +214,20 @@ const Dashboard = () => {
           {/* Quick Actions - Centered */}
           <div className="mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Quick Actions</h2>
-            <div className="max-w-4xl mx-auto">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="flex justify-center">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl">
+                {isAdmin && (
+                  <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => handleQuickAction('admin')}>
+                    <CardContent className="p-6 text-center">
+                      <div className="w-16 h-16 bg-dlsl-green/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-dlsl-green group-hover:scale-110 transition-all duration-300">
+                        <Shield className="h-8 w-8 text-dlsl-green group-hover:text-white transition-colors duration-300" />
+                      </div>
+                      <h3 className="font-semibold text-gray-900 mb-2">Admin Dashboard</h3>
+                      <p className="text-sm text-gray-600">Manage system & users</p>
+                    </CardContent>
+                  </Card>
+                )}
+                
                 {canUpload && (
                   <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => handleQuickAction('upload')}>
                     <CardContent className="p-6 text-center">
