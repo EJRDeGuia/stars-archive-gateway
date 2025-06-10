@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import NetworkAccessChecker from "./components/NetworkAccessChecker";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -63,7 +64,9 @@ const App = () => (
             } />
             <Route path="/thesis/:id" element={
               <ProtectedRoute>
-                <ThesisDetail />
+                <NetworkAccessChecker>
+                  <ThesisDetail />
+                </NetworkAccessChecker>
               </ProtectedRoute>
             } />
             <Route path="/upload" element={

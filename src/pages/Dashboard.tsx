@@ -188,51 +188,53 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Quick Actions */}
+          {/* Quick Actions - Centered */}
           <div className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {canUpload && (
-                <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleQuickAction('upload')}>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Quick Actions</h2>
+            <div className="max-w-4xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {canUpload && (
+                  <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => handleQuickAction('upload')}>
+                    <CardContent className="p-6 text-center">
+                      <div className="w-16 h-16 bg-dlsl-green/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-dlsl-green group-hover:scale-110 transition-all duration-300">
+                        <Upload className="h-8 w-8 text-dlsl-green group-hover:text-white transition-colors duration-300" />
+                      </div>
+                      <h3 className="font-semibold text-gray-900 mb-2">Upload Thesis</h3>
+                      <p className="text-sm text-gray-600">Submit new research work</p>
+                    </CardContent>
+                  </Card>
+                )}
+                
+                <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => handleQuickAction('collections')}>
                   <CardContent className="p-6 text-center">
-                    <div className="w-12 h-12 bg-dlsl-green/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                      <Upload className="h-6 w-6 text-dlsl-green" />
+                    <div className="w-16 h-16 bg-dlsl-green/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-dlsl-green group-hover:scale-110 transition-all duration-300">
+                      <Star className="h-8 w-8 text-dlsl-green group-hover:text-white transition-colors duration-300" />
                     </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Upload Thesis</h3>
-                    <p className="text-sm text-gray-600">Submit new research work</p>
+                    <h3 className="font-semibold text-gray-900 mb-2">Collections</h3>
+                    <p className="text-sm text-gray-600">Browse curated research</p>
                   </CardContent>
                 </Card>
-              )}
-              
-              <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleQuickAction('collections')}>
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <Star className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Collections</h3>
-                  <p className="text-sm text-gray-600">Browse curated research</p>
-                </CardContent>
-              </Card>
 
-              <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleQuickAction('library')}>
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <Library className="h-6 w-6 text-purple-600" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">My Library</h3>
-                  <p className="text-sm text-gray-600">View saved research</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleQuickAction('trending')}>
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <TrendingUp className="h-6 w-6 text-green-600" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Trending Research</h3>
-                  <p className="text-sm text-gray-600">Popular theses</p>
-                </CardContent>
-              </Card>
+                <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => handleQuickAction('library')}>
+                  <CardContent className="p-6 text-center">
+                    <div className="w-16 h-16 bg-dlsl-green/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-dlsl-green group-hover:scale-110 transition-all duration-300">
+                      <Library className="h-8 w-8 text-dlsl-green group-hover:text-white transition-colors duration-300" />
+                    </div>
+                    <h3 className="font-semibold text-gray-900 mb-2">My Library</h3>
+                    <p className="text-sm text-gray-600">View saved research</p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => handleQuickAction('trending')}>
+                  <CardContent className="p-6 text-center">
+                    <div className="w-16 h-16 bg-dlsl-green/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-dlsl-green group-hover:scale-110 transition-all duration-300">
+                      <TrendingUp className="h-8 w-8 text-dlsl-green group-hover:text-white transition-colors duration-300" />
+                    </div>
+                    <h3 className="font-semibold text-gray-900 mb-2">Trending Research</h3>
+                    <p className="text-sm text-gray-600">Popular theses</p>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
 
@@ -241,7 +243,7 @@ const Dashboard = () => {
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-bold text-gray-900">Browse by College</h2>
               <Button variant="outline" onClick={() => navigate('/explore')}>
-                <Filter className="mr-2 h-4 w-4" />
+                <Filter className="mr-2 h-4 w-4 text-dlsl-green" />
                 Advanced Search
               </Button>
             </div>
@@ -276,17 +278,17 @@ const Dashboard = () => {
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Recent Activity</h2>
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
               <div className="text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <Clock className="h-8 w-8 text-gray-400" />
+                <div className="w-16 h-16 bg-dlsl-green/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Clock className="h-8 w-8 text-dlsl-green" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">No recent activity</h3>
                 <p className="text-gray-600 mb-6">Start exploring to see your activity here</p>
                 <div className="flex justify-center gap-4">
-                  <Button onClick={() => navigate('/explore')}>
+                  <Button onClick={() => navigate('/explore')} className="bg-dlsl-green hover:bg-dlsl-green/90">
                     Start Exploring
                   </Button>
                   <Button variant="outline" onClick={() => handleQuickAction('profile')}>
-                    <Users className="mr-2 h-4 w-4" />
+                    <Users className="mr-2 h-4 w-4 text-dlsl-green" />
                     View Profile
                   </Button>
                 </div>
