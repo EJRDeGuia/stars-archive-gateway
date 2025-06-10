@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -101,16 +100,13 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, title, canView, className
         enableFormFilling: false,
         showBookmarks: true,
         showThumbnails: false,
-        // Enhanced security options
         enableSearchAPIs: false,
         enableLinksAPIs: false,
         includePDFAnnotations: false,
         showPreviewUnavailableBanner: false,
         disableTextSelection: true,
         disableCopyPaste: true,
-        // Additional security measures
-        exitPDFViewerType: 'CLOSE',
-        defaultViewMode: 'READ_ONLY'
+        exitPDFViewerType: 'CLOSE'
       });
 
       // Additional security: disable text selection via CSS

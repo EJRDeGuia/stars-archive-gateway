@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -69,9 +70,25 @@ const Explore = () => {
           <div className="mb-12">
             <SearchInterface
               onSearch={handleSearch}
-              onFilterChange={handleFilterChange}
-              isLoading={isSearching}
             />
+          </div>
+
+          {/* Filter Buttons */}
+          <div className="mb-8 flex flex-wrap gap-4">
+            {filters.map((filter) => (
+              <Button
+                key={filter.id}
+                variant={selectedFilter === filter.id ? 'default' : 'outline'}
+                onClick={() => handleFilterChange(filter.id)}
+                className="flex items-center gap-2"
+              >
+                <Filter className="w-4 h-4" />
+                {filter.label}
+                <Badge variant="secondary" className="ml-2">
+                  {filter.count}
+                </Badge>
+              </Button>
+            ))}
           </div>
 
           {/* Results */}
