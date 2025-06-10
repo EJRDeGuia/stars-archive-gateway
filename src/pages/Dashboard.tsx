@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -21,7 +20,8 @@ import {
   Upload,
   Library,
   Users,
-  Shield
+  Shield,
+  Archive
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -32,10 +32,12 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Redirect admin users to admin dashboard
+  // Redirect admin users to admin dashboard and archivists to archivist dashboard
   useEffect(() => {
     if (user?.role === 'admin') {
       navigate('/admin');
+    } else if (user?.role === 'archivist') {
+      navigate('/archivist');
     }
   }, [user, navigate]);
 
@@ -117,6 +119,7 @@ const Dashboard = () => {
 
   const canUpload = user?.role === 'archivist' || user?.role === 'admin';
   const isAdmin = user?.role === 'admin';
+  const isArchivist = user?.role === 'archivist';
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -147,6 +150,9 @@ const Dashboard = () => {
       case 'admin':
         navigate('/admin');
         break;
+      case 'archivist':
+        navigate('/archivist');
+        break;
       default:
         console.log('Unknown action:', action);
     }
@@ -174,6 +180,17 @@ const Dashboard = () => {
                 >
                   <Shield className="mr-2 h-4 w-4" />
                   Go to Admin Dashboard
+                </Button>
+              </div>
+            )}
+            {isArchivist && (
+              <div className="mt-4">
+                <Button 
+                  onClick={() => navigate('/archivist')}
+                  className="bg-dlsl-green hover:bg-dlsl-green/90 text-white"
+                >
+                  <Archive className="mr-2 h-4 w-4" />
+                  Go to Archivist Dashboard
                 </Button>
               </div>
             )}

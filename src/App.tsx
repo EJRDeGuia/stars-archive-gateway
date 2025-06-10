@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import ArchivistDashboard from "./pages/ArchivistDashboard";
 import CollegePage from "./pages/CollegePage";
 import ThesisDetail from "./pages/ThesisDetail";
 import Upload from "./pages/Upload";
@@ -45,6 +46,11 @@ const App = () => (
             <Route path="/admin" element={
               <ProtectedRoute requiredRole="admin">
                 <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/archivist" element={
+              <ProtectedRoute requiredRole="archivist">
+                <ArchivistDashboard />
               </ProtectedRoute>
             } />
             <Route path="/explore" element={
