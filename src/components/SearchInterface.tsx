@@ -22,7 +22,6 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { semanticSearchService } from '@/services/semanticSearch';
-import APIKeyConfig from './APIKeyConfig';
 import { useNavigate } from 'react-router-dom';
 
 interface Thesis {
@@ -45,7 +44,7 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearch, className =
   const [searchValue, setSearchValue] = useState('');
   const [searchResults, setSearchResults] = useState<Thesis[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [searchMode, setSearchMode] = useState<'semantic' | 'keyword'>('semantic');
+  const [searchMode, setSearchMode] = useState<'semantic' | 'keyword'>('keyword');
 
   const recentSearches = [
     "Machine Learning in Healthcare",
@@ -104,8 +103,6 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearch, className =
 
   return (
     <div className={`w-full ${className}`}>
-      <APIKeyConfig onApiKeySet={() => setSearchMode('semantic')} />
-      
       <Card className="sleek-shadow-xl border-0 overflow-hidden bg-white/95 backdrop-blur-lg">
         {/* Header */}
         <div className="p-8 pb-6 bg-gradient-to-r from-slate-50 to-white">
@@ -114,8 +111,8 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearch, className =
               <Sparkles className="h-7 w-7 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-slate-800 tracking-tight">AI Research Assistant</h2>
-              <p className="text-slate-600 mt-1">Search theses by keywords, authors, topics, or ask questions</p>
+              <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Research Search</h2>
+              <p className="text-slate-600 mt-1">Search theses by keywords, authors, or topics</p>
             </div>
           </div>
           
@@ -128,7 +125,7 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearch, className =
               className="text-xs"
             >
               <Sparkles className="w-3 h-3 mr-1" />
-              Semantic
+              Smart Search
             </Button>
             <Button
               variant={searchMode === 'keyword' ? 'default' : 'outline'}
@@ -149,7 +146,7 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearch, className =
               </div>
               <input
                 type="text"
-                placeholder={searchMode === 'semantic' ? "Search semantically: 'AI applications in education'..." : "Search by keywords: title, author, topic..."}
+                placeholder={searchMode === 'semantic' ? "Smart search: 'AI applications in education'..." : "Search by keywords: title, author, topic..."}
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
                 onKeyPress={handleKeyPress}

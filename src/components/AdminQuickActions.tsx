@@ -64,36 +64,38 @@ const AdminQuickActions: React.FC<AdminQuickActionsProps> = ({ onActionClick }) 
   ];
 
   return (
-    <Card className="bg-white border-gray-200">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-          <div className="w-8 h-8 bg-dlsl-green rounded-lg flex items-center justify-center">
-            <Shield className="w-5 h-5 text-white" />
+    <div className="flex justify-center">
+      <Card className="bg-white border-gray-200 w-full max-w-6xl">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
+            <div className="w-8 h-8 bg-dlsl-green rounded-lg flex items-center justify-center">
+              <Shield className="w-5 h-5 text-white" />
+            </div>
+            Quick Actions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
+            {quickActions.map((action) => (
+              <Button
+                key={action.id}
+                variant="outline"
+                className="h-auto p-6 flex flex-col items-center gap-3 border-gray-200 hover:border-dlsl-green hover:bg-dlsl-green/5 transition-all duration-200 w-full max-w-xs"
+                onClick={() => onActionClick(action.id)}
+              >
+                <div className={`w-12 h-12 ${action.color} rounded-xl flex items-center justify-center`}>
+                  <action.icon className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-center">
+                  <h3 className="font-semibold text-gray-900 mb-1">{action.title}</h3>
+                  <p className="text-sm text-gray-600">{action.description}</p>
+                </div>
+              </Button>
+            ))}
           </div>
-          Quick Actions
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {quickActions.map((action) => (
-            <Button
-              key={action.id}
-              variant="outline"
-              className="h-auto p-6 flex flex-col items-center gap-3 border-gray-200 hover:border-dlsl-green hover:bg-dlsl-green/5 transition-all duration-200"
-              onClick={() => onActionClick(action.id)}
-            >
-              <div className={`w-12 h-12 ${action.color} rounded-xl flex items-center justify-center`}>
-                <action.icon className="w-6 h-6 text-white" />
-              </div>
-              <div className="text-center">
-                <h3 className="font-semibold text-gray-900 mb-1">{action.title}</h3>
-                <p className="text-sm text-gray-600">{action.description}</p>
-              </div>
-            </Button>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
