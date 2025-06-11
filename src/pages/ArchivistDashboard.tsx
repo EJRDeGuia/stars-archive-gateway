@@ -5,6 +5,7 @@ import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import CollegeCard from '@/components/CollegeCard';
 import { 
   Upload, 
   FileText, 
@@ -22,7 +23,12 @@ import {
   Calendar,
   Download,
   Edit3,
-  Eye
+  Eye,
+  Code,
+  Briefcase,
+  GraduationCap,
+  Building,
+  Utensils
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
@@ -45,6 +51,75 @@ const ArchivistDashboard = () => {
       CIHTM: 110
     }
   };
+
+  // College data with consistent design
+  const colleges = [
+    {
+      id: 'cite',
+      name: 'CITE',
+      fullName: 'College of Information Technology Education',
+      thesesCount: 120,
+      color: '#3b82f6',
+      bgColor: 'bg-blue-500',
+      bgColorLight: 'bg-blue-100',
+      textColor: 'text-blue-600',
+      borderColor: 'border-blue-200',
+      icon: Code,
+      description: 'Advancing digital innovation through cutting-edge technology and programming excellence'
+    },
+    {
+      id: 'cbeam',
+      name: 'CBEAM',
+      fullName: 'College of Business Education, Arts and Management',
+      thesesCount: 145,
+      color: '#10b981',
+      bgColor: 'bg-emerald-500',
+      bgColorLight: 'bg-emerald-100',
+      textColor: 'text-emerald-600',
+      borderColor: 'border-emerald-200',
+      icon: Briefcase,
+      description: 'Fostering business leadership and entrepreneurial excellence for global competitiveness'
+    },
+    {
+      id: 'ceas',
+      name: 'CEAS',
+      fullName: 'College of Engineering and Architectural Studies',
+      thesesCount: 98,
+      color: '#f59e0b',
+      bgColor: 'bg-amber-500',
+      bgColorLight: 'bg-amber-100',
+      textColor: 'text-amber-600',
+      borderColor: 'border-amber-200',
+      icon: Building,
+      description: 'Building tomorrow through innovative engineering solutions and architectural design'
+    },
+    {
+      id: 'con',
+      name: 'CON',
+      fullName: 'College of Nursing',
+      thesesCount: 76,
+      color: '#ef4444',
+      bgColor: 'bg-red-500',
+      bgColorLight: 'bg-red-100',
+      textColor: 'text-red-600',
+      borderColor: 'border-red-200',
+      icon: GraduationCap,
+      description: 'Nurturing compassionate healthcare professionals for community wellness and service'
+    },
+    {
+      id: 'cihtm',
+      name: 'CIHTM',
+      fullName: 'College of International Hospitality and Tourism Management',
+      thesesCount: 110,
+      color: '#8b5cf6',
+      bgColor: 'bg-violet-500',
+      bgColorLight: 'bg-violet-100',
+      textColor: 'text-violet-600',
+      borderColor: 'border-violet-200',
+      icon: Utensils,
+      description: 'Creating exceptional hospitality experiences through innovative tourism and service management'
+    }
+  ];
 
   const recentUploads = [
     {
@@ -108,6 +183,10 @@ const ArchivistDashboard = () => {
     }
   };
 
+  const handleCollegeClick = (collegeId: string) => {
+    navigate(`/college/${collegeId}`);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -148,8 +227,8 @@ const ArchivistDashboard = () => {
                     <p className="text-sm font-medium text-gray-600">Pending Review</p>
                     <p className="text-3xl font-bold text-orange-600">{stats.pendingReview}</p>
                   </div>
-                  <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <Clock className="h-6 w-6 text-orange-600" />
+                  <div className="w-12 h-12 bg-dlsl-green/10 rounded-lg flex items-center justify-center">
+                    <Clock className="h-6 w-6 text-dlsl-green" />
                   </div>
                 </div>
                 <p className="text-sm text-gray-500 mt-2">Awaiting processing</p>
@@ -163,8 +242,8 @@ const ArchivistDashboard = () => {
                     <p className="text-sm font-medium text-gray-600">This Month</p>
                     <p className="text-3xl font-bold text-blue-600">{stats.thisMonth}</p>
                   </div>
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="h-6 w-6 text-blue-600" />
+                  <div className="w-12 h-12 bg-dlsl-green/10 rounded-lg flex items-center justify-center">
+                    <TrendingUp className="h-6 w-6 text-dlsl-green" />
                   </div>
                 </div>
                 <p className="text-sm text-gray-500 mt-2">New submissions</p>
@@ -185,8 +264,8 @@ const ArchivistDashboard = () => {
                       Upload Thesis
                     </Button>
                   </div>
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <Upload className="h-6 w-6 text-green-600" />
+                  <div className="w-12 h-12 bg-dlsl-green/10 rounded-lg flex items-center justify-center">
+                    <Upload className="h-6 w-6 text-dlsl-green" />
                   </div>
                 </div>
               </CardContent>
@@ -196,66 +275,82 @@ const ArchivistDashboard = () => {
           {/* Quick Actions */}
           <div className="mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Archivist Tools</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => handleQuickAction('upload')}>
-                <CardContent className="p-6 text-center">
-                  <div className="w-16 h-16 bg-dlsl-green/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-dlsl-green group-hover:scale-110 transition-all duration-300">
-                    <Upload className="h-8 w-8 text-dlsl-green group-hover:text-white transition-colors duration-300" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Upload Thesis</h3>
-                  <p className="text-sm text-gray-600">Add new thesis to repository</p>
-                </CardContent>
-              </Card>
+            <div className="flex justify-center">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl">
+                <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => handleQuickAction('upload')}>
+                  <CardContent className="p-6 text-center">
+                    <div className="w-16 h-16 bg-dlsl-green/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-dlsl-green group-hover:scale-110 transition-all duration-300">
+                      <Upload className="h-8 w-8 text-dlsl-green group-hover:text-white transition-colors duration-300" />
+                    </div>
+                    <h3 className="font-semibold text-gray-900 mb-2">Upload Thesis</h3>
+                    <p className="text-sm text-gray-600">Add new thesis to repository</p>
+                  </CardContent>
+                </Card>
 
-              <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => handleQuickAction('manage')}>
-                <CardContent className="p-6 text-center">
-                  <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-500 group-hover:scale-110 transition-all duration-300">
-                    <Database className="h-8 w-8 text-blue-600 group-hover:text-white transition-colors duration-300" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Manage Records</h3>
-                  <p className="text-sm text-gray-600">Edit and organize theses</p>
-                </CardContent>
-              </Card>
+                <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => handleQuickAction('manage')}>
+                  <CardContent className="p-6 text-center">
+                    <div className="w-16 h-16 bg-dlsl-green/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-dlsl-green group-hover:scale-110 transition-all duration-300">
+                      <Database className="h-8 w-8 text-dlsl-green group-hover:text-white transition-colors duration-300" />
+                    </div>
+                    <h3 className="font-semibold text-gray-900 mb-2">Manage Records</h3>
+                    <p className="text-sm text-gray-600">Edit and organize theses</p>
+                  </CardContent>
+                </Card>
 
-              <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => handleQuickAction('collections')}>
-                <CardContent className="p-6 text-center">
-                  <div className="w-16 h-16 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-purple-500 group-hover:scale-110 transition-all duration-300">
-                    <FolderOpen className="h-8 w-8 text-purple-600 group-hover:text-white transition-colors duration-300" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Collections</h3>
-                  <p className="text-sm text-gray-600">Organize by topic or theme</p>
-                </CardContent>
-              </Card>
+                <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => handleQuickAction('collections')}>
+                  <CardContent className="p-6 text-center">
+                    <div className="w-16 h-16 bg-dlsl-green/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-dlsl-green group-hover:scale-110 transition-all duration-300">
+                      <FolderOpen className="h-8 w-8 text-dlsl-green group-hover:text-white transition-colors duration-300" />
+                    </div>
+                    <h3 className="font-semibold text-gray-900 mb-2">Collections</h3>
+                    <p className="text-sm text-gray-600">Organize by topic or theme</p>
+                  </CardContent>
+                </Card>
 
-              <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => handleQuickAction('reports')}>
-                <CardContent className="p-6 text-center">
-                  <div className="w-16 h-16 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-orange-500 group-hover:scale-110 transition-all duration-300">
-                    <Calendar className="h-8 w-8 text-orange-600 group-hover:text-white transition-colors duration-300" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Reports</h3>
-                  <p className="text-sm text-gray-600">Generate archival reports</p>
-                </CardContent>
-              </Card>
+                <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => handleQuickAction('reports')}>
+                  <CardContent className="p-6 text-center">
+                    <div className="w-16 h-16 bg-dlsl-green/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-dlsl-green group-hover:scale-110 transition-all duration-300">
+                      <Calendar className="h-8 w-8 text-dlsl-green group-hover:text-white transition-colors duration-300" />
+                    </div>
+                    <h3 className="font-semibold text-gray-900 mb-2">Reports</h3>
+                    <p className="text-sm text-gray-600">Generate archival reports</p>
+                  </CardContent>
+                </Card>
 
-              <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => handleQuickAction('search')}>
-                <CardContent className="p-6 text-center">
-                  <div className="w-16 h-16 bg-indigo-100 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-indigo-500 group-hover:scale-110 transition-all duration-300">
-                    <Search className="h-8 w-8 text-indigo-600 group-hover:text-white transition-colors duration-300" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Advanced Search</h3>
-                  <p className="text-sm text-gray-600">Find specific theses</p>
-                </CardContent>
-              </Card>
+                <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => handleQuickAction('search')}>
+                  <CardContent className="p-6 text-center">
+                    <div className="w-16 h-16 bg-dlsl-green/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-dlsl-green group-hover:scale-110 transition-all duration-300">
+                      <Search className="h-8 w-8 text-dlsl-green group-hover:text-white transition-colors duration-300" />
+                    </div>
+                    <h3 className="font-semibold text-gray-900 mb-2">Advanced Search</h3>
+                    <p className="text-sm text-gray-600">Find specific theses</p>
+                  </CardContent>
+                </Card>
 
-              <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => handleQuickAction('profile')}>
-                <CardContent className="p-6 text-center">
-                  <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-gray-500 group-hover:scale-110 transition-all duration-300">
-                    <Users className="h-8 w-8 text-gray-600 group-hover:text-white transition-colors duration-300" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Profile</h3>
-                  <p className="text-sm text-gray-600">Manage your account</p>
-                </CardContent>
-              </Card>
+                <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => handleQuickAction('profile')}>
+                  <CardContent className="p-6 text-center">
+                    <div className="w-16 h-16 bg-dlsl-green/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-dlsl-green group-hover:scale-110 transition-all duration-300">
+                      <Users className="h-8 w-8 text-dlsl-green group-hover:text-white transition-colors duration-300" />
+                    </div>
+                    <h3 className="font-semibold text-gray-900 mb-2">Profile</h3>
+                    <p className="text-sm text-gray-600">Manage your account</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+
+          {/* College Cards */}
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Browse by College</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+              {colleges.map((college) => (
+                <CollegeCard
+                  key={college.id}
+                  college={college}
+                  onClick={() => handleCollegeClick(college.id)}
+                />
+              ))}
             </div>
           </div>
 
@@ -264,7 +359,7 @@ const ArchivistDashboard = () => {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-900">Recent Uploads</h2>
               <Button variant="outline" onClick={() => navigate('/archivist/manage')}>
-                <FileText className="mr-2 h-4 w-4" />
+                <FileText className="mr-2 h-4 w-4 text-dlsl-green" />
                 View All
               </Button>
             </div>
@@ -285,13 +380,13 @@ const ArchivistDashboard = () => {
                         </Badge>
                         <div className="flex gap-2">
                           <Button variant="ghost" size="sm">
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-4 w-4 text-dlsl-green" />
                           </Button>
                           <Button variant="ghost" size="sm">
-                            <Edit3 className="h-4 w-4" />
+                            <Edit3 className="h-4 w-4 text-dlsl-green" />
                           </Button>
                           <Button variant="ghost" size="sm">
-                            <Download className="h-4 w-4" />
+                            <Download className="h-4 w-4 text-dlsl-green" />
                           </Button>
                         </div>
                       </div>
@@ -300,22 +395,6 @@ const ArchivistDashboard = () => {
                 </div>
               </CardContent>
             </Card>
-          </div>
-
-          {/* College Statistics */}
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Theses by College</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-              {Object.entries(stats.byCollege).map(([college, count]) => (
-                <Card key={college} className="hover:shadow-lg transition-all duration-300 cursor-pointer" onClick={() => navigate(`/college/${college.toLowerCase()}`)}>
-                  <CardContent className="p-6 text-center">
-                    <h3 className="font-semibold text-gray-900 mb-2">{college}</h3>
-                    <p className="text-3xl font-bold text-dlsl-green mb-2">{count}</p>
-                    <p className="text-sm text-gray-600">theses</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
           </div>
         </div>
       </main>
