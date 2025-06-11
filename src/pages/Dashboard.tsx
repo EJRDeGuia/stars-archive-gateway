@@ -232,7 +232,7 @@ const Dashboard = () => {
           <div className="mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Quick Actions</h2>
             <div className="flex justify-center">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl">
                 {isAdmin && (
                   <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => handleQuickAction('admin')}>
                     <CardContent className="p-6 text-center">

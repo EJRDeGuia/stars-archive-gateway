@@ -17,21 +17,94 @@ import {
   Eye,
   Clock,
   Shield,
-  AlertTriangle
+  AlertTriangle,
+  Code,
+  Calculator,
+  Microscope,
+  HeartPulse,
+  UtensilsCrossed
 } from 'lucide-react';
-import { colleges, theses } from '@/data/mockData';
+import { theses } from '@/data/mockData';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  // College data matching the landing page
+  const collegeData = [
+    {
+      id: '1',
+      name: 'CITE',
+      fullName: 'College of Information Technology and Engineering',
+      color: 'red',
+      thesesCount: 120,
+      icon: Code,
+      bgColor: 'bg-red-500',
+      bgColorLight: 'bg-red-50',
+      textColor: 'text-red-600',
+      borderColor: 'border-red-200',
+      description: 'Advancing technology through innovative research'
+    },
+    {
+      id: '2',
+      name: 'CBEAM',
+      fullName: 'College of Business, Economics, Accountancy, and Management',
+      color: 'yellow',
+      thesesCount: 145,
+      icon: Calculator,
+      bgColor: 'bg-yellow-500',
+      bgColorLight: 'bg-yellow-50',
+      textColor: 'text-yellow-600',
+      borderColor: 'border-yellow-200',
+      description: 'Driving business excellence and economic growth'
+    },
+    {
+      id: '3',
+      name: 'CEAS',
+      fullName: 'College of Education, Arts, and Sciences',
+      color: 'blue',
+      thesesCount: 98,
+      icon: Microscope,
+      bgColor: 'bg-blue-500',
+      bgColorLight: 'bg-blue-50',
+      textColor: 'text-blue-600',
+      borderColor: 'border-blue-200',
+      description: 'Exploring knowledge across diverse disciplines'
+    },
+    {
+      id: '4',
+      name: 'CON',
+      fullName: 'College of Nursing',
+      color: 'gray',
+      thesesCount: 76,
+      icon: HeartPulse,
+      bgColor: 'bg-gray-500',
+      bgColorLight: 'bg-gray-50',
+      textColor: 'text-gray-600',
+      borderColor: 'border-gray-200',
+      description: 'Advancing healthcare through compassionate research'
+    },
+    {
+      id: '5',
+      name: 'CIHTM',
+      fullName: 'College of International Hospitality and Tourism Management',
+      color: 'green',
+      thesesCount: 110,
+      icon: UtensilsCrossed,
+      bgColor: 'bg-green-500',
+      bgColorLight: 'bg-green-50',
+      textColor: 'text-green-600',
+      borderColor: 'border-green-200',
+      description: 'Shaping the future of hospitality and tourism'
+    }
+  ];
+
   const stats = {
     totalUsers: 1247,
     totalTheses: theses.length,
-    totalColleges: colleges.length,
+    totalColleges: collegeData.length,
     monthlyUploads: 45,
     weeklyViews: 8324,
-    pendingApprovals: 12,
     securityAlerts: 3,
     networkSessions: 156
   };
@@ -39,7 +112,6 @@ const AdminDashboard = () => {
   const recentActivity = [
     { action: 'New thesis uploaded', user: 'Dr. Maria Santos', time: '2 hours ago', type: 'upload' },
     { action: 'User registered', user: 'John Doe', time: '4 hours ago', type: 'registration' },
-    { action: 'Thesis approved', user: 'Prof. Garcia', time: '6 hours ago', type: 'approval' },
     { action: 'Security alert resolved', user: 'Admin', time: '1 day ago', type: 'security' },
     { action: 'College data updated', user: 'Admin', time: '1 day ago', type: 'update' }
   ];
@@ -54,9 +126,6 @@ const AdminDashboard = () => {
     switch (action) {
       case 'users':
         // Navigate to user management
-        break;
-      case 'theses':
-        // Navigate to thesis review
         break;
       case 'colleges':
         // Navigate to college management
@@ -128,12 +197,12 @@ const AdminDashboard = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-600 text-sm font-medium">Pending Approvals</p>
-                    <p className="text-3xl font-bold text-gray-900">{stats.pendingApprovals}</p>
-                    <p className="text-orange-600 text-sm font-medium">Requires attention</p>
+                    <p className="text-gray-600 text-sm font-medium">Total Colleges</p>
+                    <p className="text-3xl font-bold text-gray-900">{stats.totalColleges}</p>
+                    <p className="text-dlsl-green text-sm font-medium">Active programs</p>
                   </div>
-                  <div className="w-12 h-12 bg-orange-100 rounded-2xl flex items-center justify-center">
-                    <Clock className="w-6 h-6 text-orange-600" />
+                  <div className="w-12 h-12 bg-dlsl-green/10 rounded-2xl flex items-center justify-center">
+                    <Building className="w-6 h-6 text-dlsl-green" />
                   </div>
                 </div>
               </CardContent>
@@ -178,7 +247,6 @@ const AdminDashboard = () => {
                       <div className={`w-3 h-3 rounded-full mt-2 ${
                         activity.type === 'upload' ? 'bg-dlsl-green' :
                         activity.type === 'registration' ? 'bg-blue-500' :
-                        activity.type === 'approval' ? 'bg-green-500' :
                         activity.type === 'security' ? 'bg-red-500' :
                         'bg-gray-500'
                       }`}></div>
@@ -235,7 +303,7 @@ const AdminDashboard = () => {
             </h2>
             <div className="max-w-5xl mx-auto">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                {colleges.slice(0, 3).map((college) => (
+                {collegeData.slice(0, 3).map((college) => (
                   <CollegeCard
                     key={college.id}
                     college={college}
@@ -246,7 +314,7 @@ const AdminDashboard = () => {
               </div>
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-3xl mx-auto">
-                {colleges.slice(3, 5).map((college) => (
+                {collegeData.slice(3, 5).map((college) => (
                   <CollegeCard
                     key={college.id}
                     college={college}
@@ -288,9 +356,6 @@ const AdminDashboard = () => {
                       <Button size="sm" variant="outline" className="border-gray-300">
                         <Eye className="w-4 h-4 mr-1 text-dlsl-green" />
                         Review
-                      </Button>
-                      <Button size="sm" className="bg-dlsl-green hover:bg-dlsl-green/90 text-white">
-                        Approve
                       </Button>
                     </div>
                   </div>
