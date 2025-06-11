@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -28,7 +27,11 @@ import {
   Briefcase,
   GraduationCap,
   Building,
-  Utensils
+  Utensils,
+  Calculator,
+  Microscope,
+  HeartPulse,
+  UtensilsCrossed
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
@@ -338,7 +341,7 @@ const ArchivistDashboard = () => {
           <div className="mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Browse by College</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-              {colleges.map((college) => (
+              {collegeData.map((college) => (
                 <CollegeCard
                   key={college.id}
                   college={college}
