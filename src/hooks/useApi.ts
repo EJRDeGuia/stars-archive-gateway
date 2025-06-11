@@ -38,7 +38,7 @@ export function useApiMutation<T, V>(
 // Specific hooks for common operations
 export function useTheses(params?: { page?: number; limit?: number; search?: string }) {
   return useApiQuery(
-    ['theses', params],
+    ['theses', JSON.stringify(params)],
     () => apiService.getTheses(params)
   );
 }

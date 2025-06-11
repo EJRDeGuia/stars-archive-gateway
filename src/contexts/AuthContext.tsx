@@ -17,7 +17,7 @@ interface AuthContextType {
   isLoading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Mock users for demonstration with updated names
 const mockUsers: (User & { password: string })[] = [
