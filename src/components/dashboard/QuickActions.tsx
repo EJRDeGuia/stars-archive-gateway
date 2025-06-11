@@ -6,7 +6,8 @@ import {
   Upload, 
   Star, 
   Library, 
-  TrendingUp 
+  TrendingUp,
+  BackupRestore
 } from 'lucide-react';
 
 interface QuickActionsProps {
@@ -30,6 +31,12 @@ const QuickActions: React.FC<QuickActionsProps> = ({ userRole, onActionClick }) 
       title: 'Upload Thesis',
       description: 'Submit new research work',
       icon: Upload
+    }] : []),
+    ...(isAdmin ? [{
+      id: 'backup',
+      title: 'Backup Database',
+      description: 'Create system backup',
+      icon: BackupRestore
     }] : []),
     {
       id: 'collections',

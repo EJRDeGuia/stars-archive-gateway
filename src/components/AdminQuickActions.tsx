@@ -8,7 +8,8 @@ import {
   Building,
   BarChart,
   Settings,
-  Shield
+  Shield,
+  BackupRestore
 } from 'lucide-react';
 
 interface AdminQuickActionsProps {
@@ -29,6 +30,13 @@ const AdminQuickActions: React.FC<AdminQuickActionsProps> = ({ onActionClick }) 
       title: 'Manage Colleges',
       description: 'Configure college settings',
       icon: Building,
+      color: 'bg-dlsl-green'
+    },
+    {
+      id: 'backup',
+      title: 'Backup Database',
+      description: 'Create system backup',
+      icon: BackupRestore,
       color: 'bg-dlsl-green'
     },
     {

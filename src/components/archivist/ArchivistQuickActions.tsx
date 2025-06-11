@@ -7,7 +7,7 @@ import {
   FolderOpen, 
   Calendar, 
   Search, 
-  Users 
+  User 
 } from 'lucide-react';
 
 interface ArchivistQuickActionsProps {
@@ -50,7 +50,7 @@ const ArchivistQuickActions: React.FC<ArchivistQuickActionsProps> = ({ onActionC
       id: 'profile',
       title: 'Profile',
       description: 'Manage your account',
-      icon: Users
+      icon: User
     }
   ];
 

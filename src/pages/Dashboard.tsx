@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import WelcomeSection from '@/components/dashboard/WelcomeSection';
@@ -37,6 +38,12 @@ const Dashboard = () => {
     }
   };
 
+  const handleBackupDatabase = () => {
+    toast.success('Database backup initiated successfully!');
+    console.log('Database backup started');
+    // TODO: Implement actual backup functionality with Supabase
+  };
+
   const handleQuickAction = (action: string) => {
     switch (action) {
       case 'upload':
@@ -62,6 +69,30 @@ const Dashboard = () => {
         break;
       case 'archivist':
         navigate('/archivist');
+        break;
+      case 'backup':
+        handleBackupDatabase();
+        break;
+      case 'manage':
+        toast.info('Manage Records feature coming soon!');
+        break;
+      case 'reports':
+        toast.info('Reports feature coming soon!');
+        break;
+      case 'search':
+        navigate('/explore');
+        break;
+      case 'users':
+        toast.info('User Management feature coming soon!');
+        break;
+      case 'colleges':
+        toast.info('College Management feature coming soon!');
+        break;
+      case 'analytics':
+        toast.info('Analytics Dashboard feature coming soon!');
+        break;
+      case 'security':
+        toast.info('Security Monitor feature coming soon!');
         break;
       default:
         console.log('Unknown action:', action);

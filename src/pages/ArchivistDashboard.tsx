@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import StatisticsCards from '@/components/archivist/StatisticsCards';
@@ -53,13 +54,13 @@ const ArchivistDashboard = () => {
         navigate('/upload');
         break;
       case 'manage':
-        navigate('/archivist/manage');
+        toast.info('Manage Records feature coming soon!');
         break;
       case 'collections':
         navigate('/collections');
         break;
       case 'reports':
-        navigate('/archivist/reports');
+        toast.info('Reports feature coming soon!');
         break;
       case 'search':
         navigate('/explore');
@@ -68,7 +69,7 @@ const ArchivistDashboard = () => {
         navigate('/profile');
         break;
       default:
-        console.log('Unknown action:', action);
+        console.log('Unknown archivist action:', action);
     }
   };
 

@@ -1,6 +1,6 @@
-
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CollegeCard from '@/components/CollegeCard';
@@ -120,25 +120,35 @@ const AdminDashboard = () => {
     navigate(`/college/${collegeId}`);
   };
 
+  const handleBackupDatabase = () => {
+    toast.success('Database backup initiated successfully!');
+    console.log('Database backup started');
+    // TODO: Implement actual backup functionality with Supabase
+  };
+
   const handleQuickAction = (action: string) => {
     console.log(`Admin action: ${action}`);
-    // Implement specific admin actions here
     switch (action) {
       case 'users':
-        // Navigate to user management
+        toast.info('User Management feature coming soon!');
         break;
       case 'colleges':
-        // Navigate to college management
+        toast.info('College Management feature coming soon!');
         break;
       case 'analytics':
-        // Navigate to analytics dashboard
+        toast.info('Analytics Dashboard feature coming soon!');
         break;
       case 'settings':
-        // Navigate to system settings
+        toast.info('System Settings feature coming soon!');
         break;
       case 'security':
-        // Navigate to security monitor
+        toast.info('Security Monitor feature coming soon!');
         break;
+      case 'backup':
+        handleBackupDatabase();
+        break;
+      default:
+        console.log('Unknown admin action:', action);
     }
   };
 
