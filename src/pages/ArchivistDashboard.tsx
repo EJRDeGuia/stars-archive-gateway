@@ -53,73 +53,67 @@ const ArchivistDashboard = () => {
   };
 
   // College data with consistent design
-  const colleges = [
-    {
-      id: 'cite',
-      name: 'CITE',
-      fullName: 'College of Information Technology Education',
-      thesesCount: 120,
-      color: '#3b82f6',
-      bgColor: 'bg-blue-500',
-      bgColorLight: 'bg-blue-100',
-      textColor: 'text-blue-600',
-      borderColor: 'border-blue-200',
-      icon: Code,
-      description: 'Advancing digital innovation through cutting-edge technology and programming excellence'
-    },
-    {
-      id: 'cbeam',
-      name: 'CBEAM',
-      fullName: 'College of Business Education, Arts and Management',
-      thesesCount: 145,
-      color: '#10b981',
-      bgColor: 'bg-emerald-500',
-      bgColorLight: 'bg-emerald-100',
-      textColor: 'text-emerald-600',
-      borderColor: 'border-emerald-200',
-      icon: Briefcase,
-      description: 'Fostering business leadership and entrepreneurial excellence for global competitiveness'
-    },
-    {
-      id: 'ceas',
-      name: 'CEAS',
-      fullName: 'College of Engineering and Architectural Studies',
-      thesesCount: 98,
-      color: '#f59e0b',
-      bgColor: 'bg-amber-500',
-      bgColorLight: 'bg-amber-100',
-      textColor: 'text-amber-600',
-      borderColor: 'border-amber-200',
-      icon: Building,
-      description: 'Building tomorrow through innovative engineering solutions and architectural design'
-    },
-    {
-      id: 'con',
-      name: 'CON',
-      fullName: 'College of Nursing',
-      thesesCount: 76,
-      color: '#ef4444',
-      bgColor: 'bg-red-500',
-      bgColorLight: 'bg-red-100',
-      textColor: 'text-red-600',
-      borderColor: 'border-red-200',
-      icon: GraduationCap,
-      description: 'Nurturing compassionate healthcare professionals for community wellness and service'
-    },
-    {
-      id: 'cihtm',
-      name: 'CIHTM',
-      fullName: 'College of International Hospitality and Tourism Management',
-      thesesCount: 110,
-      color: '#8b5cf6',
-      bgColor: 'bg-violet-500',
-      bgColorLight: 'bg-violet-100',
-      textColor: 'text-violet-600',
-      borderColor: 'border-violet-200',
-      icon: Utensils,
-      description: 'Creating exceptional hospitality experiences through innovative tourism and service management'
-    }
-  ];
+  const collegeData = [{
+    id: '1',
+    name: 'CITE',
+    fullName: 'College of Information Technology and Engineering',
+    color: 'red',
+    thesesCount: 120,
+    icon: Code,
+    bgColor: 'bg-red-500',
+    bgColorLight: 'bg-red-50',
+    textColor: 'text-red-600',
+    borderColor: 'border-red-200',
+    description: 'Advancing technology through innovative research'
+  }, {
+    id: '2',
+    name: 'CBEAM',
+    fullName: 'College of Business, Economics, Accountancy, and Management',
+    color: 'yellow',
+    thesesCount: 145,
+    icon: Calculator,
+    bgColor: 'bg-yellow-500',
+    bgColorLight: 'bg-yellow-50',
+    textColor: 'text-yellow-600',
+    borderColor: 'border-yellow-200',
+    description: 'Driving business excellence and economic growth'
+  }, {
+    id: '3',
+    name: 'CEAS',
+    fullName: 'College of Education, Arts, and Sciences',
+    color: 'blue',
+    thesesCount: 98,
+    icon: Microscope,
+    bgColor: 'bg-blue-500',
+    bgColorLight: 'bg-blue-50',
+    textColor: 'text-blue-600',
+    borderColor: 'border-blue-200',
+    description: 'Exploring knowledge across diverse disciplines'
+  }, {
+    id: '4',
+    name: 'CON',
+    fullName: 'College of Nursing',
+    color: 'gray',
+    thesesCount: 76,
+    icon: HeartPulse,
+    bgColor: 'bg-gray-500',
+    bgColorLight: 'bg-gray-50',
+    textColor: 'text-gray-600',
+    borderColor: 'border-gray-200',
+    description: 'Advancing healthcare through compassionate research'
+  }, {
+    id: '5',
+    name: 'CIHTM',
+    fullName: 'College of International Hospitality and Tourism Management',
+    color: 'green',
+    thesesCount: 110,
+    icon: UtensilsCrossed,
+    bgColor: 'bg-green-500',
+    bgColorLight: 'bg-green-50',
+    textColor: 'text-green-600',
+    borderColor: 'border-green-200',
+    description: 'Shaping the future of hospitality and tourism'
+  }];
 
   const recentUploads = [
     {
