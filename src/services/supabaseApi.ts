@@ -230,10 +230,18 @@ export class SupabaseApiService {
 
     if (error) throw error;
 
-    // Update view count directly
+    // Update view count by fetching current count and incrementing
+    const { data: currentData, error: fetchError } = await supabase
+      .from('theses')
+      .select('view_count')
+      .eq('id', thesisId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
     const { error: updateError } = await supabase
       .from('theses')
-      .update({ view_count: supabase.sql`view_count + 1` })
+      .update({ view_count: (currentData.view_count || 0) + 1 })
       .eq('id', thesisId);
 
     if (updateError) throw updateError;
@@ -249,10 +257,18 @@ export class SupabaseApiService {
 
     if (error) throw error;
 
-    // Update download count directly
+    // Update download count by fetching current count and incrementing
+    const { data: currentData, error: fetchError } = await supabase
+      .from('theses')
+      .select('download_count')
+      .eq('id', thesisId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
     const { error: updateError } = await supabase
       .from('theses')
-      .update({ download_count: supabase.sql`download_count + 1` })
+      .update({ download_count: (currentData.download_count || 0) + 1 })
       .eq('id', thesisId);
 
     if (updateError) throw updateError;

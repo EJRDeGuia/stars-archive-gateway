@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabaseApi } from '@/services/supabaseApi';
 import { useAuth } from '@/contexts/AuthContext';
+import type { Database } from '@/integrations/supabase/types';
 
 // User hooks
 export function useUserProfile(userId?: string) {
@@ -160,7 +161,7 @@ export function useUpdateUserRole() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ userId, role }: { userId: string; role: string }) => 
+    mutationFn: ({ userId, role }: { userId: string; role: Database['public']['Enums']['user_role'] }) => 
       supabaseApi.updateUserRole(userId, role),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'all'] });
