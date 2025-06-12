@@ -7,7 +7,7 @@ import {
   Star, 
   Library, 
   TrendingUp,
-  BackupRestore
+  Database
 } from 'lucide-react';
 
 interface QuickActionsProps {
@@ -36,7 +36,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({ userRole, onActionClick }) 
       id: 'backup',
       title: 'Backup Database',
       description: 'Create system backup',
-      icon: BackupRestore
+      icon: Database
     }] : []),
     {
       id: 'collections',

@@ -9,7 +9,7 @@ import {
   BarChart,
   Settings,
   Shield,
-  BackupRestore
+  Database
 } from 'lucide-react';
 
 interface AdminQuickActionsProps {
@@ -36,7 +36,7 @@ const AdminQuickActions: React.FC<AdminQuickActionsProps> = ({ onActionClick }) 
       id: 'backup',
       title: 'Backup Database',
       description: 'Create system backup',
-      icon: BackupRestore,
+      icon: Database,
       color: 'bg-dlsl-green'
     },
     {
