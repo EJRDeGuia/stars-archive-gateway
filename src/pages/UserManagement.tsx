@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -9,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAllUsers, useUpdateUserRole } from '@/hooks/useSupabaseApi';
+import type { Database } from '@/integrations/supabase/types';
 import {
   Users,
   Search,
@@ -38,7 +38,10 @@ const UserManagement = () => {
 
   const handleRoleUpdate = async (userId: string, newRole: string) => {
     try {
-      await updateUserRoleMutation.mutateAsync({ userId, role: newRole });
+      await updateUserRoleMutation.mutateAsync({ 
+        userId, 
+        role: newRole as Database['public']['Enums']['user_role']
+      });
       toast({
         title: "Success",
         description: "User role updated successfully",
