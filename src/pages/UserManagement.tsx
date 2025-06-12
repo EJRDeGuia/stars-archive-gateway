@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { useAllUsers, useUpdateUserRole } from '@/hooks/useSupabaseApi';
 import {
   Users,
   Search,
@@ -16,58 +18,40 @@ import {
   Shield,
   UserCheck,
   UserX,
-  ArrowLeft
+  ArrowLeft,
+  Loader2
 } from 'lucide-react';
 
 const UserManagement = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Mock user data
-  const users = [
-    {
-      id: '1',
-      name: 'Dr. Maria Santos',
-      email: 'maria.santos@dlsl.edu.ph',
-      role: 'archivist',
-      college: 'CITE',
-      status: 'active',
-      lastLogin: '2024-01-15'
-    },
-    {
-      id: '2',
-      name: 'John Doe',
-      email: 'john.doe@dlsl.edu.ph',
-      role: 'researcher',
-      college: 'CBEAM',
-      status: 'active',
-      lastLogin: '2024-01-14'
-    },
-    {
-      id: '3',
-      name: 'Admin User',
-      email: 'admin@dlsl.edu.ph',
-      role: 'admin',
-      college: 'All',
-      status: 'active',
-      lastLogin: '2024-01-16'
-    },
-    {
-      id: '4',
-      name: 'Jane Smith',
-      email: 'jane.smith@dlsl.edu.ph',
-      role: 'researcher',
-      college: 'CEAS',
-      status: 'inactive',
-      lastLogin: '2024-01-10'
-    }
-  ];
+  const { data: users = [], isLoading, error, refetch } = useAllUsers();
+  const updateUserRoleMutation = useUpdateUserRole();
 
   const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchQuery.toLowerCase())
+    user.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (user.colleges?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleRoleUpdate = async (userId: string, newRole: string) => {
+    try {
+      await updateUserRoleMutation.mutateAsync({ userId, role: newRole });
+      toast({
+        title: "Success",
+        description: "User role updated successfully",
+      });
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update user role",
+        variant: "destructive",
+      });
+    }
+  };
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
@@ -77,16 +61,46 @@ const UserManagement = () => {
         return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'researcher':
         return 'bg-green-100 text-green-800 border-green-200';
+      case 'guest_researcher':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
-  const getStatusBadgeColor = (status: string) => {
-    return status === 'active' 
-      ? 'bg-green-100 text-green-800 border-green-200'
-      : 'bg-gray-100 text-gray-800 border-gray-200';
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="flex-1">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+            <div className="flex items-center justify-center">
+              <Loader2 className="w-8 h-8 animate-spin text-dlsl-green" />
+              <span className="ml-2 text-lg">Loading users...</span>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="flex-1">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+            <div className="text-center">
+              <p className="text-red-600 mb-4">Error loading users: {error.message}</p>
+              <Button onClick={() => refetch()}>Try Again</Button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -123,16 +137,12 @@ const UserManagement = () => {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
-                placeholder="Search users by name, email, or role..."
+                placeholder="Search users by name, role, or college..."
                 className="pl-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button className="bg-dlsl-green hover:bg-dlsl-green/90 text-white">
-              <Plus className="w-4 h-4 mr-2" />
-              Add New User
-            </Button>
           </div>
 
           {/* Users Table */}
@@ -144,36 +154,49 @@ const UserManagement = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {filteredUsers.map((user) => (
-                  <div key={user.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-dlsl-green/10 rounded-full flex items-center justify-center">
-                        <UserCheck className="w-5 h-5 text-dlsl-green" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{user.name}</h3>
-                        <p className="text-gray-600 text-sm">{user.email}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge className={getRoleBadgeColor(user.role)}>
-                            {user.role}
-                          </Badge>
-                          <Badge className={getStatusBadgeColor(user.status)}>
-                            {user.status}
-                          </Badge>
-                          <span className="text-xs text-gray-500">• {user.college}</span>
+                {filteredUsers.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500">No users found matching your search.</p>
+                  </div>
+                ) : (
+                  filteredUsers.map((user) => (
+                    <div key={user.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-dlsl-green/10 rounded-full flex items-center justify-center">
+                          <UserCheck className="w-5 h-5 text-dlsl-green" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{user.name}</h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge className={getRoleBadgeColor(user.role)}>
+                              {user.role.replace('_', ' ')}
+                            </Badge>
+                            {user.colleges && (
+                              <span className="text-xs text-gray-500">• {user.colleges.name}</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Joined: {new Date(user.created_at || '').toLocaleDateString()}
+                          </p>
                         </div>
                       </div>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={user.role}
+                          onChange={(e) => handleRoleUpdate(user.id, e.target.value)}
+                          className="text-sm border border-gray-300 rounded px-2 py-1"
+                          disabled={updateUserRoleMutation.isPending}
+                        >
+                          <option value="researcher">Researcher</option>
+                          <option value="archivist">Archivist</option>
+                          <option value="admin">Admin</option>
+                          <option value="guest_researcher">Guest Researcher</option>
+                        </select>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" variant="outline">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline" className="text-red-600 hover:text-red-700">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
