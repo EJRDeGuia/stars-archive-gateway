@@ -6,6 +6,7 @@ type Profile = Database['public']['Tables']['profiles']['Row'];
 type College = Database['public']['Tables']['colleges']['Row'];
 type Thesis = Database['public']['Tables']['theses']['Row'];
 type Program = Database['public']['Tables']['programs']['Row'];
+type ThesisStatus = Database['public']['Enums']['thesis_status'];
 
 export class SupabaseApiService {
   // Auth methods
@@ -120,7 +121,7 @@ export class SupabaseApiService {
     limit?: number; 
     search?: string;
     collegeId?: string;
-    status?: string;
+    status?: ThesisStatus;
   }) {
     let query = supabase
       .from('theses')
@@ -229,8 +230,13 @@ export class SupabaseApiService {
 
     if (error) throw error;
 
-    // Update view count
-    await supabase.rpc('increment_view_count', { thesis_id: thesisId });
+    // Update view count directly
+    const { error: updateError } = await supabase
+      .from('theses')
+      .update({ view_count: supabase.sql`view_count + 1` })
+      .eq('id', thesisId);
+
+    if (updateError) throw updateError;
   }
 
   async recordThesisDownload(thesisId: string, userId?: string) {
@@ -243,8 +249,13 @@ export class SupabaseApiService {
 
     if (error) throw error;
 
-    // Update download count
-    await supabase.rpc('increment_download_count', { thesis_id: thesisId });
+    // Update download count directly
+    const { error: updateError } = await supabase
+      .from('theses')
+      .update({ download_count: supabase.sql`download_count + 1` })
+      .eq('id', thesisId);
+
+    if (updateError) throw updateError;
   }
 
   // User management methods (admin only)
@@ -261,10 +272,10 @@ export class SupabaseApiService {
     return data || [];
   }
 
-  async updateUserRole(userId: string, role: string) {
+  async updateUserRole(userId: string, role: Database['public']['Enums']['user_role']) {
     const { data, error } = await supabase
       .from('profiles')
-      .update({ role: role as any })
+      .update({ role })
       .eq('id', userId)
       .select()
       .single();
@@ -287,7 +298,7 @@ export class SupabaseApiService {
     // Full-text search across multiple fields
     if (query) {
       supabaseQuery = supabaseQuery.or(
-        `title.ilike.%${query}%,author.ilike.%${query}%,abstract.ilike.%${query}%,keywords.cs.{${query}}`
+        `title.ilike.%${query}%,author.ilike.%${query}%,abstract.ilike.%${query}%`
       );
     }
 

@@ -10,6 +10,7 @@ type Profile = Database['public']['Tables']['profiles']['Row'];
 
 interface AuthUser extends User {
   profile?: Profile;
+  name?: string; // Add name property for easier access
 }
 
 interface AuthContextType {
@@ -22,7 +23,7 @@ interface AuthContextType {
   isLoading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -49,10 +50,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(true);
 
         if (session?.user) {
-          setUser(session.user);
+          // Create AuthUser with name property
+          const authUser: AuthUser = {
+            ...session.user,
+            name: session.user.user_metadata?.name || session.user.email || 'User'
+          };
+          setUser(authUser);
+          
           // Fetch user profile after setting user
           setTimeout(async () => {
-            await fetchUserProfile(session.user.id);
+            const profileData = await fetchUserProfile(session.user.id);
+            if (profileData) {
+              // Update user with profile data
+              setUser(prev => prev ? { ...prev, profile: profileData, name: profileData.name } : null);
+            }
             setIsLoading(false);
           }, 0);
         } else {
@@ -67,8 +78,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session?.user) {
-        setUser(session.user);
-        fetchUserProfile(session.user.id).finally(() => {
+        const authUser: AuthUser = {
+          ...session.user,
+          name: session.user.user_metadata?.name || session.user.email || 'User'
+        };
+        setUser(authUser);
+        fetchUserProfile(session.user.id).then(profileData => {
+          if (profileData) {
+            setUser(prev => prev ? { ...prev, profile: profileData, name: profileData.name } : null);
+          }
           setIsLoading(false);
         });
       } else {
