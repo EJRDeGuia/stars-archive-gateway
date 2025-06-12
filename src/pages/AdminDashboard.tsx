@@ -130,19 +130,19 @@ const AdminDashboard = () => {
     console.log(`Admin action: ${action}`);
     switch (action) {
       case 'users':
-        toast.info('User Management feature coming soon!');
+        navigate('/user-management');
         break;
       case 'colleges':
-        toast.info('College Management feature coming soon!');
+        navigate('/college-management');
         break;
       case 'analytics':
-        toast.info('Analytics Dashboard feature coming soon!');
+        navigate('/analytics-dashboard');
         break;
       case 'settings':
-        toast.info('System Settings feature coming soon!');
+        navigate('/system-settings');
         break;
       case 'security':
-        toast.info('Security Monitor feature coming soon!');
+        navigate('/security-monitor');
         break;
       case 'backup':
         handleBackupDatabase();

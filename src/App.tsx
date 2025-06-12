@@ -23,6 +23,11 @@ import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import About from "./pages/About";
 import Resources from "./pages/Resources";
+import UserManagement from "./pages/UserManagement";
+import CollegeManagement from "./pages/CollegeManagement";
+import AnalyticsDashboard from "./pages/AnalyticsDashboard";
+import SystemSettings from "./pages/SystemSettings";
+import SecurityMonitor from "./pages/SecurityMonitor";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +51,31 @@ const App = () => (
             <Route path="/admin" element={
               <ProtectedRoute requiredRole="admin">
                 <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/user-management" element={
+              <ProtectedRoute requiredRole="admin">
+                <UserManagement />
+              </ProtectedRoute>
+            } />
+            <Route path="/college-management" element={
+              <ProtectedRoute requiredRole="admin">
+                <CollegeManagement />
+              </ProtectedRoute>
+            } />
+            <Route path="/analytics-dashboard" element={
+              <ProtectedRoute requiredRole="admin">
+                <AnalyticsDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/system-settings" element={
+              <ProtectedRoute requiredRole="admin">
+                <SystemSettings />
+              </ProtectedRoute>
+            } />
+            <Route path="/security-monitor" element={
+              <ProtectedRoute requiredRole="admin">
+                <SecurityMonitor />
               </ProtectedRoute>
             } />
             <Route path="/archivist" element={
