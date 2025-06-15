@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -33,6 +32,17 @@ const ThesisDetail = () => {
   const { data: thesis, isLoading, error } = useThesis(id || "") as { data: Thesis | undefined, isLoading: boolean, error: any };
 
   const [showPreview, setShowPreview] = React.useState(false);
+
+  // Utility: Get the public Supabase Storage URL for a thesis PDF, if only a storage key is present
+  function getPublicPdfUrl(fileUrl: string | undefined): string {
+    if (!fileUrl) return "";
+    // If already a full supabase storage public URL, just return it
+    if (fileUrl.startsWith("http")) {
+      return fileUrl;
+    }
+    // Otherwise, construct the bucket public URL
+    return `https://cylsbcjqemluouxblywl.supabase.co/storage/v1/object/public/thesis-pdfs/${fileUrl.replace(/^\/+/, "")}`;
+  }
 
   // Derived fields for easy rendering; guard against undefined
   const collegeName = thesis?.colleges?.name || "Unknown College";
@@ -308,7 +318,7 @@ const ThesisDetail = () => {
         <ThesisPDFPreviewDialog
           open={showPreview}
           onOpenChange={setShowPreview}
-          pdfUrl={thesis.file_url || ""}
+          pdfUrl={getPublicPdfUrl(thesis.file_url)}
           title={thesis.title}
           author={thesis.author}
           year={thesisYearString}
@@ -321,4 +331,3 @@ const ThesisDetail = () => {
 };
 
 export default ThesisDetail;
-
