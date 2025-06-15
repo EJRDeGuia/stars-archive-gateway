@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,10 +9,26 @@ type SaveSearchModalProps = {
   onClose: () => void;
   onSave: (name: string) => void;
   defaultName?: string;
+  autoFocus?: boolean;
 };
 
-export default function SaveSearchModal({ open, onClose, onSave, defaultName }: SaveSearchModalProps) {
+export default function SaveSearchModal({ open, onClose, onSave, defaultName, autoFocus }: SaveSearchModalProps) {
   const [name, setName] = useState(defaultName || "");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Focus input whenever modal is opened and autoFocus is true
+  useEffect(() => {
+    if (open && autoFocus && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [open, autoFocus]);
+
+  // Reset name when modal is re-opened
+  useEffect(() => {
+    if (open && defaultName) {
+      setName(defaultName);
+    }
+  }, [open, defaultName]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -29,12 +45,13 @@ export default function SaveSearchModal({ open, onClose, onSave, defaultName }: 
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="Search name"
-              autoFocus
+              autoFocus={false}
+              ref={inputRef}
               className="mb-4"
             />
             <div className="flex justify-end gap-2 mt-4">
               <Button variant="ghost" type="button" onClick={onClose}>Cancel</Button>
-              <Button type="submit" className="bg-dlsl-green text-white">Save</Button>
+              <Button type="submit" className="bg-dlsl-green text-white" disabled={!name.trim()}>Save</Button>
             </div>
           </form>
         </div>

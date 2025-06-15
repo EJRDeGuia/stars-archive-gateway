@@ -48,13 +48,27 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
   const [showSaveModal, setShowSaveModal] = useState(false);
   const saveSearch = useSaveSearch();
 
-  // Add effect to close save modal if no user search in chat
+  // TRACK THE LAST SEARCH RESULT for improved control
+  const lastResult = chat
+    .slice()
+    .reverse()
+    .find(item => item.type === 'result' || (item.type === "error" && item.query));
+
+  // Only show the Save Search button if there is a successful search result
+  const userCanSaveSearch =
+    !!user &&
+    !!lastResult &&
+    lastResult.type === 'result' &&
+    Array.isArray(lastResult.results) &&
+    lastResult.results.length > 0;
+
+  // Animate visibility of Save Search button
   useEffect(() => {
-    // If chat has no user search, close the modal if open
-    if (!chat.some(item => item.type === "user") && showSaveModal) {
+    // If chat has no usable search, close the modal
+    if ((!lastResult || !userCanSaveSearch) && showSaveModal) {
       setShowSaveModal(false);
     }
-  }, [chat, showSaveModal]);
+  }, [lastResult, userCanSaveSearch, showSaveModal]);
 
   // Scroll to bottom on new chat
   useEffect(() => {
@@ -151,13 +165,11 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
 
   // Save last query as "search"
   const handleSaveSearch = (name: string) => {
-    if (user?.id && chat.length > 0) {
-      // Find the last user query
-      const lastQuery = [...chat].reverse().find(i => i.type === "user")?.query || "";
+    if (user?.id && lastResult && lastResult.query) {
       saveSearch.mutate({
         userId: user.id,
         name,
-        query: lastQuery,
+        query: lastResult.query,
       });
       setShowSaveModal(false);
       toast({
@@ -304,25 +316,29 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
             ? <Loader className="animate-spin h-5 w-5" />
             : <Send className="h-5 w-5" />}
         </Button>
-        {/* Save Search Button - Only show if user has submitted a query */}
-        {user && chat.some(item => item.type === "user") && (
+        {/* Improved Save Search Button - only show after actual result */}
+        {userCanSaveSearch && (
           <Button
             type="button"
             variant="outline"
-            className="ml-4 text-dlsl-green border-dlsl-green/30 px-3 font-semibold"
+            className="ml-4 text-dlsl-green border-dlsl-green/30 px-3 font-semibold animate-fade-in"
             onClick={() => setShowSaveModal(true)}
+            tabIndex={0}
+            title="Save this search to your dashboard for quick access"
+            aria-label="Save this search"
           >
             Save Search
           </Button>
         )}
       </form>
-      {/* Only show SaveSearchModal if there are user queries in the chat */}
-      {user && chat.some(item => item.type === "user") && (
+      {/* SaveSearchModal - opened only after search with result */}
+      {userCanSaveSearch && (
         <SaveSearchModal 
           open={showSaveModal} 
           onClose={() => setShowSaveModal(false)} 
           onSave={handleSaveSearch}
-          defaultName="Research Query"
+          defaultName={lastResult?.query ? lastResult.query.slice(0, 32) : "Research Query"}
+          autoFocus
         />
       )}
     </Card>
