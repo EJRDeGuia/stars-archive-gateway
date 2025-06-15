@@ -58,28 +58,13 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, title, canView, maxPages,
     document.addEventListener('selectstart', (e) => e.preventDefault());
     document.addEventListener('dragstart', (e) => e.preventDefault());
 
-    // Load Adobe Acrobat DC View SDK
-    const script = document.createElement('script');
-    script.src = 'https://documentservices.adobe.com/view-sdk/viewer.js';
-    script.onload = initializeViewer;
-    document.head.appendChild(script);
+    const initializeViewer = () => {
+      // FIX: Only run if AdobeDC is loaded and viewerRef exists
+      if (!window.AdobeDC || !viewerRef.current || !pdfUrl) return;
 
-    return () => {
-      document.removeEventListener('contextmenu', disableInteractions);
-      document.removeEventListener('keydown', disableInteractions);
-      document.removeEventListener('selectstart', (e) => e.preventDefault());
-      document.removeEventListener('dragstart', (e) => e.preventDefault());
-      
-      if (adobeViewerRef.current) {
-        adobeViewerRef.current = null;
-      }
-    };
-  }, [pdfUrl, canView, maxPages]);
+      // Prevent multiple initializations
+      if (adobeViewerRef.current) return;
 
-  const initializeViewer = () => {
-    if (!window.AdobeDC || !viewerRef.current || !pdfUrl) return;
-
-    window.AdobeDC.readyState.then(() => {
       adobeViewerRef.current = new window.AdobeDC.View({
         clientId: 'YOUR_ADOBE_CLIENT_ID', // Replace with your Adobe client ID
         divId: 'adobe-dc-view',
@@ -129,8 +114,32 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, title, canView, maxPages,
         }
       `;
       document.head.appendChild(style);
-    });
-  };
+    };
+
+    // Make sure the script only loads once
+    let script: HTMLScriptElement | null = document.getElementById('adobe-view-sdk') as HTMLScriptElement;
+    if (!script) {
+      script = document.createElement('script');
+      script.id = 'adobe-view-sdk';
+      script.src = 'https://documentservices.adobe.com/view-sdk/viewer.js';
+      script.onload = initializeViewer;
+      document.head.appendChild(script);
+    } else if (window.AdobeDC) {
+      initializeViewer();
+    } else {
+      script.onload = initializeViewer;
+    }
+
+    return () => {
+      document.removeEventListener('contextmenu', disableInteractions);
+      document.removeEventListener('keydown', disableInteractions);
+      document.removeEventListener('selectstart', (e) => e.preventDefault());
+      document.removeEventListener('dragstart', (e) => e.preventDefault());
+      if (adobeViewerRef.current) {
+        adobeViewerRef.current = null;
+      }
+    };
+  }, [pdfUrl, canView, maxPages]);
 
   if (!canView) {
     return (
