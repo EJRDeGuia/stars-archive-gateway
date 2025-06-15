@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +9,7 @@ import SearchSection from '@/components/dashboard/SearchSection';
 import QuickActions from '@/components/dashboard/QuickActions';
 import CollegeGrid from '@/components/dashboard/CollegeGrid';
 import RecentActivity from '@/components/dashboard/RecentActivity';
+import { semanticSearchService } from '@/services/semanticSearch';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -32,9 +32,17 @@ const Dashboard = () => {
     return 'Good evening';
   };
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (searchQuery.trim()) {
-      navigate(`/explore?q=${encodeURIComponent(searchQuery)}`);
+      // Perform semantic search and store the results for the explore page to pick up
+      try {
+        const results = await semanticSearchService.semanticSearch(searchQuery.trim(), 50);
+        localStorage.setItem('exploreResults', JSON.stringify(results));
+        localStorage.setItem('lastExploreQuery', searchQuery.trim());
+        navigate(`/explore?q=${encodeURIComponent(searchQuery)}`);
+      } catch (e: any) {
+        toast.error('Failed to perform semantic search.');
+      }
     }
   };
 
