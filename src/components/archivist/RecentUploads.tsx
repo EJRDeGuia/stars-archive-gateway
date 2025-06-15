@@ -1,11 +1,21 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Eye, Edit3, Download } from 'lucide-react';
+import { FileText, Eye, Edit3, Download, Trash2, Archive, ArrowDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuItem,
+  DropdownMenuSeparator
+} from '@/components/ui/dropdown-menu';
+import { Checkbox } from '@/components/ui/checkbox';
 
+// TypeScript interface for a thesis upload
 interface Upload {
   id: string;
   title: string;
@@ -22,14 +32,42 @@ interface RecentUploadsProps {
 const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads }) => {
   const navigate = useNavigate();
 
+  // For selection state
+  const [selected, setSelected] = useState<string[]>([]);
+
+  // 'Select All' logic
+  const allIds = uploads.map((t) => t.id);
+  const isAllSelected = selected.length === uploads.length && uploads.length > 0;
+
+  // Status badge renderer
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       pending_review: { label: 'Pending Review', variant: 'secondary' as const },
       approved: { label: 'Approved', variant: 'default' as const },
       needs_revision: { label: 'Needs Revision', variant: 'destructive' as const }
     };
-    
     return statusConfig[status as keyof typeof statusConfig] || statusConfig.pending_review;
+  };
+
+  const toggleSelectOne = (id: string) => {
+    setSelected((current) =>
+      current.includes(id) ? current.filter((sid) => sid !== id) : [...current, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (isAllSelected) setSelected([]);
+    else setSelected(allIds);
+  };
+
+  // Dummy Handlers for Actions
+  const handleBulkAction = (action: string) => {
+    // Replace this with backend call (e.g., Supabase update/delete) as needed
+    alert(
+      `Action: ${action}\nSelected IDs: ${selected.join(', ')}`
+    );
+    // After action, clear selection
+    setSelected([]);
   };
 
   return (
@@ -41,21 +79,82 @@ const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads }) => {
           View All
         </Button>
       </div>
-      
+
+      {/* Bulk Action Bar */}
+      {selected.length > 0 && (
+        <div className="mb-4 flex items-center gap-3 px-2 py-2 bg-dlsl-green/5 border border-dlsl-green/20 rounded-lg animate-in fade-in duration-300">
+          <span className="text-sm font-medium text-gray-900">
+            {selected.length} selected
+          </span>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="secondary" size="sm" className="gap-2">
+                Bulk Actions <ArrowDown className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="z-50">
+              <DropdownMenuLabel>Choose action</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => handleBulkAction('approve')}>
+                <Archive className="h-4 w-4 mr-2 text-green-600" /> Approve
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleBulkAction('reject')}>
+                <Archive className="h-4 w-4 mr-2 text-yellow-700" /> Reject
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleBulkAction('move')}>
+                <Archive className="h-4 w-4 mr-2 text-blue-700" /> Move to Collection
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleBulkAction('delete')}>
+                <Trash2 className="h-4 w-4 mr-2 text-red-600" /> Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSelected([])}
+            className="text-gray-400"
+          >
+            Clear
+          </Button>
+        </div>
+      )}
+
       <Card>
         <CardContent className="p-6">
           {uploads.length === 0 ? (
             <div className="text-gray-400 text-center py-8">No uploads found.</div>
           ) : (
             <div className="space-y-4">
+              <div className="flex items-center px-2 py-2 border-b border-gray-200 bg-gray-100 rounded-t">
+                <Checkbox
+                  checked={isAllSelected}
+                  onCheckedChange={toggleSelectAll}
+                  aria-label="Select all"
+                  className="mr-4"
+                />
+                <span className="text-xs text-gray-700 font-semibold flex-1">Select All</span>
+                <span className="w-32" />
+              </div>
               {uploads.map((thesis) => (
-                <div key={thesis.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <div
+                  key={thesis.id}
+                  className={`flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors relative ${
+                    selected.includes(thesis.id) ? 'bg-dlsl-green/10 border-dlsl-green/70' : ''
+                  }`}
+                >
+                  <Checkbox
+                    checked={selected.includes(thesis.id)}
+                    onCheckedChange={() => toggleSelectOne(thesis.id)}
+                    aria-label={`Select thesis ${thesis.title}`}
+                    className="mr-3"
+                  />
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-900 mb-1">{thesis.title}</h3>
                     <p className="text-sm text-gray-600">by {thesis.author} • {thesis.college}</p>
                     <p className="text-xs text-gray-500 mt-1">Uploaded: {thesis.uploadDate}</p>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 pl-2">
                     <Badge variant={getStatusBadge(thesis.status).variant}>
                       {getStatusBadge(thesis.status).label}
                     </Badge>
