@@ -9,16 +9,459 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      collection_theses: {
+        Row: {
+          added_at: string | null
+          collection_id: string
+          id: string
+          thesis_id: string
+        }
+        Insert: {
+          added_at?: string | null
+          collection_id: string
+          id?: string
+          thesis_id: string
+        }
+        Update: {
+          added_at?: string | null
+          collection_id?: string
+          id?: string
+          thesis_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_theses_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collection_theses_thesis_id_fkey"
+            columns: ["thesis_id"]
+            isOneToOne: false
+            referencedRelation: "theses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collections: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          description: string | null
+          id: string
+          is_public: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      colleges: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          description: string | null
+          full_name: string
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          full_name: string
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          full_name?: string
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          college_id: string | null
+          created_at: string | null
+          id: string
+          name: string
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string | null
+        }
+        Insert: {
+          college_id?: string | null
+          created_at?: string | null
+          id: string
+          name: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+        }
+        Update: {
+          college_id?: string | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_profiles_college"
+            columns: ["college_id"]
+            isOneToOne: false
+            referencedRelation: "colleges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      programs: {
+        Row: {
+          college_id: string
+          created_at: string | null
+          degree_level: string
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          college_id: string
+          created_at?: string | null
+          degree_level: string
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          college_id?: string
+          created_at?: string | null
+          degree_level?: string
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "programs_college_id_fkey"
+            columns: ["college_id"]
+            isOneToOne: false
+            referencedRelation: "colleges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      theses: {
+        Row: {
+          abstract: string | null
+          adviser: string | null
+          author: string
+          co_adviser: string | null
+          college_id: string
+          cover_image_url: string | null
+          created_at: string | null
+          download_count: number | null
+          file_url: string | null
+          id: string
+          keywords: string[] | null
+          program_id: string | null
+          publish_date: string | null
+          status: Database["public"]["Enums"]["thesis_status"]
+          title: string
+          updated_at: string | null
+          uploaded_by: string | null
+          view_count: number | null
+        }
+        Insert: {
+          abstract?: string | null
+          adviser?: string | null
+          author: string
+          co_adviser?: string | null
+          college_id: string
+          cover_image_url?: string | null
+          created_at?: string | null
+          download_count?: number | null
+          file_url?: string | null
+          id?: string
+          keywords?: string[] | null
+          program_id?: string | null
+          publish_date?: string | null
+          status?: Database["public"]["Enums"]["thesis_status"]
+          title: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          abstract?: string | null
+          adviser?: string | null
+          author?: string
+          co_adviser?: string | null
+          college_id?: string
+          cover_image_url?: string | null
+          created_at?: string | null
+          download_count?: number | null
+          file_url?: string | null
+          id?: string
+          keywords?: string[] | null
+          program_id?: string | null
+          publish_date?: string | null
+          status?: Database["public"]["Enums"]["thesis_status"]
+          title?: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "theses_college_id_fkey"
+            columns: ["college_id"]
+            isOneToOne: false
+            referencedRelation: "colleges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "theses_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      thesis_downloads: {
+        Row: {
+          downloaded_at: string | null
+          id: string
+          ip_address: unknown | null
+          thesis_id: string
+          user_id: string | null
+        }
+        Insert: {
+          downloaded_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          thesis_id: string
+          user_id?: string | null
+        }
+        Update: {
+          downloaded_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          thesis_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "thesis_downloads_thesis_id_fkey"
+            columns: ["thesis_id"]
+            isOneToOne: false
+            referencedRelation: "theses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      thesis_views: {
+        Row: {
+          id: string
+          ip_address: unknown | null
+          thesis_id: string
+          user_id: string | null
+          viewed_at: string | null
+        }
+        Insert: {
+          id?: string
+          ip_address?: unknown | null
+          thesis_id: string
+          user_id?: string | null
+          viewed_at?: string | null
+        }
+        Update: {
+          id?: string
+          ip_address?: unknown | null
+          thesis_id?: string
+          user_id?: string | null
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "thesis_views_thesis_id_fkey"
+            columns: ["thesis_id"]
+            isOneToOne: false
+            referencedRelation: "theses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_favorites: {
+        Row: {
+          created_at: string | null
+          id: string
+          thesis_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          thesis_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          thesis_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_favorites_thesis_id_fkey"
+            columns: ["thesis_id"]
+            isOneToOne: false
+            referencedRelation: "theses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      binary_quantize: {
+        Args: { "": string } | { "": unknown }
+        Returns: unknown
+      }
+      halfvec_avg: {
+        Args: { "": number[] }
+        Returns: unknown
+      }
+      halfvec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      halfvec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      halfvec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["user_role"]
+        }
+        Returns: boolean
+      }
+      hnsw_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_sparsevec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnswhandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      is_admin_or_archivist: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
+      ivfflat_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflat_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflathandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      l2_norm: {
+        Args: { "": unknown } | { "": unknown }
+        Returns: number
+      }
+      l2_normalize: {
+        Args: { "": string } | { "": unknown } | { "": unknown }
+        Returns: unknown
+      }
+      sparsevec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      sparsevec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      sparsevec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
+      vector_avg: {
+        Args: { "": number[] }
+        Returns: string
+      }
+      vector_dims: {
+        Args: { "": string } | { "": unknown }
+        Returns: number
+      }
+      vector_norm: {
+        Args: { "": string }
+        Returns: number
+      }
+      vector_out: {
+        Args: { "": string }
+        Returns: unknown
+      }
+      vector_send: {
+        Args: { "": string }
+        Returns: string
+      }
+      vector_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
     }
     Enums: {
-      [_ in never]: never
+      thesis_status:
+        | "pending_review"
+        | "approved"
+        | "needs_revision"
+        | "rejected"
+      user_role: "researcher" | "archivist" | "admin" | "guest_researcher"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +576,14 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      thesis_status: [
+        "pending_review",
+        "approved",
+        "needs_revision",
+        "rejected",
+      ],
+      user_role: ["researcher", "archivist", "admin", "guest_researcher"],
+    },
   },
 } as const
