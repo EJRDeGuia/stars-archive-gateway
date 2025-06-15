@@ -4,6 +4,7 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileText, ExternalLink, Lock } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Set the workerSrc property to use the pdfjs-dist CDN build
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
@@ -96,61 +97,65 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const totalPagesToShow = maxPages && numPages ? Math.min(maxPages, numPages) : numPages;
 
   return (
-    <Card className={`${className}`}>
+    <Card className={className}>
       <CardContent className="p-0">
         <div className="bg-red-50 border-b border-red-200 p-3 rounded-t-2xl">
           <p className="text-red-800 text-sm text-center">
             <strong>Security Notice:</strong> This document is protected: downloading, copying, printing, and screenshots are not allowed.
           </p>
         </div>
-        <div className="flex flex-col items-center bg-gray-50" style={{ minHeight: 460 }}>
-          <Document
-            file={pdfUrl}
-            onLoadSuccess={onDocumentLoadSuccess}
-            loading={
-              <div className="w-full flex flex-col items-center justify-center py-14 text-gray-400">
-                <FileText className="w-12 h-12 mb-4 text-gray-300" />
-                <div>Loading PDF preview...</div>
+        {/* Scrollable PDF Preview */}
+        <ScrollArea className="w-full max-h-[540px]">
+          <div className="flex flex-col items-center bg-gray-50" style={{ minHeight: 460 }}>
+            <Document
+              file={pdfUrl}
+              onLoadSuccess={onDocumentLoadSuccess}
+              loading={
+                <div className="w-full flex flex-col items-center justify-center py-14 text-gray-400">
+                  <FileText className="w-12 h-12 mb-4 text-gray-300" />
+                  <div>Loading PDF preview...</div>
+                </div>
+              }
+              error={
+                <div className="w-full flex flex-col items-center justify-center py-14 text-red-400">
+                  <FileText className="w-12 h-12 mb-4 text-red-200" />
+                  <div>Failed to load PDF preview</div>
+                </div>
+              }
+              className="w-full flex flex-col items-center"
+            >
+              {Array.from(
+                new Array(totalPagesToShow || 0),
+                (el, index) => (
+                  <Page
+                    key={`page_${index + 1}`}
+                    pageNumber={index + 1}
+                    width={720}
+                    renderAnnotationLayer={false}
+                    renderTextLayer={false}
+                    loading={
+                      <div className="flex flex-col items-center py-8">
+                        <FileText className="w-8 h-8 mb-2 text-gray-200" />
+                        <span className="text-gray-300">Loading page...</span>
+                      </div>
+                    }
+                    className="mx-auto my-4 rounded-lg border border-gray-200 shadow bg-white"
+                  />
+                ),
+              )}
+            </Document>
+            {numPages && maxPages && numPages > maxPages && (
+              <div className="mt-5 text-sm text-gray-600 bg-yellow-50 rounded p-3 border border-yellow-100 shadow flex items-center gap-2">
+                <Lock className="w-4 h-4 text-yellow-500 mr-1" />
+                Only the first {maxPages} pages are visible. Request full access for the entire document.
               </div>
-            }
-            error={
-              <div className="w-full flex flex-col items-center justify-center py-14 text-red-400">
-                <FileText className="w-12 h-12 mb-4 text-red-200" />
-                <div>Failed to load PDF preview</div>
-              </div>
-            }
-            className="w-full flex flex-col items-center"
-          >
-            {Array.from(
-              new Array(totalPagesToShow || 0),
-              (el, index) => (
-                <Page
-                  key={`page_${index + 1}`}
-                  pageNumber={index + 1}
-                  width={720}
-                  renderAnnotationLayer={false}
-                  renderTextLayer={false}
-                  loading={
-                    <div className="flex flex-col items-center py-8">
-                      <FileText className="w-8 h-8 mb-2 text-gray-200" />
-                      <span className="text-gray-300">Loading page...</span>
-                    </div>
-                  }
-                  className="mx-auto my-4 rounded-lg border border-gray-200 shadow bg-white"
-                />
-              ),
             )}
-          </Document>
-          {numPages && maxPages && numPages > maxPages && (
-            <div className="mt-5 text-sm text-gray-600 bg-yellow-50 rounded p-3 border border-yellow-100 shadow flex items-center gap-2">
-              <Lock className="w-4 h-4 text-yellow-500 mr-1" />
-              Only the first {maxPages} pages are visible. Request full access for the entire document.
-            </div>
-          )}
-        </div>
+          </div>
+        </ScrollArea>
       </CardContent>
     </Card>
   );
 };
 
 export default PDFViewer;
+

@@ -109,7 +109,24 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
     setIsLoading(true);
     setInput('');
     try {
-      const results = await semanticSearchService.semanticSearch(query, 10);
+      // Log query for debug
+      console.log('[SemanticSearch] User query:', query);
+
+      let results = await semanticSearchService.semanticSearch(query, 10);
+
+      // Defensive Fallback: Try simple keyword filtering if semantic returns 0 results for "AI" etc.
+      if (
+        results.length === 0 &&
+        query.toLowerCase().includes('ai')
+      ) {
+        results = (await semanticSearchService.semanticSearch('artificial intelligence', 10)).filter(
+          t =>
+            t.title?.toLowerCase().includes('ai') ||
+            t.keywords?.some(k => k.toLowerCase().includes('ai')) ||
+            t.abstract?.toLowerCase().includes('ai')
+        );
+        console.log('[SemanticSearch] Fallback hit for "AI", results:', results);
+      }
 
       if (results.length === 0) {
         setChat((prev) => [
