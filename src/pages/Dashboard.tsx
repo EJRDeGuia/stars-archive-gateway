@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+
+import React from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -11,23 +12,19 @@ import RecentActivity from "@/components/dashboard/RecentActivity";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import SemanticSearchButton from "@/components/dashboard/SemanticSearchButton";
 import { getGreeting } from "@/utils/greetingUtils";
-import { useSemanticSearch } from "@/hooks/useSemanticSearch";
 
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
 
   // Redirect admin users to admin dashboard and archivists to archivist dashboard
-  useEffect(() => {
+  React.useEffect(() => {
     if (user?.role === "admin") {
       navigate("/admin");
     } else if (user?.role === "archivist") {
       navigate("/archivist");
     }
   }, [user, navigate]);
-
-  const { handleSemanticSearch } = useSemanticSearch();
 
   const handleQuickAction = (action: string) => {
     switch (action) {
@@ -110,3 +107,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
