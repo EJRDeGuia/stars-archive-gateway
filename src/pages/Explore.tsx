@@ -1,14 +1,40 @@
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import SearchInterface from '@/components/SearchInterface';
+import FacetFilterBar, { FacetFilterState } from '@/components/FacetFilterBar';
+import { useTheses } from '@/hooks/useApi';
+
+const defaultFilters: FacetFilterState = {
+  authors: [],
+  years: [],
+  colleges: [],
+  statuses: [],
+};
 
 const Explore = () => {
+  const [filters, setFilters] = useState<FacetFilterState>(defaultFilters);
+
+  // Get all theses to extract unique years/authors for filters
+  const { data: theses = [] } = useTheses();
+
+  const allAuthors = useMemo(() => {
+    // Unique list of authors
+    const s = new Set<string>();
+    theses.forEach((t: any) => t.author && s.add(t.author));
+    return Array.from(s).sort();
+  }, [theses]);
+
+  const allYears = useMemo(() => {
+    const s = new Set<string>();
+    theses.forEach((t: any) => t.year && s.add(String(t.year)));
+    return Array.from(s).sort((a, b) => Number(b) - Number(a));
+  }, [theses]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-dlsl-green/5">
       <Header />
-      
       <main className="flex-1 flex flex-col">
         <div className="flex-1 flex items-center justify-center py-8 px-4">
           <div className="w-full max-w-4xl">
@@ -19,20 +45,23 @@ const Explore = () => {
                   <span className="text-dlsl-green font-bold text-lg">S</span>
                 </div>
               </div>
-              
               <h1 className="text-4xl lg:text-5xl font-bold text-slate-800 mb-4 tracking-tight">
                 STARS Research Assistant
               </h1>
-              
               <p className="text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
                 Ask questions about research, find theses, or explore academic work at 
                 <span className="text-dlsl-green font-medium"> De La Salle Lipa University</span>
               </p>
             </div>
-
-            {/* Chat Interface */}
-            <SearchInterface className="animate-fade-in" />
-            
+            {/* Faceted Filters */}
+            <FacetFilterBar
+              filters={filters}
+              allYears={allYears}
+              allAuthors={allAuthors}
+              onFilterChange={setFilters}
+            />
+            {/* Chat/Search Interface */}
+            <SearchInterface className="animate-fade-in" filters={filters} />
             {/* Quick Suggestions */}
             <div className="mt-8 text-center">
               <p className="text-sm text-slate-500 mb-4">Try asking about:</p>
@@ -56,7 +85,6 @@ const Explore = () => {
           </div>
         </div>
       </main>
-
       <Footer />
     </div>
   );

@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -24,7 +23,11 @@ type ChatItem = {
   suggestions?: Thesis[];
 };
 
-const ChatSearch: React.FC = () => {
+type ChatSearchProps = {
+  filters?: any;
+};
+
+const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
   const [chat, setChat] = useState<ChatItem[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -47,6 +50,18 @@ const ChatSearch: React.FC = () => {
     // Filter out the thesis itself if it accidentally appears
     return related.filter(t => t.id !== mainResult.id);
   };
+
+  // For now, just log filters if they are applied (future: apply to backend search)
+  useEffect(() => {
+    if (filters && (
+      filters.authors.length > 0 ||
+      filters.years.length > 0 ||
+      filters.colleges.length > 0 ||
+      filters.statuses.length > 0
+    )) {
+      console.log('Applied filters:', filters);
+    }
+  }, [filters]);
 
   const handleSearch = async () => {
     const query = input.trim();

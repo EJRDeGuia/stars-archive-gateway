@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
@@ -37,16 +38,18 @@ interface Thesis {
 interface SearchInterfaceProps {
   onSearch?: (query: string) => void;
   className?: string;
+  filters?: any; // Accept filters from parent if provided
 }
 
 const SearchInterface: React.FC<SearchInterfaceProps> = ({
   onSearch,
   className = "",
+  filters,
 }) => {
-  // Remove any local search logic, always show ChatSearch
+  // Forward filters if needed in the future
   return (
     <div className={className}>
-      <ChatSearch />
+      <ChatSearch filters={filters} />
     </div>
   );
 };
