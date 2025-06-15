@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -48,6 +49,10 @@ const Settings = () => {
     (localStorage.getItem('contrast') as 'high' | 'default') || 'default'
   );
 
+  const [theme, setTheme] = useState(
+    localStorage.getItem('theme') || 'light'
+  );
+
   // Update settings in localStorage and DOM on change
   React.useEffect(() => {
     localStorage.setItem('theme', theme);
@@ -82,8 +87,6 @@ const Settings = () => {
       root.classList.remove('high-contrast');
     }
   }, [theme, fontSize, contrast]);
-
-  const [theme, setTheme] = useState('light');
 
   const handleSave = () => {
     toast({
@@ -452,3 +455,4 @@ const Settings = () => {
 };
 
 export default Settings;
+
