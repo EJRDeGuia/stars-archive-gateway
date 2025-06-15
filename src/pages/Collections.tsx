@@ -1,3 +1,4 @@
+
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CollegeCard from '@/components/CollegeCard';
@@ -8,10 +9,24 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+type FeaturedCollection = {
+  id: string;
+  title: string;
+  description: string | null;
+  image_url: string | null;
+  color: string;
+  type: string;
+  collection_id: string | null;
+};
+
 const Collections = () => {
   const navigate = useNavigate();
   const [colleges, setColleges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Featured collections
+  const [featured, setFeatured] = useState<FeaturedCollection[]>([]);
+  const [loadingFeatured, setLoadingFeatured] = useState(true);
 
   useEffect(() => {
     setLoading(true);
@@ -22,6 +37,19 @@ const Collections = () => {
       .then(({ data }) => {
         setColleges(data || []);
         setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    setLoadingFeatured(true);
+    supabase
+      .from('collection_highlights')
+      .select('*')
+      .eq('type', 'featured')
+      .order('updated_at', { ascending: false })
+      .then(({ data }) => {
+        setFeatured((data as FeaturedCollection[]) || []);
+        setLoadingFeatured(false);
       });
   }, []);
 
@@ -41,7 +69,49 @@ const Collections = () => {
           {/* Featured Collections */}
           <div className="mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-8">Featured Collections</h2>
-            <div className="text-gray-400 text-center py-20">No featured collections yet.</div>
+            {loadingFeatured ? (
+              <div className="text-gray-400 text-center py-20">Loading featured collections...</div>
+            ) : featured.length === 0 ? (
+              <div className="text-gray-400 text-center py-20">No featured collections yet.</div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                {featured.map((fc) => (
+                  <Card
+                    key={fc.id}
+                    className="hover:shadow-lg transition cursor-pointer relative"
+                    style={{
+                      borderColor: fc.color || '#059669',
+                      borderWidth: 2,
+                    }}
+                    onClick={() =>
+                      fc.collection_id
+                        ? navigate(`/collections/${fc.collection_id}`)
+                        : undefined
+                    }
+                  >
+                    {fc.image_url && (
+                      <img
+                        src={fc.image_url}
+                        alt={fc.title}
+                        className="rounded-t-lg w-full h-40 object-cover"
+                        style={{
+                          backgroundColor: fc.color || '#059669',
+                        }}
+                      />
+                    )}
+                    <CardContent className="p-4">
+                      <h3 className="font-semibold text-lg mb-2" style={{ color: fc.color || '#059669' }}>
+                        {fc.title}
+                      </h3>
+                      <div className="mb-2 text-sm text-gray-600">{fc.description}</div>
+                      <Badge className="absolute top-3 right-3" style={{ backgroundColor: fc.color || '#059669', color: '#fff' }}>
+                        Featured
+                      </Badge>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* College Collections */}
@@ -120,3 +190,4 @@ const Collections = () => {
 };
 
 export default Collections;
+
