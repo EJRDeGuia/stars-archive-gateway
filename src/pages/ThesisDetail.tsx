@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,18 +21,42 @@ import {
   Share2
 } from 'lucide-react';
 import ThesisPDFPreviewDialog from '@/components/ThesisPDFPreviewDialog';
-
-// Provide EMPTY ARRAY for now. Should be replaced with Supabase-fetched values.
-const theses: any[] = [];
+import { useThesis } from '@/hooks/useApi';
 
 const ThesisDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  
-  const thesis = theses.find(t => t.id === id);
 
-  if (!thesis) {
+  const { data: thesis, isLoading, error } = useThesis(id || "");
+
+  const [showPreview, setShowPreview] = React.useState(false);
+
+  // Derived fields for easy rendering; guard against undefined
+  const collegeName = thesis?.colleges?.name || "Unknown College";
+  const thesisYear =
+    thesis?.publish_date
+      ? new Date(thesis.publish_date).getFullYear()
+      : thesis?.created_at
+        ? new Date(thesis.created_at).getFullYear()
+        : "N/A";
+  const thesisKeywords =
+    Array.isArray(thesis?.keywords)
+      ? thesis.keywords.filter(Boolean)
+      : [];
+
+  // Loading and error handling
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-green-900 mb-4">Loading thesis...</h1>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !thesis) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center">
         <div className="text-center">
@@ -46,8 +71,6 @@ const ThesisDetail = () => {
 
   const canViewPDF = user?.role && ['researcher', 'archivist', 'admin'].includes(user.role);
 
-  const [showPreview, setShowPreview] = React.useState(false);
-
   const handleSaveToLibrary = () => {
     // Implementation for saving to library
     console.log('Saving to library:', thesis.id);
@@ -56,7 +79,7 @@ const ThesisDetail = () => {
 
   const handleCite = () => {
     // Implementation for citing
-    const citation = `${thesis.author}. (${thesis.year}). ${thesis.title}. De La Salle Lipa University.`;
+    const citation = `${thesis.author}. (${thesisYear}). ${thesis.title}. De La Salle Lipa University.`;
     navigator.clipboard.writeText(citation);
     console.log('Citation copied:', citation);
   };
@@ -103,35 +126,39 @@ const ThesisDetail = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="h-5 w-5" />
-                        <span className="text-lg">{thesis.year}</span>
+                        <span className="text-lg">{thesisYear}</span>
                       </div>
                       <Badge variant="secondary" className="bg-dlsl-green/10 text-dlsl-green border-0 text-sm">
-                        {thesis.college}
+                        {collegeName}
                       </Badge>
                     </div>
 
                     <div className="flex items-center gap-8 text-gray-500">
                       <div className="flex items-center gap-2">
                         <Eye className="h-5 w-5" />
-                        <span>1,234 views</span>
+                        <span>{thesis.view_count || 0} views</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Heart className="h-5 w-5" />
-                        <span>45 likes</span>
+                        <span>{thesis.download_count || 0} downloads</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <MessageCircle className="h-5 w-5" />
-                        <span>12 citations</span>
+                        <span>Citations not tracked</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="flex flex-wrap gap-3">
-                    {thesis.keywords.map((keyword, index) => (
-                      <Badge key={index} variant="outline" className="border-gray-300 text-gray-600">
-                        {keyword}
-                      </Badge>
-                    ))}
+                    {thesisKeywords.length > 0 ? (
+                      thesisKeywords.map((keyword, index) => (
+                        <Badge key={index} variant="outline" className="border-gray-300 text-gray-600">
+                          {keyword}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-gray-400 italic">No keywords</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -141,7 +168,7 @@ const ThesisDetail = () => {
                 <div className="p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Abstract</h2>
                   <p className="text-gray-700 leading-relaxed text-lg">
-                    {thesis.abstract}
+                    {thesis.abstract || <span className="text-gray-400 italic">No abstract</span>}
                   </p>
                 </div>
               </div>
@@ -151,13 +178,17 @@ const ThesisDetail = () => {
                 <div className="p-8">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold text-gray-900">Document Preview</h2>
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowPreview(true)}
-                      className="border-dlsl-green text-dlsl-green hover:bg-dlsl-green/5 font-semibold"
-                    >
-                      Preview PDF (First 10 Pages)
-                    </Button>
+                    {canViewPDF && thesis.file_url ? (
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowPreview(true)}
+                        className="border-dlsl-green text-dlsl-green hover:bg-dlsl-green/5 font-semibold"
+                      >
+                        Preview PDF (First 10 Pages)
+                      </Button>
+                    ) : (
+                      <span className="text-gray-400 italic">No PDF preview available</span>
+                    )}
                   </div>
                   <div className="text-gray-500 text-sm mb-2">
                     View-only, download/copy/print disabled. This preview is secured via Adobe PDF Viewer.
@@ -170,7 +201,7 @@ const ThesisDetail = () => {
                 <div className="p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Research Methodology</h2>
                   <p className="text-gray-700 leading-relaxed text-lg">
-                    This research employed a mixed-methods approach, combining quantitative analysis through surveys and qualitative insights from in-depth interviews. The study utilized a sample size of 200 participants selected through stratified random sampling to ensure representative results across different demographic groups.
+                    No methodology data available.
                   </p>
                 </div>
               </div>
@@ -182,15 +213,7 @@ const ThesisDetail = () => {
                   <ul className="space-y-4 text-gray-700 text-lg">
                     <li className="flex items-start gap-3">
                       <div className="w-2 h-2 bg-dlsl-green rounded-full mt-3 flex-shrink-0"></div>
-                      <span>The implementation of AI-driven educational technologies showed a 35% improvement in student engagement rates.</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-dlsl-green rounded-full mt-3 flex-shrink-0"></div>
-                      <span>Students demonstrated increased retention rates when using adaptive learning platforms compared to traditional methods.</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-dlsl-green rounded-full mt-3 flex-shrink-0"></div>
-                      <span>The cost-effectiveness of implementing these technologies showed positive ROI within 18 months.</span>
+                      <span>No key findings available.</span>
                     </li>
                   </ul>
                 </div>
@@ -239,15 +262,15 @@ const ThesisDetail = () => {
                   <div className="space-y-4 text-gray-600">
                     <div className="flex justify-between">
                       <span>Pages:</span>
-                      <span className="font-medium text-gray-900">127</span>
+                      <span className="font-medium text-gray-900">N/A</span>
                     </div>
                     <div className="flex justify-between">
                       <span>File Size:</span>
-                      <span className="font-medium text-gray-900">2.4 MB</span>
+                      <span className="font-medium text-gray-900">N/A</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Format:</span>
-                      <span className="font-medium text-gray-900">PDF</span>
+                      <span className="font-medium text-gray-900">{thesis.file_url ? "PDF" : "N/A"}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Language:</span>
@@ -255,29 +278,23 @@ const ThesisDetail = () => {
                     </div>
                     <div className="flex justify-between">
                       <span>Added:</span>
-                      <span className="font-medium text-gray-900">Mar 15, 2024</span>
+                      <span className="font-medium text-gray-900">
+                        {thesis.created_at
+                          ? new Date(thesis.created_at).toLocaleDateString()
+                          : "N/A"}
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Related Theses */}
+              {/* This needs related data. Placeholder for now */}
               <div className="bg-white border border-gray-200 rounded-2xl shadow-sm">
                 <div className="p-6">
                   <h3 className="text-xl font-bold text-gray-900 mb-6">Related Theses</h3>
                   <div className="space-y-4">
-                    {theses.filter(t => t.id !== thesis.id && t.college === thesis.college).slice(0, 3).map((relatedThesis) => (
-                      <div 
-                        key={relatedThesis.id}
-                        className="cursor-pointer group"
-                        onClick={() => navigate(`/thesis/${relatedThesis.id}`)}
-                      >
-                        <h4 className="font-medium text-gray-900 group-hover:text-dlsl-green transition-colors leading-tight mb-2">
-                          {relatedThesis.title.substring(0, 60)}...
-                        </h4>
-                        <p className="text-sm text-gray-600">{relatedThesis.author} • {relatedThesis.year}</p>
-                      </div>
-                    ))}
+                    <span className="text-gray-400 italic">No related theses found.</span>
                   </div>
                 </div>
               </div>
@@ -288,10 +305,10 @@ const ThesisDetail = () => {
         <ThesisPDFPreviewDialog
           open={showPreview}
           onOpenChange={setShowPreview}
-          pdfUrl={"/sample-thesis.pdf"}
+          pdfUrl={thesis.file_url || ""}
           title={thesis.title}
           author={thesis.author}
-          year={thesis.year || "N/A"}
+          year={thesisYear}
         />
       </main>
 
@@ -301,3 +318,4 @@ const ThesisDetail = () => {
 };
 
 export default ThesisDetail;
+
