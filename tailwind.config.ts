@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -109,7 +108,13 @@ export default {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out'
 			}
-		}
+		},
+		// Add safelisting for custom classes so Tailwind doesn't purge them
+		safelist: [
+			'large-font',
+			'high-contrast',
+			'dark'
+		]
 	},
 	plugins: [require("tailwindcss-animate")],
 } satisfies Config;
