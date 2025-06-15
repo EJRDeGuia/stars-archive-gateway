@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Header } from '@/components/Header';
+import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import PDFViewer from '@/components/PDFViewer';
 import { Card, CardContent } from '@/components/ui/card';

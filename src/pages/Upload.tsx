@@ -33,6 +33,15 @@ const Upload = () => {
     advisor: ''
   });
 
+  // Add colleges array for the Select in the form
+  const colleges = [
+    { id: 'cite', name: 'CITE', fullName: 'College of Information Technology and Engineering' },
+    { id: 'cbeam', name: 'CBEAM', fullName: 'College of Business, Economics, Accountancy, and Management' },
+    { id: 'ceas', name: 'CEAS', fullName: 'College of Education, Arts, and Sciences' },
+    { id: 'con', name: 'CON', fullName: 'College of Nursing' },
+    { id: 'cihtm', name: 'CIHTM', fullName: 'College of International Hospitality and Tourism Management' }
+  ];
+
   const departments = {
     cite: ['Computer Science', 'Information Technology', 'Computer Engineering', 'Electronics Engineering'],
     cbeam: ['Business Administration', 'Management', 'Accountancy', 'Economics', 'Marketing'],
