@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -16,11 +17,7 @@ import {
   Download, 
   Mail, 
   User, 
-  Lock,
-  Globe,
-  Monitor,
-  Moon,
-  Sun
+  Lock
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
@@ -40,52 +37,8 @@ const Settings = () => {
     libraryVisible: true
   });
 
-  // ADD: state for font size and contrast
-  const [fontSize, setFontSize] = useState<'default' | 'large'>(
-    (localStorage.getItem('fontSize') as 'large' | 'default') || 'default'
-  );
-  const [contrast, setContrast] = useState<'default' | 'high'>(
-    (localStorage.getItem('contrast') as 'high' | 'default') || 'default'
-  );
-
-  const [theme, setTheme] = useState(
-    localStorage.getItem('theme') || 'light'
-  );
-
-  // Update settings in localStorage and DOM on change
-  React.useEffect(() => {
-    localStorage.setItem('theme', theme);
-    localStorage.setItem('fontSize', fontSize);
-    localStorage.setItem('contrast', contrast);
-
-    // Light/dark mode -- handle system and user preference
-    const root = document.documentElement;
-    if (theme === 'system') {
-      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        root.classList.add('dark');
-      } else {
-        root.classList.remove('dark');
-      }
-    } else if (theme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-
-    // Font size class
-    if (fontSize === 'large') {
-      root.classList.add('large-font');
-    } else {
-      root.classList.remove('large-font');
-    }
-
-    // High-contrast class
-    if (contrast === 'high') {
-      root.classList.add('high-contrast');
-    } else {
-      root.classList.remove('high-contrast');
-    }
-  }, [theme, fontSize, contrast]);
+  // Remove theme/font/contrast related state and logic
+  // Hide appearance/accessibility section entirely
 
   const handleSave = () => {
     toast({
@@ -97,7 +50,6 @@ const Settings = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
       <main className="flex-1">
         <div className="max-w-4xl mx-auto px-6 lg:px-8 py-12">
           {/* Header */}
@@ -299,105 +251,7 @@ const Settings = () => {
               </CardContent>
             </Card>
 
-            {/* Appearance & Accessibility Settings */}
-            <Card className="bg-background border-gray-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3 text-2xl text-gray-900">
-                  <Palette className="w-6 h-6 text-primary" />
-                  Appearance & Accessibility
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Theme</h3>
-                  <div className="grid grid-cols-3 gap-4">
-                    {[
-                      { id: 'light', label: 'Light', icon: Sun },
-                      { id: 'dark', label: 'Dark', icon: Moon },
-                      { id: 'system', label: 'System', icon: Monitor }
-                    ].map((option) => {
-                      const Icon = option.icon;
-                      return (
-                        <button
-                          key={option.id}
-                          onClick={() => setTheme(option.id)}
-                          tabIndex={0}
-                          className={`p-4 rounded-xl border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-primary ${
-                            theme === option.id 
-                              ? 'border-primary bg-primary/10' 
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                          aria-pressed={theme === option.id}
-                          aria-label={`Select ${option.label} mode`}
-                        >
-                          <Icon className={`w-6 h-6 mx-auto mb-2 ${
-                            theme === option.id ? 'text-primary' : 'text-gray-600'
-                          }`} />
-                          <p className={`text-sm font-medium ${
-                            theme === option.id ? 'text-primary' : 'text-gray-900'
-                          }`}>
-                            {option.label}
-                          </p>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <Separator />
-                  <h3 className="text-lg font-semibold text-gray-900">Font Size</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <button
-                      onClick={() => setFontSize('default')}
-                      tabIndex={0}
-                      className={`p-3 rounded-xl border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-primary ${
-                        fontSize === 'default'
-                          ? 'border-primary bg-primary/10'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      aria-pressed={fontSize === 'default'}
-                      aria-label="Default font size"
-                    >Default</button>
-                    <button
-                      onClick={() => setFontSize('large')}
-                      tabIndex={0}
-                      className={`p-3 rounded-xl border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-primary ${
-                        fontSize === 'large'
-                          ? 'border-primary bg-primary/10'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      aria-pressed={fontSize === 'large'}
-                      aria-label="Large font size"
-                    >Large</button>
-                  </div>
-                  <Separator />
-                  <h3 className="text-lg font-semibold text-gray-900">Contrast</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <button
-                      onClick={() => setContrast('default')}
-                      tabIndex={0}
-                      className={`p-3 rounded-xl border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-primary ${
-                        contrast === 'default'
-                          ? 'border-primary bg-primary/10'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      aria-pressed={contrast === 'default'}
-                      aria-label="Default contrast"
-                    >Default</button>
-                    <button
-                      onClick={() => setContrast('high')}
-                      tabIndex={0}
-                      className={`p-3 rounded-xl border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-primary ${
-                        contrast === 'high'
-                          ? 'border-primary bg-primary/10'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      aria-pressed={contrast === 'high'}
-                      aria-label="High contrast"
-                    >High Contrast</button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
+            {/* Appearance & Accessibility Settings REMOVED */}
             {/* Data & Storage */}
             <Card className="bg-background border-gray-200">
               <CardHeader>
