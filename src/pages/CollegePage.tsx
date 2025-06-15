@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from "react";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -94,7 +93,9 @@ const CollegePage = () => {
                         {thesesForCollege.map((thesis) => (
                           <div key={thesis.id} className="border border-slate-100 rounded-lg p-5 bg-slate-50 hover:bg-dlsl-green/5 transition-all cursor-pointer shadow-sm">
                             <div className="font-bold text-dlsl-green text-lg mb-1">{thesis.title}</div>
-                            <div className="text-xs text-slate-500 mb-1">{thesis.author} • {thesis.year} • <span>{thesis.college}</span></div>
+                            <div className="text-xs text-slate-500 mb-1">
+                              {thesis.author} • {thesis.publishDate?.slice(0, 4) || "N/A"} • <span>{thesis.college}</span>
+                            </div>
                             <div className="text-slate-700 text-sm mb-2">{thesis.abstract?.substring(0, 110)}...</div>
                             <div className="flex flex-wrap gap-2 mt-1">
                               {thesis.keywords?.slice(0, 4).map((k, i) => (
