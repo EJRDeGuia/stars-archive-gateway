@@ -1,4 +1,3 @@
-import { theses } from '@/data/mockData';
 
 interface SearchResult {
   thesis: any;
@@ -86,13 +85,12 @@ export class SemanticSearchService {
       if (!resp.ok) throw new Error('Failed to fetch semantic search results.');
       const data = await resp.json();
       // Each item is a row from theses table with a 'similarity' property
-      // Format as needed for frontend
       if (data.results && Array.isArray(data.results)) {
         return data.results.map((thesis: any) => ({
           id: thesis.id,
           title: thesis.title,
           author: thesis.author,
-          year: new Date(thesis.publish_date).getFullYear?.() || 0,
+          year: thesis.publish_date ? new Date(thesis.publish_date).getFullYear() : 0,
           college: thesis.college_id,
           abstract: thesis.abstract,
           keywords: thesis.keywords || [],
@@ -103,17 +101,6 @@ export class SemanticSearchService {
       console.error('Semantic search error:', err);
       return [];
     }
-  }
-
-  // Traditional keyword search as fallback
-  keywordSearch(query: string): any[] {
-    const lowercaseQuery = query.toLowerCase();
-    return theses.filter(thesis =>
-      thesis.title.toLowerCase().includes(lowercaseQuery) ||
-      thesis.author.toLowerCase().includes(lowercaseQuery) ||
-      thesis.abstract.toLowerCase().includes(lowercaseQuery) ||
-      thesis.keywords.some(keyword => keyword.toLowerCase().includes(lowercaseQuery))
-    );
   }
 }
 

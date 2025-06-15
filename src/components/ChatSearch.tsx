@@ -2,7 +2,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Send, Sparkles, Loader, User, Bot } from 'lucide-react';
+import { Send, Sparkles, Loader, User, Bot, Lightbulb } from 'lucide-react';
 import { semanticSearchService } from '@/services/semanticSearch';
 import { useToast } from '@/hooks/use-toast';
 
@@ -21,6 +21,7 @@ type ChatItem = {
   query?: string;
   results?: Thesis[];
   error?: string;
+  suggestions?: Thesis[];
 };
 
 const ChatSearch: React.FC = () => {
@@ -35,6 +36,18 @@ const ChatSearch: React.FC = () => {
     chatEndRef?.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chat]);
 
+  // Find related theses for the top result using its title or keywords
+  const fetchRelatedTheses = async (mainResult: Thesis) => {
+    // Use the title plus keywords for secondary semantic search, excluding the thesis itself
+    let relatedQuery = mainResult.title;
+    if (mainResult.keywords && mainResult.keywords.length > 0) {
+      relatedQuery += ' ' + mainResult.keywords.join(' ');
+    }
+    const related = await semanticSearchService.semanticSearch(relatedQuery, 5);
+    // Filter out the thesis itself if it accidentally appears
+    return related.filter(t => t.id !== mainResult.id);
+  };
+
   const handleSearch = async () => {
     const query = input.trim();
     if (!query) return;
@@ -43,6 +56,7 @@ const ChatSearch: React.FC = () => {
     setInput('');
     try {
       const results = await semanticSearchService.semanticSearch(query, 10);
+
       if (results.length === 0) {
         setChat((prev) => [
           ...prev,
@@ -54,9 +68,17 @@ const ChatSearch: React.FC = () => {
           variant: 'destructive',
         });
       } else {
+        // After main search: Fetch related suggestions for the top result
+        let suggestions: Thesis[] = [];
+        try {
+          suggestions = results.length > 0 ? await fetchRelatedTheses(results[0]) : [];
+        } catch (_) {
+          suggestions = [];
+        }
+
         setChat((prev) => [
           ...prev,
-          { type: 'result', results, query },
+          { type: 'result', results, query, suggestions }
         ]);
       }
     } catch (e: any) {
@@ -112,8 +134,8 @@ const ChatSearch: React.FC = () => {
               </div>
             </div>
           ) : item.type === 'result' ? (
-            <div key={idx} className="flex items-end justify-start">
-              <div className="bg-white border border-dlsl-green/25 rounded-2xl px-4 py-3 max-w-[75%] flex flex-col shadow group hover:border-dlsl-green transition-all">
+            <div key={idx} className="flex flex-col items-start justify-start">
+              <div className="bg-white border border-dlsl-green/25 rounded-2xl px-4 py-3 max-w-[75%] flex flex-col shadow group hover:border-dlsl-green transition-all mb-2">
                 <div className="flex items-center mb-1">
                   <Bot className="h-4 w-4 mr-2 text-dlsl-green" />
                   <span className="text-xs text-dlsl-green font-medium">STARS AI</span>
@@ -126,20 +148,41 @@ const ChatSearch: React.FC = () => {
                       <div key={tidx} className="border border-slate-100 rounded-lg p-3 bg-slate-50 hover:bg-dlsl-green/5 transition-all cursor-pointer">
                         <div className="font-bold text-dlsl-green text-md mb-0.5">{thesis.title}</div>
                         <div className="text-xs text-slate-500 mb-0.5">{thesis.author} • {thesis.year} • <span className="">{thesis.college}</span></div>
-                        <div className="text-slate-700 text-sm mb-1">{thesis.abstract.substring(0, 100)}...</div>
+                        <div className="text-slate-700 text-sm mb-1">{thesis.abstract?.substring(0, 100)}...</div>
                         <div className="flex flex-wrap gap-2 mt-1">
-                          {thesis.keywords.slice(0, 3).map((k, i) => (
+                          {thesis.keywords?.slice(0, 3).map((k, i) => (
                             <span key={i} className="px-2 py-0.5 rounded-full bg-dlsl-green/10 text-xs text-dlsl-green">{k}</span>
                           ))}
                         </div>
                       </div>
                     ))}
                     {item.results!.length > 3 && (
-                      <div className="text-xs mt-2 text-dlsl-green underline cursor-pointer">+{item.results!.length - 3} more results</div>
+                      <div className="text-xs mt-2 text-dlsl-green underline cursor-pointer">
+                        +{item.results!.length - 3} more results
+                      </div>
                     )}
                   </div>
                 )}
               </div>
+              {/* Suggestions/Related Theses */}
+              {item.suggestions && item.suggestions.length > 0 && (
+                <div className="bg-dlsl-green/5 border border-dlsl-green/15 rounded-xl px-4 py-2 mt-1 max-w-[75%]">
+                  <div className="flex items-center mb-1 gap-1">
+                    <Lightbulb className="h-4 w-4 text-dlsl-green mr-1" />
+                    <span className="text-xs text-dlsl-green font-semibold uppercase tracking-wider">Related Theses</span>
+                  </div>
+                  <ul className="space-y-1">
+                    {item.suggestions.map((s, sidx) => (
+                      <li key={sidx} className="text-sm text-dlsl-green/90 hover:underline cursor-pointer">
+                        {s.title}
+                        <span className="text-xs text-slate-500 ml-2">
+                          ({s.author}, {s.year})
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           ) : (
             <div key={idx} className="flex items-end justify-start">

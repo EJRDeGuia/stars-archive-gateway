@@ -43,7 +43,7 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({
   onSearch,
   className = "",
 }) => {
-  // For now, suppress unused warning, pass onSearch if wanted
+  // Remove any local search logic, always show ChatSearch
   return (
     <div className={className}>
       <ChatSearch />
