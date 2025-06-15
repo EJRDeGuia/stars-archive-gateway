@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -9,19 +8,13 @@ import StatisticsCards from '@/components/archivist/StatisticsCards';
 import ArchivistQuickActions from '@/components/archivist/ArchivistQuickActions';
 import CollegeGrid from '@/components/dashboard/CollegeGrid';
 import RecentUploads from '@/components/archivist/RecentUploads';
+import { useArchivistDashboardData } from '@/hooks/useArchivistDashboardData';
 
 const ArchivistDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Mock data REMOVED! Set stats and recentUploads to empty
-  const stats = {
-    totalTheses: 0,
-    pendingReview: 0,
-    thisMonth: 0
-  };
-
-  const recentUploads: any[] = [];
+  const { stats, recentUploads, loading } = useArchivistDashboardData();
 
   const handleQuickAction = (action: string) => {
     switch (action) {
@@ -64,10 +57,16 @@ const ArchivistDashboard = () => {
             </p>
           </div>
 
-          <StatisticsCards stats={stats} />
-          <ArchivistQuickActions onActionClick={handleQuickAction} />
-          <CollegeGrid />
-          <RecentUploads uploads={recentUploads} />
+          {loading ? (
+            <div className="text-center text-gray-400 py-8">Loading stats...</div>
+          ) : (
+            <>
+              <StatisticsCards stats={stats} />
+              <ArchivistQuickActions onActionClick={handleQuickAction} />
+              <CollegeGrid />
+              <RecentUploads uploads={recentUploads} />
+            </>
+          )}
         </div>
       </main>
 
