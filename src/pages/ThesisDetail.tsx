@@ -205,7 +205,7 @@ const ThesisDetail = () => {
                     )}
                   </div>
                   <div className="text-gray-500 text-sm mb-2">
-                    View-only, download/copy/print disabled. This preview is secured via Adobe PDF Viewer.
+                    View-only, download/copy/print disabled. This preview is secured for on-site reading at De La Salle Lipa.
                   </div>
                 </div>
               </div>
