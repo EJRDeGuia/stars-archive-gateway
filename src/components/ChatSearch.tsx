@@ -51,14 +51,17 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
     return related.filter(t => t.id !== mainResult.id);
   };
 
-  // For now, just log filters if they are applied (future: apply to backend search)
+  // Fix: defensively check filter arrays
   useEffect(() => {
-    if (filters && (
-      filters.authors.length > 0 ||
-      filters.years.length > 0 ||
-      filters.colleges.length > 0 ||
-      filters.statuses.length > 0
-    )) {
+    if (
+      filters &&
+      (
+        (filters.authors && filters.authors.length > 0) ||
+        (filters.years && filters.years.length > 0) ||
+        (filters.colleges && filters.colleges.length > 0) ||
+        (filters.statuses && filters.statuses.length > 0)
+      )
+    ) {
       console.log('Applied filters:', filters);
     }
   }, [filters]);
