@@ -22,13 +22,15 @@ import {
 } from 'lucide-react';
 import ThesisPDFPreviewDialog from '@/components/ThesisPDFPreviewDialog';
 import { useThesis } from '@/hooks/useApi';
+import type { Thesis } from '@/types/thesis';
 
 const ThesisDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const { data: thesis, isLoading, error } = useThesis(id || "");
+  // Make sure to type thesis as Thesis | undefined
+  const { data: thesis, isLoading, error } = useThesis(id || "") as { data: Thesis | undefined, isLoading: boolean, error: any };
 
   const [showPreview, setShowPreview] = React.useState(false);
 
@@ -40,6 +42,7 @@ const ThesisDetail = () => {
       : thesis?.created_at
         ? new Date(thesis.created_at).getFullYear()
         : "N/A";
+  const thesisYearString = typeof thesisYear === "number" ? thesisYear.toString() : thesisYear;
   const thesisKeywords =
     Array.isArray(thesis?.keywords)
       ? thesis.keywords.filter(Boolean)
@@ -79,7 +82,7 @@ const ThesisDetail = () => {
 
   const handleCite = () => {
     // Implementation for citing
-    const citation = `${thesis.author}. (${thesisYear}). ${thesis.title}. De La Salle Lipa University.`;
+    const citation = `${thesis.author}. (${thesisYearString}). ${thesis.title}. De La Salle Lipa University.`;
     navigator.clipboard.writeText(citation);
     console.log('Citation copied:', citation);
   };
@@ -126,7 +129,7 @@ const ThesisDetail = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="h-5 w-5" />
-                        <span className="text-lg">{thesisYear}</span>
+                        <span className="text-lg">{thesisYearString}</span>
                       </div>
                       <Badge variant="secondary" className="bg-dlsl-green/10 text-dlsl-green border-0 text-sm">
                         {collegeName}
@@ -308,7 +311,7 @@ const ThesisDetail = () => {
           pdfUrl={thesis.file_url || ""}
           title={thesis.title}
           author={thesis.author}
-          year={thesisYear}
+          year={thesisYearString}
         />
       </main>
 
