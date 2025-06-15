@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -13,30 +14,25 @@ import {
   BookOpen, 
   Heart, 
   Download, 
-  Calendar, 
-  User,
-  Trash2,
-  ExternalLink,
-  FolderOpen,
-  Plus
+  Plus,
+  FolderOpen
 } from 'lucide-react';
-
-// Provide EMPTY ARRAYS for now. Should be replaced with Supabase-fetched values.
-const theses: any[] = [];
+import { useAuth } from '@/hooks/useAuth';
+import { useUserFavorites } from '@/hooks/useApi';
 
 const Library = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('bookmarks');
   
-  // In future phases, fetch user's real data. For now, all arrays are empty.
-  const savedTheses: any[] = [];
-  const downloadedTheses: any[] = [];
+  // Get user's favorites
+  const { data: userFavorites = [], isLoading } = useUserFavorites(user?.id);
 
   const filteredItems = (items: any[]) => {
-    return items.filter(thesis => 
-      (thesis.title?.toLowerCase()?.includes(searchQuery.toLowerCase()) ||
-      thesis.author?.toLowerCase()?.includes(searchQuery.toLowerCase()))
+    return items.filter(item => 
+      (item.title?.toLowerCase()?.includes(searchQuery.toLowerCase()) ||
+      item.author?.toLowerCase()?.includes(searchQuery.toLowerCase()))
     );
   };
 
@@ -45,10 +41,27 @@ const Library = () => {
   };
 
   const tabs = [
-    { id: 'bookmarks', label: 'Bookmarks', count: savedTheses.length },
-    { id: 'downloads', label: 'Downloads', count: downloadedTheses.length },
+    { id: 'bookmarks', label: 'Bookmarks', count: userFavorites.length },
+    { id: 'downloads', label: 'Downloads', count: 0 },
     { id: 'collections', label: 'Collections', count: 0 },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="flex-1">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-dlsl-green mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading your library...</p>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -71,9 +84,12 @@ const Library = () => {
                 <h1 className="text-4xl font-bold text-gray-900 mb-2">My Library</h1>
                 <p className="text-xl text-gray-600">Your saved research papers and collections</p>
               </div>
-              <Button className="bg-primary text-white">
+              <Button 
+                className="bg-dlsl-green hover:bg-dlsl-green/90 text-white"
+                onClick={() => navigate('/collections')}
+              >
                 <Plus className="mr-2 h-4 w-4" />
-                New Collection
+                Browse Collections
               </Button>
             </div>
 
@@ -86,7 +102,7 @@ const Library = () => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search your library..."
-                    className="pl-12 h-12 border-gray-300 focus:border-primary"
+                    className="pl-12 h-12 border-gray-300 focus:border-dlsl-green"
                   />
                 </div>
                 <Button variant="outline" className="h-12 border-gray-300">
@@ -122,10 +138,52 @@ const Library = () => {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900">
-                  Bookmarked Papers (0)
+                  Bookmarked Papers ({userFavorites.length})
                 </h2>
               </div>
-              <div className="text-gray-400 text-center py-8">No bookmarks found.</div>
+              
+              {userFavorites.length === 0 ? (
+                <Card className="text-center py-12">
+                  <CardContent>
+                    <Heart className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-gray-700 mb-2">No bookmarks yet</h3>
+                    <p className="text-gray-500 mb-6">Start exploring and bookmark theses that interest you</p>
+                    <Button 
+                      onClick={() => navigate('/explore')}
+                      className="bg-dlsl-green hover:bg-dlsl-green/90"
+                    >
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      Explore Theses
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {userFavorites.map((favorite) => (
+                    <Card 
+                      key={favorite.id} 
+                      className="hover:shadow-lg transition-shadow cursor-pointer"
+                      onClick={() => handleThesisClick(favorite.thesis_id)}
+                    >
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between mb-3">
+                          <BookOpen className="h-6 w-6 text-dlsl-green" />
+                          <Heart className="h-5 w-5 text-red-500 fill-current" />
+                        </div>
+                        <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                          Thesis #{favorite.thesis_id.slice(0, 8)}...
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-4">
+                          Added {new Date(favorite.created_at).toLocaleDateString()}
+                        </p>
+                        <Button variant="outline" size="sm" className="w-full">
+                          View Thesis
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -136,7 +194,20 @@ const Library = () => {
                   Downloaded Papers (0)
                 </h2>
               </div>
-              <div className="text-gray-400 text-center py-8">No downloads found.</div>
+              <Card className="text-center py-12">
+                <CardContent>
+                  <Download className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-700 mb-2">No downloads yet</h3>
+                  <p className="text-gray-500 mb-6">Download theses to access them offline</p>
+                  <Button 
+                    onClick={() => navigate('/explore')}
+                    className="bg-dlsl-green hover:bg-dlsl-green/90"
+                  >
+                    <BookOpen className="mr-2 h-4 w-4" />
+                    Explore Theses
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
           )}
 
@@ -145,7 +216,20 @@ const Library = () => {
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900">Collections (0)</h2>
               </div>
-              <div className="text-gray-400 text-center py-8">No collections found.</div>
+              <Card className="text-center py-12">
+                <CardContent>
+                  <FolderOpen className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-700 mb-2">No collections yet</h3>
+                  <p className="text-gray-500 mb-6">Organize your research with curated collections</p>
+                  <Button 
+                    onClick={() => navigate('/collections')}
+                    className="bg-dlsl-green hover:bg-dlsl-green/90"
+                  >
+                    <FolderOpen className="mr-2 h-4 w-4" />
+                    Browse Collections
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
           )}
         </div>

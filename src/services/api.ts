@@ -1,5 +1,6 @@
 
 import { API_ENDPOINTS } from '@/utils/constants';
+import { supabase } from '@/integrations/supabase/client';
 
 class ApiService {
   private baseUrl: string;
@@ -10,102 +11,153 @@ class ApiService {
       : 'http://localhost:3001';
   }
 
-  private async request<T>(
-    endpoint: string, 
-    options: RequestInit = {}
-  ): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
-    
-    const config: RequestInit = {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-      ...options,
-    };
-
-    // Add auth token if available
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      config.headers = {
-        ...config.headers,
-        Authorization: `Bearer ${token}`,
-      };
-    }
-
-    const response = await fetch(url, config);
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
-    }
-
-    return response.json();
-  }
-
-  // Auth methods
+  // Auth methods - using Supabase directly instead of mock API
   async login(email: string, password: string) {
-    return this.request(`${API_ENDPOINTS.AUTH}/login`, {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     });
+    if (error) throw error;
+    return data;
   }
 
   async logout() {
-    return this.request(`${API_ENDPOINTS.AUTH}/logout`, {
-      method: 'POST',
-    });
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    return { success: true };
   }
 
-  // Thesis methods
+  // Thesis methods - using Supabase directly
   async getTheses(params?: { page?: number; limit?: number; search?: string }) {
-    const searchParams = new URLSearchParams();
-    if (params?.page) searchParams.append('page', params.page.toString());
-    if (params?.limit) searchParams.append('limit', params.limit.toString());
-    if (params?.search) searchParams.append('search', params.search);
+    let query = supabase
+      .from('theses')
+      .select(`
+        *,
+        colleges (
+          id,
+          name,
+          description
+        )
+      `)
+      .order('created_at', { ascending: false });
 
-    return this.request(`${API_ENDPOINTS.THESES}?${searchParams}`);
+    if (params?.search) {
+      query = query.or(`title.ilike.%${params.search}%,author.ilike.%${params.search}%,abstract.ilike.%${params.search}%`);
+    }
+
+    if (params?.limit) {
+      query = query.limit(params.limit);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data;
   }
 
   async getThesis(id: string) {
-    return this.request(`${API_ENDPOINTS.THESES}/${id}`);
+    const { data, error } = await supabase
+      .from('theses')
+      .select(`
+        *,
+        colleges (
+          id,
+          name,
+          description
+        )
+      `)
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data;
   }
 
-  async createThesis(thesis: FormData) {
-    return this.request(API_ENDPOINTS.THESES, {
-      method: 'POST',
-      body: thesis,
-      headers: {}, // Remove Content-Type to let browser set it for FormData
-    });
+  async createThesis(thesisData: any) {
+    const { data, error } = await supabase
+      .from('theses')
+      .insert([thesisData])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
   }
 
   async updateThesis(id: string, thesis: Partial<any>) {
-    return this.request(`${API_ENDPOINTS.THESES}/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(thesis),
-    });
+    const { data, error } = await supabase
+      .from('theses')
+      .update(thesis)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
   }
 
   async deleteThesis(id: string) {
-    return this.request(`${API_ENDPOINTS.THESES}/${id}`, {
-      method: 'DELETE',
-    });
+    const { error } = await supabase
+      .from('theses')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+    return { success: true };
   }
 
-  // Search methods
+  // Search methods - using Supabase
   async search(query: string, filters?: any) {
-    return this.request(`${API_ENDPOINTS.SEARCH}`, {
-      method: 'POST',
-      body: JSON.stringify({ query, filters }),
-    });
+    let supabaseQuery = supabase
+      .from('theses')
+      .select(`
+        *,
+        colleges (
+          id,
+          name,
+          description
+        )
+      `);
+
+    if (query) {
+      supabaseQuery = supabaseQuery.or(`title.ilike.%${query}%,author.ilike.%${query}%,abstract.ilike.%${query}%`);
+    }
+
+    if (filters?.college) {
+      supabaseQuery = supabaseQuery.eq('college_id', filters.college);
+    }
+
+    const { data, error } = await supabaseQuery;
+    if (error) throw error;
+    return data;
   }
 
-  // College methods
+  // College methods - using Supabase
   async getColleges() {
-    return this.request(API_ENDPOINTS.COLLEGES);
+    const { data, error } = await supabase
+      .from('colleges')
+      .select('*')
+      .order('name');
+    
+    if (error) throw error;
+    return data;
   }
 
   async getCollegeTheses(collegeId: string) {
-    return this.request(`${API_ENDPOINTS.COLLEGES}/${collegeId}/theses`);
+    const { data, error } = await supabase
+      .from('theses')
+      .select(`
+        *,
+        colleges (
+          id,
+          name,
+          description
+        )
+      `)
+      .eq('college_id', collegeId)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data;
   }
 }
 

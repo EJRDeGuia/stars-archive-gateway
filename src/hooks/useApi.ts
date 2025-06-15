@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiService } from '@/services/api';
@@ -37,10 +38,31 @@ export function useApiMutation<T, V>(
 
 // Specific hooks for common operations
 export function useTheses(params?: { page?: number; limit?: number; search?: string }) {
-  return useApiQuery(
-    ['theses', JSON.stringify(params)],
-    () => apiService.getTheses(params)
-  );
+  return useQuery({
+    queryKey: ['theses', JSON.stringify(params)],
+    queryFn: async () => {
+      console.log('[useTheses] Fetching theses with params:', params);
+      const { data, error } = await supabase
+        .from('theses')
+        .select(`
+          *,
+          colleges (
+            id,
+            name,
+            description
+          )
+        `)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('[useTheses] Error fetching theses:', error);
+        throw error;
+      }
+      
+      console.log('[useTheses] Successfully fetched theses:', data);
+      return data || [];
+    },
+  });
 }
 
 export function useThesis(id: string) {
@@ -79,31 +101,38 @@ export function useSearch() {
 }
 
 export function useColleges() {
-  return useApiQuery(
-    ['colleges'],
-    () => apiService.getColleges()
-  );
+  return useQuery({
+    queryKey: ['colleges'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('colleges')
+        .select('*')
+        .order('name');
+      
+      if (error) throw error;
+      return data || [];
+    },
+  });
 }
 
 // User Favorites Hooks
 export function useUserFavorites(userId: string | undefined) {
-  return useApiQuery(
-    ["user_favorites", userId],
-    async () => {
+  return useQuery({
+    queryKey: ["user_favorites", userId],
+    queryFn: async () => {
       if (!userId) return [];
       const { data, error } = await supabase
         .from("user_favorites")
         .select("*")
         .eq("user_id", userId);
       if (error) throw error;
-      return data;
+      return data || [];
     },
-    { enabled: !!userId }
-  );
+    enabled: !!userId,
+  });
 }
 
 export function useToggleFavorite() {
-  // Adds/removes favorite. Requires { userId, thesisId, favoriteId? }
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
@@ -138,19 +167,19 @@ export function useToggleFavorite() {
 
 // Saved Searches Hooks
 export function useSavedSearches(userId: string | undefined) {
-  return useApiQuery(
-    ["saved_searches", userId],
-    async () => {
+  return useQuery({
+    queryKey: ["saved_searches", userId],
+    queryFn: async () => {
       if (!userId) return [];
       const { data, error } = await supabase
         .from("saved_searches")
         .select("*")
         .eq("user_id", userId);
       if (error) throw error;
-      return data;
+      return data || [];
     },
-    { enabled: !!userId }
-  );
+    enabled: !!userId,
+  });
 }
 
 export function useSaveSearch() {
