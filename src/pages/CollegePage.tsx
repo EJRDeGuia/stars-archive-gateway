@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 import CollegeCard from '@/components/CollegeCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Users, Calendar, TrendingUp } from 'lucide-react';
+import { BookOpen, Users, Calendar, TrendingUp, ArrowLeft } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import FacetFilterBar, { FacetFilterState } from "@/components/FacetFilterBar";
@@ -13,7 +13,8 @@ import SearchInterface from "@/components/SearchInterface";
 import { useTheses } from "@/hooks/useApi";
 import type { Thesis } from "@/types/thesis";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import ChatSearch from "@/components/ChatSearch";
 
 const defaultFilters: FacetFilterState = {
   authors: [],
@@ -27,6 +28,7 @@ const CollegePage = () => {
   const { id } = useParams();
   const [college, setCollege] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -93,17 +95,40 @@ const CollegePage = () => {
                 )}
                 <p className="text-xl text-gray-600">Explore research papers and theses from {college?.name}</p>
               </div>
+              {/* Toggle switch for Chat vs Filters */}
+              <div className="flex flex-col items-end gap-0">
+                <label htmlFor="chat-toggle" className="text-sm text-gray-600 mb-2 flex items-center gap-2">
+                  <span className={showChat ? "font-semibold text-dlsl-green" : ""}>Chat</span>
+                  <Switch
+                    id="chat-toggle"
+                    checked={showChat}
+                    onCheckedChange={setShowChat}
+                    className="mx-2"
+                  />
+                  <span className={!showChat ? "font-semibold text-dlsl-green" : ""}>Filters</span>
+                </label>
+              </div>
             </div>
           </div>
-          {/* Faceted Filters for college-specific theses */}
+          {/* Main Content */}
           <div className="max-w-5xl mx-auto pt-8">
-            <FacetFilterBar
-              filters={filters}
-              allYears={allYears}
-              allAuthors={allAuthors}
-              onFilterChange={setFilters}
-            />
-            <SearchInterface filters={filters} />
+            {showChat ? (
+              <div className="mb-10">
+                {/* ChatSearch only */}
+                <ChatSearch filters={{ college: id }} />
+              </div>
+            ) : (
+              <>
+                {/* Faceted Filters for college-specific theses */}
+                <FacetFilterBar
+                  filters={filters}
+                  allYears={allYears}
+                  allAuthors={allAuthors}
+                  onFilterChange={setFilters}
+                />
+                <SearchInterface filters={filters} />
+              </>
+            )}
           </div>
           {/* College Details */}
           {loading ? (
