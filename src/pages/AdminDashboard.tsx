@@ -24,8 +24,8 @@ import {
   HeartPulse,
   UtensilsCrossed
 } from 'lucide-react';
-import { useState } from "react";
-// REMOVE: import { theses } from '@/data/mockData';
+import { useState, useEffect } from "react";
+import { supabase } from '@/integrations/supabase/client';
 
 // For now, provide fallback values. Replace with Supabase queries in the future.
 const theses = [];
@@ -34,91 +34,48 @@ const AdminDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // College data matching the landing page
-  const collegeData = [
-    {
-      id: '1',
-      name: 'CITE',
-      fullName: 'College of Information Technology and Engineering',
-      color: 'red',
-      thesesCount: 120,
-      icon: Code,
-      bgColor: 'bg-red-500',
-      bgColorLight: 'bg-red-50',
-      textColor: 'text-red-600',
-      borderColor: 'border-red-200',
-      description: 'Advancing technology through innovative research'
-    },
-    {
-      id: '2',
-      name: 'CBEAM',
-      fullName: 'College of Business, Economics, Accountancy, and Management',
-      color: 'yellow',
-      thesesCount: 145,
-      icon: Calculator,
-      bgColor: 'bg-yellow-500',
-      bgColorLight: 'bg-yellow-50',
-      textColor: 'text-yellow-600',
-      borderColor: 'border-yellow-200',
-      description: 'Driving business excellence and economic growth'
-    },
-    {
-      id: '3',
-      name: 'CEAS',
-      fullName: 'College of Education, Arts, and Sciences',
-      color: 'blue',
-      thesesCount: 98,
-      icon: Microscope,
-      bgColor: 'bg-blue-500',
-      bgColorLight: 'bg-blue-50',
-      textColor: 'text-blue-600',
-      borderColor: 'border-blue-200',
-      description: 'Exploring knowledge across diverse disciplines'
-    },
-    {
-      id: '4',
-      name: 'CON',
-      fullName: 'College of Nursing',
-      color: 'gray',
-      thesesCount: 76,
-      icon: HeartPulse,
-      bgColor: 'bg-gray-500',
-      bgColorLight: 'bg-gray-50',
-      textColor: 'text-gray-600',
-      borderColor: 'border-gray-200',
-      description: 'Advancing healthcare through compassionate research'
-    },
-    {
-      id: '5',
-      name: 'CIHTM',
-      fullName: 'College of International Hospitality and Tourism Management',
-      color: 'green',
-      thesesCount: 110,
-      icon: UtensilsCrossed,
-      bgColor: 'bg-green-500',
-      bgColorLight: 'bg-green-50',
-      textColor: 'text-green-600',
-      borderColor: 'border-green-200',
-      description: 'Shaping the future of hospitality and tourism'
-    }
-  ];
+  const [colleges, setColleges] = useState<any[]>([]);
+  const [collegesLoading, setCollegesLoading] = useState(true);
+  const [theses, setTheses] = useState<any[]>([]);
+  const [thesesLoading, setThesesLoading] = useState(true);
 
+  useEffect(() => {
+    setCollegesLoading(true);
+    supabase
+      .from('colleges')
+      .select('*')
+      .order('name', { ascending: true })
+      .then(({ data }) => {
+        setColleges(data || []);
+        setCollegesLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    setThesesLoading(true);
+    supabase
+      .from('theses')
+      .select('*')
+      .order('created_at', { descending: true })
+      .limit(5)
+      .then(({ data }) => {
+        setTheses(data || []);
+        setThesesLoading(false);
+      });
+  }, []);
+
+  // Statistics Calculation (all 0, will update in next phase)
   const stats = {
-    totalUsers: 1247,
-    totalTheses: theses.length, // eventually this should be loaded from Supabase
-    totalColleges: collegeData.length,
-    monthlyUploads: 45,
-    weeklyViews: 8324,
-    securityAlerts: 3,
-    networkSessions: 156,
+    totalUsers: 0,
+    totalTheses: theses.length,
+    totalColleges: colleges.length,
+    monthlyUploads: 0,
+    weeklyViews: 0,
+    securityAlerts: 0,
+    networkSessions: 0,
   };
 
-  const recentActivity = [
-    { action: 'New thesis uploaded', user: 'Dr. Maria Santos', time: '2 hours ago', type: 'upload' },
-    { action: 'User registered', user: 'John Doe', time: '4 hours ago', type: 'registration' },
-    { action: 'Security alert resolved', user: 'Admin', time: '1 day ago', type: 'security' },
-    { action: 'College data updated', user: 'Admin', time: '1 day ago', type: 'update' }
-  ];
+  const recentActivity: any[] = []; // Empty for now
 
   const handleCollegeClick = (collegeId: string) => {
     navigate(`/college/${collegeId}`);
@@ -127,11 +84,9 @@ const AdminDashboard = () => {
   const handleBackupDatabase = () => {
     toast.success('Database backup initiated successfully!');
     console.log('Database backup started');
-    // TODO: Implement actual backup functionality with Supabase
   };
 
   const handleQuickAction = (action: string) => {
-    console.log(`Admin action: ${action}`);
     switch (action) {
       case 'users':
         navigate('/user-management');
@@ -255,23 +210,7 @@ const AdminDashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {recentActivity.map((activity, index) => (
-                    <div key={index} className="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                      <div className={`w-3 h-3 rounded-full mt-2 ${
-                        activity.type === 'upload' ? 'bg-dlsl-green' :
-                        activity.type === 'registration' ? 'bg-blue-500' :
-                        activity.type === 'security' ? 'bg-red-500' :
-                        'bg-gray-500'
-                      }`}></div>
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">{activity.action}</p>
-                        <p className="text-gray-600 text-sm">{activity.user}</p>
-                        <p className="text-gray-500 text-xs">{activity.time}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <div className="space-y-4 text-center text-gray-400 py-8">No recent activity to display.</div>
               </CardContent>
             </Card>
 
@@ -317,21 +256,40 @@ const AdminDashboard = () => {
             </h2>
             <div className="max-w-5xl mx-auto">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                {collegeData.slice(0, 3).map((college) => (
-                  <CollegeCard
-                    key={college.id}
-                    college={college}
-                    onClick={() => handleCollegeClick(college.id)}
-                    size="large"
-                  />
-                ))}
+                {collegesLoading
+                  ? <div className="text-gray-400 col-span-3 text-center py-8">Loading colleges...</div>
+                  : colleges.slice(0, 3).map((college) => (
+                      <CollegeCard
+                        key={college.id}
+                        college={{
+                          ...college,
+                          icon: null,
+                          bgColor: 'bg-gray-200',
+                          bgColorLight: 'bg-gray-50',
+                          textColor: 'text-gray-700',
+                          borderColor: 'border-gray-200',
+                          description: college.description,
+                        }}
+                        onClick={() => handleCollegeClick(college.id)}
+                        size="large"
+                      />
+                  ))
+                }
               </div>
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-3xl mx-auto">
-                {collegeData.slice(3, 5).map((college) => (
+                {!collegesLoading && colleges.slice(3, 5).map((college) => (
                   <CollegeCard
                     key={college.id}
-                    college={college}
+                    college={{
+                      ...college,
+                      icon: null,
+                      bgColor: 'bg-gray-200',
+                      bgColorLight: 'bg-gray-50',
+                      textColor: 'text-gray-700',
+                      borderColor: 'border-gray-200',
+                      description: college.description,
+                    }}
                     onClick={() => handleCollegeClick(college.id)}
                     size="large"
                   />
@@ -351,30 +309,36 @@ const AdminDashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {theses.slice(0, 5).map((thesis) => (
-                  <div key={thesis.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 mb-1">{thesis.title}</h3>
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
-                        <span>{thesis.author}</span>
-                        <span>•</span>
-                        <Badge variant="secondary" className="bg-dlsl-green/10 text-dlsl-green border-0">
-                          {thesis.college}
-                        </Badge>
-                        <span>•</span>
-                        <span>{thesis.year}</span>
+              {thesesLoading ? (
+                <div className="text-gray-400 text-center py-8">Loading recent theses...</div>
+              ) : theses.length === 0 ? (
+                <div className="text-gray-400 text-center py-8">No thesis submissions yet.</div>
+              ) : (
+                <div className="space-y-4">
+                  {theses.map((thesis) => (
+                    <div key={thesis.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 mb-1">{thesis.title}</h3>
+                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                          <span>{thesis.author}</span>
+                          <span>•</span>
+                          <Badge variant="secondary" className="bg-dlsl-green/10 text-dlsl-green border-0">
+                            {(colleges.find(c => c.id === thesis.college_id)?.name) || thesis.college_id}
+                          </Badge>
+                          <span>•</span>
+                          <span>{thesis.year || (thesis.publish_date && thesis.publish_date.slice(0, 4))}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button size="sm" variant="outline" className="border-gray-300">
+                          <Eye className="w-4 h-4 mr-1 text-dlsl-green" />
+                          Review
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" variant="outline" className="border-gray-300">
-                        <Eye className="w-4 h-4 mr-1 text-dlsl-green" />
-                        Review
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

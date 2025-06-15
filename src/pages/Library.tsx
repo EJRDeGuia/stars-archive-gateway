@@ -29,14 +29,14 @@ const Library = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('bookmarks');
   
-  // Mock saved items (in real app, this would come from user's saved data)
-  const savedTheses = theses.slice(0, 5);
-  const downloadedTheses = theses.slice(2, 7);
+  // In future phases, fetch user's real data. For now, all arrays are empty.
+  const savedTheses: any[] = [];
+  const downloadedTheses: any[] = [];
 
-  const filteredItems = (items: typeof theses) => {
+  const filteredItems = (items: any[]) => {
     return items.filter(thesis => 
-      thesis.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      thesis.author.toLowerCase().includes(searchQuery.toLowerCase())
+      (thesis.title?.toLowerCase()?.includes(searchQuery.toLowerCase()) ||
+      thesis.author?.toLowerCase()?.includes(searchQuery.toLowerCase()))
     );
   };
 
@@ -47,7 +47,7 @@ const Library = () => {
   const tabs = [
     { id: 'bookmarks', label: 'Bookmarks', count: savedTheses.length },
     { id: 'downloads', label: 'Downloads', count: downloadedTheses.length },
-    { id: 'collections', label: 'Collections', count: 3 }
+    { id: 'collections', label: 'Collections', count: 0 },
   ];
 
   return (
@@ -122,60 +122,10 @@ const Library = () => {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900">
-                  Bookmarked Papers ({filteredItems(savedTheses).length})
+                  Bookmarked Papers (0)
                 </h2>
               </div>
-              
-              {filteredItems(savedTheses).map((thesis) => (
-                <Card 
-                  key={thesis.id} 
-                  className="hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-gray-200"
-                >
-                  <CardContent className="p-8">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1" onClick={() => handleThesisClick(thesis.id)}>
-                        <h3 className="text-xl font-bold text-gray-900 mb-3 hover:text-primary transition-colors">
-                          {thesis.title}
-                        </h3>
-                        <div className="flex items-center gap-6 text-gray-600 mb-4">
-                          <div className="flex items-center gap-2">
-                            <User className="w-4 h-4" />
-                            <span className="font-medium">{thesis.author}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            <span>{thesis.year}</span>
-                          </div>
-                          <Badge variant="secondary" className="bg-primary/10 text-primary border-0">
-                            {thesis.college}
-                          </Badge>
-                        </div>
-                        <p className="text-gray-600 leading-relaxed mb-4">
-                          {thesis.abstract.substring(0, 200)}...
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {thesis.keywords.slice(0, 3).map((keyword, index) => (
-                            <Badge key={index} variant="outline" className="border-gray-300 text-gray-600">
-                              {keyword}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 ml-6">
-                        <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
-                          <Download className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="text-gray-600 hover:text-red-600">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleThesisClick(thesis.id)}>
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              <div className="text-gray-400 text-center py-8">No bookmarks found.</div>
             </div>
           )}
 
@@ -183,75 +133,19 @@ const Library = () => {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900">
-                  Downloaded Papers ({filteredItems(downloadedTheses).length})
+                  Downloaded Papers (0)
                 </h2>
               </div>
-              
-              {filteredItems(downloadedTheses).map((thesis) => (
-                <Card 
-                  key={thesis.id} 
-                  className="hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-gray-200"
-                >
-                  <CardContent className="p-8">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1" onClick={() => handleThesisClick(thesis.id)}>
-                        <h3 className="text-xl font-bold text-gray-900 mb-3 hover:text-primary transition-colors">
-                          {thesis.title}
-                        </h3>
-                        <div className="flex items-center gap-6 text-gray-600 mb-4">
-                          <div className="flex items-center gap-2">
-                            <User className="w-4 h-4" />
-                            <span className="font-medium">{thesis.author}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            <span>{thesis.year}</span>
-                          </div>
-                          <Badge variant="secondary" className="bg-green-100 text-green-700 border-0">
-                            Downloaded
-                          </Badge>
-                        </div>
-                        <p className="text-gray-600 leading-relaxed">
-                          {thesis.abstract.substring(0, 200)}...
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 ml-6">
-                        <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
-                          <BookOpen className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="text-gray-600 hover:text-red-600">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              <div className="text-gray-400 text-center py-8">No downloads found.</div>
             </div>
           )}
 
           {activeTab === 'collections' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">Collections (3)</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Collections (0)</h2>
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {['AI Research', 'Educational Technology', 'Data Science'].map((collection, index) => (
-                  <Card key={collection} className="hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-gray-200">
-                    <CardContent className="p-8 text-center">
-                      <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                        <FolderOpen className="w-8 h-8 text-primary" />
-                      </div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-3">{collection}</h3>
-                      <p className="text-gray-600 mb-4">{3 + index} papers</p>
-                      <Button variant="outline" className="w-full border-gray-300">
-                        View Collection
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+              <div className="text-gray-400 text-center py-8">No collections found.</div>
             </div>
           )}
         </div>
