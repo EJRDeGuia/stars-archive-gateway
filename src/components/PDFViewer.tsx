@@ -105,9 +105,10 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           </p>
         </div>
         {/* Improved Scrollable PDF Area */}
-        <div className="relative max-h-[640px] md:max-h-[560px] min-h-[300px] bg-gray-50 overflow-hidden rounded-b-2xl">
-          <ScrollArea className="w-full h-full max-h-[640px] md:max-h-[560px] min-h-[300px] py-2 px-0">
-            <div className="flex flex-col items-center gap-6 px-2">
+        <div className="relative bg-gray-50 rounded-b-2xl" style={{ minHeight: 300, maxHeight: 640 }}>
+          {/* Add overflow-auto and full height for scrollability */}
+          <ScrollArea className="w-full h-[560px] md:h-[600px] lg:h-[640px] overflow-auto">
+            <div className="flex flex-col items-center gap-6 px-2 pb-2">
               <Document
                 file={pdfUrl}
                 onLoadSuccess={onDocumentLoadSuccess}
@@ -164,3 +165,4 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
 };
 
 export default PDFViewer;
+
