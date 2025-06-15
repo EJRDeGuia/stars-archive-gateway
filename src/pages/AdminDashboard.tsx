@@ -56,7 +56,7 @@ const AdminDashboard = () => {
     supabase
       .from('theses')
       .select('*')
-      .order('created_at', { descending: true })
+      .order('created_at', { ascending: false }) // <-- Fixed line here
       .limit(5)
       .then(({ data }) => {
         setTheses(data || []);
