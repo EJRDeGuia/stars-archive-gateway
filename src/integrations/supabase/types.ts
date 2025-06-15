@@ -185,6 +185,7 @@ export type Database = {
           cover_image_url: string | null
           created_at: string | null
           download_count: number | null
+          embedding: string | null
           file_url: string | null
           id: string
           keywords: string[] | null
@@ -205,6 +206,7 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string | null
           download_count?: number | null
+          embedding?: string | null
           file_url?: string | null
           id?: string
           keywords?: string[] | null
@@ -225,6 +227,7 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string | null
           download_count?: number | null
+          embedding?: string | null
           file_url?: string | null
           id?: string
           keywords?: string[] | null

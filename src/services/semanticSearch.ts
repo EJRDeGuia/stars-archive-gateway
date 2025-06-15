@@ -1,4 +1,3 @@
-
 import { theses } from '@/data/mockData';
 
 interface SearchResult {
@@ -12,7 +11,8 @@ interface EmbeddingResponse {
   }>;
 }
 
-// Placeholder for semantic search - in a real implementation, you'd store embeddings in a vector database
+const SEMANTIC_SEARCH_ENDPOINT = 'https://cylsbcjqemluouxblywl.supabase.co/functions/v1/semantic-search';
+
 export class SemanticSearchService {
   private apiKey: string | null = null;
   private embeddingsCache = new Map<string, number[]>();
@@ -66,6 +66,7 @@ export class SemanticSearchService {
     }
   }
 
+  // Not used anymore, replaced with backend
   private cosineSimilarity(a: number[], b: number[]): number {
     const dotProduct = a.reduce((sum, val, i) => sum + val * b[i], 0);
     const magnitudeA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
@@ -73,24 +74,35 @@ export class SemanticSearchService {
     return dotProduct / (magnitudeA * magnitudeB);
   }
 
-  async semanticSearch(query: string, limit: number = 10): Promise<SearchResult[]> {
-    const queryEmbedding = await this.getEmbedding(query);
-    
-    const results: SearchResult[] = [];
-    
-    for (const thesis of theses) {
-      // Create a searchable text combining title, abstract, and keywords
-      const searchableText = `${thesis.title} ${thesis.abstract} ${thesis.keywords.join(' ')}`;
-      const thesisEmbedding = await this.getEmbedding(searchableText);
-      
-      const similarity = this.cosineSimilarity(queryEmbedding, thesisEmbedding);
-      results.push({ thesis, similarity });
+  // Updated: Use Supabase Edge Function for semantic search
+  async semanticSearch(query: string, limit: number = 10): Promise<any[]> {
+    try {
+      const resp = await fetch(SEMANTIC_SEARCH_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, limit }),
+      });
+
+      if (!resp.ok) throw new Error('Failed to fetch semantic search results.');
+      const data = await resp.json();
+      // Each item is a row from theses table with a 'similarity' property
+      // Format as needed for frontend
+      if (data.results && Array.isArray(data.results)) {
+        return data.results.map((thesis: any) => ({
+          id: thesis.id,
+          title: thesis.title,
+          author: thesis.author,
+          year: new Date(thesis.publish_date).getFullYear?.() || 0,
+          college: thesis.college_id,
+          abstract: thesis.abstract,
+          keywords: thesis.keywords || [],
+        }));
+      }
+      return [];
+    } catch (err) {
+      console.error('Semantic search error:', err);
+      return [];
     }
-    
-    // Sort by similarity and return top results
-    return results
-      .sort((a, b) => b.similarity - a.similarity)
-      .slice(0, limit);
   }
 
   // Traditional keyword search as fallback
