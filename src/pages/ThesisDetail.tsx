@@ -36,12 +36,13 @@ const ThesisDetail = () => {
   // Utility: Get the public Supabase Storage URL for a thesis PDF, if only a storage key is present
   function getPublicPdfUrl(fileUrl: string | undefined): string {
     if (!fileUrl) return "";
-    // If already a full supabase storage public URL, just return it
     if (fileUrl.startsWith("http")) {
       return fileUrl;
     }
-    // Otherwise, construct the bucket public URL
-    return `https://cylsbcjqemluouxblywl.supabase.co/storage/v1/object/public/thesis-pdfs/${fileUrl.replace(/^\/+/, "")}`;
+    // Remove all leading slashes AND any accidental internal duplicate slashes
+    let cleanFileUrl = fileUrl.trim().replace(/^\/+/, "");
+    cleanFileUrl = cleanFileUrl.replace(/\/{2,}/g, "/");
+    return `https://cylsbcjqemluouxblywl.supabase.co/storage/v1/object/public/thesis-pdfs/${cleanFileUrl}`;
   }
 
   // Derived fields for easy rendering; guard against undefined
