@@ -296,8 +296,8 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
             ? <Loader className="animate-spin h-5 w-5" />
             : <Send className="h-5 w-5" />}
         </Button>
-        {/* Save Search Button */}
-        {user && (
+        {/* Save Search Button - Only show if user has submitted a query */}
+        {user && chat.some(item => item.type === "user") && (
           <Button
             type="button"
             variant="outline"
