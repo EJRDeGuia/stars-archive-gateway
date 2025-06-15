@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { Upload as UploadIcon, FileText, X, CheckCircle, ArrowLeft } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from "@/integrations/supabase/client";
 
 interface UploadFile {
   file: File;
@@ -96,15 +97,12 @@ const Upload = () => {
       };
       setUploadedFiles(prev => [...prev, uploadFile]);
 
-      // New: upload PDF to Supabase Storage before extraction
       setIsExtracting(true);
 
-      // Create a unique filename with timestamp
       const storagePath = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]+/g, "_")}`;
       try {
         // 1. Upload to Supabase Storage
-        const { data, error } = await window
-          .supabase
+        const { data, error } = await supabase
           .storage
           .from('thesis-pdfs')
           .upload(storagePath, file, {
@@ -123,7 +121,7 @@ const Upload = () => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              apikey: window.supabase?.anonKey ?? "",
+              apikey: supabase._anonKey ?? "",
             },
             body: JSON.stringify({
               path: storagePath
@@ -133,7 +131,6 @@ const Upload = () => {
         const meta = await response.json();
         if (!response.ok) throw new Error(meta.error || "Metadata extraction failed.");
 
-        // 3. Apply detected metadata to formData if empty (let user keep their data if not empty)
         setFormData(f => ({
           ...f,
           title: f.title || meta.title,
