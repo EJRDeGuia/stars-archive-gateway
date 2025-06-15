@@ -39,7 +39,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white/95 backdrop-blur-lg sleek-shadow border-b border-slate-200/60 sticky top-0 z-50">
+    <header className="bg-background/95 backdrop-blur-lg sleek-shadow border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo and Nav */}
@@ -60,7 +60,7 @@ const Header = () => {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="text-slate-600 hover:text-dlsl-green hover:bg-dlsl-green/10 rounded-xl px-4 py-2 font-medium transition-all duration-200"
+                className="text-slate-600 dark:text-gray-200 hover:text-dlsl-green hover:bg-dlsl-green/10 dark:hover:text-dlsl-green dark:hover:bg-dlsl-green/10 rounded-xl px-4 py-2 font-medium transition-all duration-200"
                 onClick={() => navigate('/dashboard')}
               >
                 Dashboard
@@ -68,7 +68,7 @@ const Header = () => {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="text-slate-600 hover:text-dlsl-green hover:bg-dlsl-green/10 rounded-xl px-4 py-2 font-medium transition-all duration-200"
+                className="text-slate-600 dark:text-gray-200 hover:text-dlsl-green hover:bg-dlsl-green/10 dark:hover:text-dlsl-green dark:hover:bg-dlsl-green/10 rounded-xl px-4 py-2 font-medium transition-all duration-200"
                 onClick={handleExploreClick}
               >
                 Explore
@@ -76,7 +76,7 @@ const Header = () => {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="text-slate-600 hover:text-dlsl-green hover:bg-dlsl-green/10 rounded-xl px-4 py-2 font-medium transition-all duration-200"
+                className="text-slate-600 dark:text-gray-200 hover:text-dlsl-green hover:bg-dlsl-green/10 dark:hover:text-dlsl-green dark:hover:bg-dlsl-green/10 rounded-xl px-4 py-2 font-medium transition-all duration-200"
                 onClick={handleCollectionsClick}
               >
                 Collections
@@ -88,11 +88,11 @@ const Header = () => {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="md:hidden text-slate-600 hover:text-dlsl-green hover:bg-dlsl-green/10 rounded-xl"
+            className="md:hidden text-slate-600 dark:text-gray-200 hover:text-dlsl-green hover:bg-dlsl-green/10 dark:hover:text-dlsl-green dark:hover:bg-dlsl-green/10 rounded-xl"
           >
             <Menu className="h-5 w-5" />
           </Button>
-
+          
           {/* Right Side */}
           {user ? (
             <div className="flex items-center space-x-3">
@@ -100,7 +100,7 @@ const Header = () => {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="text-slate-600 hover:text-dlsl-green hover:bg-dlsl-green/10 rounded-xl hidden md:flex relative"
+                className="text-slate-600 dark:text-gray-200 hover:text-dlsl-green hover:bg-dlsl-green/10 dark:hover:text-dlsl-green dark:hover:bg-dlsl-green/10 rounded-xl hidden md:flex relative"
                 onClick={() => setShowNotifications(!showNotifications)}
               >
                 <Bell className="h-5 w-5" />
@@ -112,18 +112,18 @@ const Header = () => {
                 <DropdownMenuTrigger asChild>
                   <Button 
                     variant="ghost" 
-                    className="flex items-center space-x-3 hover:bg-slate-50 rounded-xl px-3 py-2 transition-all duration-200 sleek-shadow-sm hover:sleek-shadow"
+                    className="flex items-center space-x-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl px-3 py-2 transition-all duration-200 sleek-shadow-sm hover:sleek-shadow"
                   >
                     <div className="w-10 h-10 bg-gradient-to-br from-dlsl-green to-dlsl-green-light rounded-xl flex items-center justify-center sleek-shadow">
                       <User className="w-5 h-5 text-white" />
                     </div>
                     <div className="hidden md:block text-left">
-                      <p className="text-sm font-semibold text-slate-800">{user.name}</p>
-                      <p className="text-xs text-slate-500 capitalize">{user.role.replace('_', ' ')}</p>
+                      <p className="text-sm font-semibold text-slate-800 dark:text-gray-100">{user.name}</p>
+                      <p className="text-xs text-slate-500 dark:text-gray-300 capitalize">{user.role.replace('_', ' ')}</p>
                     </div>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 sleek-shadow-xl border-0 bg-white/95 backdrop-blur-lg">
+                <DropdownMenuContent align="end" className="w-56 sleek-shadow-xl border-0 bg-white/95 dark:bg-background/95 backdrop-blur-lg">
                   <DropdownMenuLabel className="text-slate-700 font-semibold">My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-slate-200" />
                   <DropdownMenuItem 
@@ -147,7 +147,7 @@ const Header = () => {
                   >
                     <span className="mr-3 flex items-center">
                       {/* Only lucide-react "settings" is allowed */}
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 8a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 8 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 16 4.6c.42.14.8.36 1.12.68.34.34.54.75.68 1.12.15.38.1.8-.11 1.13A1.44 1.44 0 0 0 18 8a1.65 1.65 0 0 0 1.51 1h.09a2 2 0 0 1 0 4h-.09A1.65 1.65 0 0 0 19.4 15z"/></svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 8a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 8 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 16 4.6c.42.14.8.36 1.12.68.34.34.54.75.68 1.12.15.38.1.8-.11 1.13A1.44 1.44 0 0 0 18 8a1.65 1.65 0 0 0 1.51 1h.09a2 2 0 0 1 0 4h-.09A1.65 1.65 0 0 0 19.4 15z"/></svg>
                     </span>
                     <span>Settings</span>
                   </DropdownMenuItem>
