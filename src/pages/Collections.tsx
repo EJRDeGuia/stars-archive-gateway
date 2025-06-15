@@ -1,12 +1,12 @@
-
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CollegeCard from '@/components/CollegeCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BookOpen, Users, Calendar, TrendingUp, Code, Calculator, Microscope, HeartPulse, UtensilsCrossed } from 'lucide-react';
-import { theses } from '@/data/mockData';
 import { useNavigate } from 'react-router-dom';
+
+const theses = [];
 
 const Collections = () => {
   const navigate = useNavigate();

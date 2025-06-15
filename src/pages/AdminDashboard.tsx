@@ -24,7 +24,11 @@ import {
   HeartPulse,
   UtensilsCrossed
 } from 'lucide-react';
-import { theses } from '@/data/mockData';
+import { useState } from "react";
+// REMOVE: import { theses } from '@/data/mockData';
+
+// For now, provide fallback values. Replace with Supabase queries in the future.
+const theses = [];
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -101,12 +105,12 @@ const AdminDashboard = () => {
 
   const stats = {
     totalUsers: 1247,
-    totalTheses: theses.length,
+    totalTheses: theses.length, // eventually this should be loaded from Supabase
     totalColleges: collegeData.length,
     monthlyUploads: 45,
     weeklyViews: 8324,
     securityAlerts: 3,
-    networkSessions: 156
+    networkSessions: 156,
   };
 
   const recentActivity = [

@@ -1,8 +1,6 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { theses } from '@/data/mockData';
-import Header from '@/components/Header';
+import { Header } from '@/components/Header';
 import Footer from '@/components/Footer';
 import PDFViewer from '@/components/PDFViewer';
 import { Card, CardContent } from '@/components/ui/card';
@@ -20,6 +18,9 @@ import {
   MessageCircle,
   Share2
 } from 'lucide-react';
+
+// Provide EMPTY ARRAY for now. Should be replaced with Supabase-fetched values.
+const theses: any[] = [];
 
 const ThesisDetail = () => {
   const { id } = useParams<{ id: string }>();

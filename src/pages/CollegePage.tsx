@@ -1,6 +1,4 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
-import { colleges, theses } from '@/data/mockData';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
@@ -27,6 +25,10 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 
+// Provide EMPTY ARRAYS for now. Should be replaced with Supabase-fetched values.
+const colleges: any[] = [];
+const theses: any[] = [];
+
 const CollegePage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -34,7 +36,7 @@ const CollegePage = () => {
   const [selectedYear, setSelectedYear] = useState('all');
 
   const college = colleges.find(c => c.id === id);
-  const collegeTheses = theses.filter(thesis => thesis.college.toLowerCase() === college?.name.toLowerCase());
+  const collegeTheses = theses.filter(thesis => thesis.college && college && thesis.college.toLowerCase() === college.name.toLowerCase());
 
   if (!college) {
     return <div>College not found</div>;
@@ -109,13 +111,16 @@ const CollegePage = () => {
     }
   };
 
-  const years = [...new Set(collegeTheses.map(thesis => Number(thesis.year)))].sort((a, b) => b - a);
-  
+  const years = [...new Set(collegeTheses.map(thesis => {
+    const yearVal = Number(thesis.year);
+    return isNaN(yearVal) ? null : yearVal;
+  }).filter(Boolean))].sort((a, b) => b - a);
+
   const filteredTheses = collegeTheses.filter(thesis => {
-    const matchesSearch = thesis.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         thesis.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         thesis.keywords.some(keyword => keyword.toLowerCase().includes(searchQuery.toLowerCase()));
-    const matchesYear = selectedYear === 'all' || thesis.year.toString() === selectedYear;
+    const matchesSearch = (thesis.title ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (thesis.author ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (thesis.keywords ?? []).some((keyword:string) => (keyword ?? "").toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesYear = selectedYear === 'all' || (thesis.year && thesis.year.toString() === selectedYear);
     return matchesSearch && matchesYear;
   });
 
@@ -227,9 +232,9 @@ const CollegePage = () => {
 
           {/* Thesis List - No individual thesis images and no download button */}
           <div className="space-y-6">
-            {filteredTheses.map((thesis) => (
+            {filteredTheses.map((thesis: any, idx: number) => (
               <Card 
-                key={thesis.id} 
+                key={thesis.id ?? idx} 
                 className="bg-white border border-gray-200 rounded-2xl hover:shadow-lg transition-all duration-300 cursor-pointer group shadow-sm"
                 onClick={() => navigate(`/thesis/${thesis.id}`)}
               >
@@ -272,7 +277,7 @@ const CollegePage = () => {
                   
                   <div className="flex items-center justify-between">
                     <div className="flex flex-wrap gap-2">
-                      {thesis.keywords.map((keyword, index) => (
+                      {(thesis.keywords ?? []).map((keyword, index) => (
                         <Badge key={index} variant="outline" className={`${college.borderColor} ${college.textColor}`}>
                           {keyword}
                         </Badge>

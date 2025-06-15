@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -21,7 +20,9 @@ import {
   FolderOpen,
   Plus
 } from 'lucide-react';
-import { theses } from '@/data/mockData';
+
+// Provide EMPTY ARRAYS for now. Should be replaced with Supabase-fetched values.
+const theses: any[] = [];
 
 const Library = () => {
   const navigate = useNavigate();
