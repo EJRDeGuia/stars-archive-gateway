@@ -14,31 +14,7 @@ const defaultFilters: FacetFilterState = {
 };
 
 const Explore = () => {
-  const [filters, setFilters] = useState<FacetFilterState>(defaultFilters);
-
-  // Get all theses to extract unique years/authors for filters
-  const { data: theses = [] } = useTheses();
-  const thesesArray: Thesis[] = Array.isArray(theses) ? theses : [];
-
-  const allAuthors = useMemo(() => {
-    // Unique list of authors
-    const s = new Set<string>();
-    thesesArray.forEach((t) => t.author && s.add(t.author));
-    return Array.from(s).sort();
-  }, [thesesArray]);
-
-  const allYears = useMemo(() => {
-    const s = new Set<string>();
-    thesesArray.forEach((t) => {
-      if (t.publishDate) {
-        const year = new Date(t.publishDate).getFullYear();
-        if (!isNaN(year)) {
-          s.add(year.toString());
-        }
-      }
-    });
-    return Array.from(s).sort((a, b) => Number(b) - Number(a));
-  }, [thesesArray]);
+  // Removed filter state and faceted filter logic
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-dlsl-green/5">
@@ -61,15 +37,8 @@ const Explore = () => {
                 <span className="text-dlsl-green font-medium"> De La Salle Lipa University</span>
               </p>
             </div>
-            {/* Faceted Filters */}
-            <FacetFilterBar
-              filters={filters}
-              allYears={allYears}
-              allAuthors={allAuthors}
-              onFilterChange={setFilters}
-            />
-            {/* Chat/Search Interface */}
-            <SearchInterface className="animate-fade-in" filters={filters} />
+            {/* Search Interface only */}
+            <SearchInterface className="animate-fade-in" />
             {/* Quick Suggestions */}
             <div className="mt-8 text-center">
               <p className="text-sm text-slate-500 mb-4">Try asking about:</p>
