@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -13,16 +14,14 @@ import AdminRecentActivity from '@/components/admin/AdminRecentActivity';
 import AdminSystemStatus from '@/components/admin/AdminSystemStatus';
 import AdminRecentTheses from '@/components/admin/AdminRecentTheses';
 
-// For now, provide fallback values. Replace with Supabase queries in the future.
-const theses = [];
-
 const AdminDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  // Use custom hook to fetch admin dashboard data
   const { colleges, collegesLoading, theses, thesesLoading } = useAdminDashboardData();
 
-  // Statistics Calculation
+  // Example stats, could be expanded/refined when more api is available
   const stats = {
     totalUsers: 0,
     totalTheses: theses.length,
