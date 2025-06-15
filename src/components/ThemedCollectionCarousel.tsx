@@ -43,9 +43,9 @@ const ThemedCollectionCarousel: React.FC<ThemedCollectionCarouselProps> = ({
   }
 
   return (
-    <div className="mb-14">
-      <div className="mb-6 flex items-center gap-3">
-        <h2 className="text-2xl font-bold">{title}</h2>
+    <div className="mb-12">
+      <div className="mb-5 flex items-center gap-2">
+        <h2 className="text-xl font-bold">{title}</h2>
         <Badge className={badgeClass}>{badgeLabel}</Badge>
       </div>
       <Carousel>
@@ -58,14 +58,15 @@ const ThemedCollectionCarousel: React.FC<ThemedCollectionCarouselProps> = ({
               <Card
                 className={`
                   relative cursor-pointer overflow-hidden border-0
-                  transition-all duration-300
-                  rounded-3xl shadow
+                  transition-all duration-200
+                  rounded-2xl shadow
                   ${accentColorClass}
                   group
-                  hover:scale-[1.03] hover:shadow-2xl
+                  hover:scale-[1.01] hover:shadow-lg
+                  min-h-[220px]
                 `}
                 style={{
-                  boxShadow: "0 6px 32px 0 rgb(16 42 67 / 8%)",
+                  boxShadow: "0 2px 12px 0 rgb(16 42 67 / 7%)",
                   borderColor: col.color || undefined,
                   background: "#fff",
                 }}
@@ -75,26 +76,26 @@ const ThemedCollectionCarousel: React.FC<ThemedCollectionCarouselProps> = ({
                     : undefined
                 }
               >
-                {/* Card Image with Overlay */}
+                {/* Smaller Card Image with Overlay */}
                 <div className="relative">
                   {col.image_url ? (
                     <img
                       src={col.image_url}
                       alt={col.title}
-                      className="rounded-t-3xl w-full h-48 object-cover object-center"
+                      className="rounded-t-2xl w-full h-32 object-cover object-center"
                       style={{
                         backgroundColor: col.color || undefined,
-                        minHeight: 160,
+                        minHeight: 90,
                       }}
                     />
                   ) : (
-                    <div className="w-full h-48 bg-gray-200 rounded-t-3xl flex items-center justify-center text-gray-400 text-2xl">
+                    <div className="w-full h-32 bg-gray-200 rounded-t-2xl flex items-center justify-center text-gray-400 text-lg">
                       No Image
                     </div>
                   )}
-                  <div className="absolute inset-0 rounded-t-3xl bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                  <div className="absolute inset-0 rounded-t-2xl bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none transition-all duration-200" />
                   <Badge
-                    className={`absolute left-4 bottom-4 px-3 py-1 text-xs font-bold shadow ${badgeClass} z-10`}
+                    className={`absolute right-3 top-3 px-2.5 py-0.5 text-[11px] font-bold shadow ${badgeClass} z-10`}
                     style={{
                       backgroundColor: col.color || undefined,
                       color: "#fff",
@@ -104,18 +105,18 @@ const ThemedCollectionCarousel: React.FC<ThemedCollectionCarouselProps> = ({
                     {badgeLabel}
                   </Badge>
                 </div>
-                <CardContent className="p-5 pt-6 flex flex-col">
+                <CardContent className="p-4 flex flex-col">
                   <h3
-                    className="font-extrabold text-xl mb-1 overflow-hidden truncate leading-7"
+                    className="font-bold text-base mb-0.5 truncate leading-6"
                     style={{
                       color: col.color || undefined,
-                      textShadow: "0 2px 2px rgba(0,0,0,0.03)",
+                      textShadow: "0 1px 2px rgba(0,0,0,0.03)",
                     }}
                     title={col.title}
                   >
                     {col.title}
                   </h3>
-                  <p className="text-gray-700 text-base leading-snug mb-1 line-clamp-3 min-h-[56px]">
+                  <p className="text-gray-700 text-sm leading-snug line-clamp-2 min-h-[38px]">
                     {col.description}
                   </p>
                 </CardContent>
