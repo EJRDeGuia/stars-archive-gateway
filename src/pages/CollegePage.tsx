@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from "react";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -11,6 +12,8 @@ import FacetFilterBar, { FacetFilterState } from "@/components/FacetFilterBar";
 import SearchInterface from "@/components/SearchInterface";
 import { useTheses } from "@/hooks/useApi";
 import type { Thesis } from "@/types/thesis";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 const defaultFilters: FacetFilterState = {
   authors: [],
@@ -41,7 +44,7 @@ const CollegePage = () => {
   // Get theses for this college
   const { data: theses = [] } = useTheses();
   const thesesArray: Thesis[] = Array.isArray(theses) ? theses : [];
-  const thesesForCollege = thesesArray.filter((t) => t.collegeId === id);
+  const thesesForCollege = thesesArray.filter((t) => t.college === id);
 
   // Set up filters
   const [filters, setFilters] = useState<FacetFilterState>(defaultFilters);
