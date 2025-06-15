@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -96,7 +95,7 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Header />
       
       <main className="flex-1">
@@ -121,10 +120,9 @@ const Settings = () => {
               </Button>
             </div>
           </div>
-
           <div className="space-y-8">
             {/* Account Settings */}
-            <Card className="bg-white border-gray-200">
+            <Card className="bg-background border-gray-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3 text-2xl text-gray-900">
                   <User className="w-6 h-6 text-primary" />
@@ -170,7 +168,7 @@ const Settings = () => {
             </Card>
 
             {/* Notification Settings */}
-            <Card className="bg-white border-gray-200">
+            <Card className="bg-background border-gray-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3 text-2xl text-gray-900">
                   <Bell className="w-6 h-6 text-primary" />
@@ -250,7 +248,7 @@ const Settings = () => {
             </Card>
 
             {/* Privacy Settings */}
-            <Card className="bg-white border-gray-200">
+            <Card className="bg-background border-gray-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3 text-2xl text-gray-900">
                   <Shield className="w-6 h-6 text-primary" />
@@ -302,7 +300,7 @@ const Settings = () => {
             </Card>
 
             {/* Appearance & Accessibility Settings */}
-            <Card className="bg-white border-gray-200">
+            <Card className="bg-background border-gray-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3 text-2xl text-gray-900">
                   <Palette className="w-6 h-6 text-primary" />
@@ -401,7 +399,7 @@ const Settings = () => {
             </Card>
 
             {/* Data & Storage */}
-            <Card className="bg-white border-gray-200">
+            <Card className="bg-background border-gray-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3 text-2xl text-gray-900">
                   <Download className="w-6 h-6 text-primary" />
@@ -455,4 +453,3 @@ const Settings = () => {
 };
 
 export default Settings;
-
