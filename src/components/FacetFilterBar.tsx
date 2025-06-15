@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
@@ -31,6 +30,7 @@ const STATUS_OPTIONS = [
   { label: "Approved", value: "approved" },
   { label: "Pending Review", value: "pending_review" },
   { label: "Needs Revision", value: "needs_revision" },
+  { label: "Rejected", value: "rejected" },
 ];
 
 const FacetFilterBar: React.FC<FacetFilterBarProps> = ({
@@ -51,6 +51,7 @@ const FacetFilterBar: React.FC<FacetFilterBarProps> = ({
         : [...filters[key], val],
     });
   };
+  
   return (
     <section className="w-full flex flex-wrap gap-2 mb-5 items-center">
       {/* Author Filter */}
