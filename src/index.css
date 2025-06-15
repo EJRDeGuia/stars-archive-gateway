@@ -45,33 +45,78 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 142 71% 25%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --background: 222 47% 10%; /* Deeper neutral blue-gray, less harsh than pure black */
+    --foreground: 220 13% 90%; /* Slightly blue-leaning gray for primary text */
+    --card: 224 42% 13%; /* Slightly lighter than background for card panels */
+    --card-foreground: 210 40% 96%;
+
+    --popover: 225 40% 12%;
+    --popover-foreground: 210 40% 96%;
+
+    --primary: 142 71% 45%; /* Slightly brighter green for better accent */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 219 16% 18%;
+    --secondary-foreground: 210 40% 92%;
+
+    --muted: 218 20% 14%;
+    --muted-foreground: 215 18% 60%;
+
+    --accent: 221 24% 16%;
+    --accent-foreground: 210 40% 92%;
+
+    --destructive: 355 57% 44%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 142 71% 25%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 142 71% 25%;
+
+    --border: 220 13% 22%;
+    --input: 220 13% 22%;
+    --ring: 142 71% 40%;
+
+    --sidebar-background: 226 35% 13%;
+    --sidebar-foreground: 220 12% 86%;
+    --sidebar-primary: 142 71% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 142 71% 25%;
+    --sidebar-accent: 224 19% 23%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 220 13% 22%;
+    --sidebar-ring: 142 71% 45%;
+  }
+
+  /* Make cards/emphasis panels pop in dark */
+  .dark .card,
+  .dark .bg-background {
+    background: linear-gradient(135deg, hsl(var(--card)) 90%, hsl(var(--background)) 100%);
+    color: hsl(var(--card-foreground));
+    box-shadow: 0 2px 8px 0 rgb(60 60 60 / 0.18);
+    border-color: hsl(var(--border));
+  }
+
+  /* Shadows for cards in dark mode, a little more visible */
+  .dark .sleek-shadow,
+  .dark .sleek-shadow-lg,
+  .dark .sleek-shadow-xl {
+    box-shadow: 
+      0 2px 8px 0 rgba(40, 40, 40, 0.2),
+      0 1.5px 5px -1.5px rgba(40, 40, 40, 0.18);
+  }
+
+  .dark .glass-effect {
+    @apply bg-white/5 backdrop-blur-lg border border-white/5;
+    background: rgba(20, 22, 32, 0.6) !important;
+    color: hsl(var(--card-foreground)) !important;
+    border-color: hsl(var(--border)) !important;
+  }
+
+  /* Enhance text readability in dark mode */
+  .dark .text-gray-900,
+  .dark .text-gray-800,
+  .dark .text-gray-700,
+  .dark .text-gray-600 {
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .dark .border-gray-200 {
+    border-color: hsl(var(--border)) !important;
   }
 
   .large-font body, .large-font {
