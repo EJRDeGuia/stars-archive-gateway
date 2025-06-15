@@ -121,7 +121,6 @@ const Upload = () => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              apikey: supabase._anonKey ?? "",
             },
             body: JSON.stringify({
               path: storagePath
