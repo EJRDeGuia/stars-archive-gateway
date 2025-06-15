@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -23,45 +22,8 @@ const UserManagement = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Mock user data
-  const users = [
-    {
-      id: '1',
-      name: 'Dr. Maria Santos',
-      email: 'maria.santos@dlsl.edu.ph',
-      role: 'archivist',
-      college: 'CITE',
-      status: 'active',
-      lastLogin: '2024-01-15'
-    },
-    {
-      id: '2',
-      name: 'John Doe',
-      email: 'john.doe@dlsl.edu.ph',
-      role: 'researcher',
-      college: 'CBEAM',
-      status: 'active',
-      lastLogin: '2024-01-14'
-    },
-    {
-      id: '3',
-      name: 'Admin User',
-      email: 'admin@dlsl.edu.ph',
-      role: 'admin',
-      college: 'All',
-      status: 'active',
-      lastLogin: '2024-01-16'
-    },
-    {
-      id: '4',
-      name: 'Jane Smith',
-      email: 'jane.smith@dlsl.edu.ph',
-      role: 'researcher',
-      college: 'CEAS',
-      status: 'inactive',
-      lastLogin: '2024-01-10'
-    }
-  ];
+  // REMOVE mock users array! Frontend now uses no hardcoded users
+  const users: any[] = [];
 
   const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -143,38 +105,42 @@ const UserManagement = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {filteredUsers.map((user) => (
-                  <div key={user.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-dlsl-green/10 rounded-full flex items-center justify-center">
-                        <UserCheck className="w-5 h-5 text-dlsl-green" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{user.name}</h3>
-                        <p className="text-gray-600 text-sm">{user.email}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge className={getRoleBadgeColor(user.role)}>
-                            {user.role}
-                          </Badge>
-                          <Badge className={getStatusBadgeColor(user.status)}>
-                            {user.status}
-                          </Badge>
-                          <span className="text-xs text-gray-500">• {user.college}</span>
+              {filteredUsers.length === 0 ? (
+                <div className="text-gray-400 text-center py-8">No users found.</div>
+              ) : (
+                <div className="space-y-4">
+                  {filteredUsers.map((user) => (
+                    <div key={user.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-dlsl-green/10 rounded-full flex items-center justify-center">
+                          <UserCheck className="w-5 h-5 text-dlsl-green" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{user.name}</h3>
+                          <p className="text-gray-600 text-sm">{user.email}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge className={getRoleBadgeColor(user.role)}>
+                              {user.role}
+                            </Badge>
+                            <Badge className={getStatusBadgeColor(user.status)}>
+                              {user.status}
+                            </Badge>
+                            <span className="text-xs text-gray-500">• {user.college}</span>
+                          </div>
                         </div>
                       </div>
+                      <div className="flex items-center gap-2">
+                        <Button size="sm" variant="outline">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="outline" className="text-red-600 hover:text-red-700">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" variant="outline">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline" className="text-red-600 hover:text-red-700">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

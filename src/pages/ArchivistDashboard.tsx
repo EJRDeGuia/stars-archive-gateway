@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -14,39 +14,14 @@ const ArchivistDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Mock data for archivist dashboard
+  // Mock data REMOVED! Set stats and recentUploads to empty
   const stats = {
-    totalTheses: 549,
-    pendingReview: 12,
-    thisMonth: 23
+    totalTheses: 0,
+    pendingReview: 0,
+    thisMonth: 0
   };
 
-  const recentUploads = [
-    {
-      id: '1',
-      title: 'Machine Learning Applications in Healthcare',
-      author: 'John Smith',
-      college: 'CITE',
-      uploadDate: '2024-01-15',
-      status: 'pending_review'
-    },
-    {
-      id: '2',
-      title: 'Sustainable Tourism Practices in the Philippines',
-      author: 'Maria Garcia',
-      college: 'CIHTM',
-      uploadDate: '2024-01-14',
-      status: 'approved'
-    },
-    {
-      id: '3',
-      title: 'Financial Technology Adoption in SMEs',
-      author: 'Robert Johnson',
-      college: 'CBEAM',
-      uploadDate: '2024-01-13',
-      status: 'needs_revision'
-    }
-  ];
+  const recentUploads: any[] = [];
 
   const handleQuickAction = (action: string) => {
     switch (action) {
@@ -90,11 +65,8 @@ const ArchivistDashboard = () => {
           </div>
 
           <StatisticsCards stats={stats} />
-          
           <ArchivistQuickActions onActionClick={handleQuickAction} />
-          
           <CollegeGrid />
-          
           <RecentUploads uploads={recentUploads} />
         </div>
       </main>

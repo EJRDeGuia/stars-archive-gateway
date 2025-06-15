@@ -64,18 +64,19 @@ const AdminDashboard = () => {
       });
   }, []);
 
-  // Statistics Calculation (all 0, will update in next phase)
+  // Statistics Calculation, now only pull live counts; set 0 if no live data
   const stats = {
-    totalUsers: 0,
+    totalUsers: 0, // No backend query available; showing zero. (FIX: connect real data if API exists.)
     totalTheses: theses.length,
     totalColleges: colleges.length,
-    monthlyUploads: 0,
-    weeklyViews: 0,
-    securityAlerts: 0,
-    networkSessions: 0,
+    monthlyUploads: 0, // No backend data, leave as zero.
+    weeklyViews: 0,    // No backend data, leave as zero.
+    securityAlerts: 0, // No backend data, leave as zero.
+    networkSessions: 0 // No backend data, leave as zero.
   };
 
-  const recentActivity: any[] = []; // Empty for now
+  // Remove any demo data for recent activity; keep as empty
+  const recentActivity: any[] = [];
 
   const handleCollegeClick = (collegeId: string) => {
     navigate(`/college/${collegeId}`);
