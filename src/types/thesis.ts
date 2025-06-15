@@ -1,12 +1,11 @@
-
 export interface Thesis {
   id: string;
   title: string;
   author: string;
-  college: string;
+  college_id: string; // update to use college_id as per table
   abstract: string;
   keywords: string[];
-  publishDate: string;
+  publish_date: string;
   status: 'pending_review' | 'approved' | 'needs_revision';
   fileUrl?: string;
   downloadCount?: number;

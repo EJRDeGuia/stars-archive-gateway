@@ -35,10 +35,10 @@ const CollegePage = () => {
       });
   }, [id]);
 
-  // Get theses for this college
+  // Get theses for this college by college_id (UUID)
   const { data: theses = [] } = useTheses();
   const thesesArray: Thesis[] = Array.isArray(theses) ? theses : [];
-  const thesesForCollege = thesesArray.filter((t) => t.college === id);
+  const thesesForCollege = thesesArray.filter((t) => t.college_id === id);
 
   const { user } = useAuth();
   const userId = user?.id;
@@ -120,7 +120,7 @@ const CollegePage = () => {
                             )}
                             <div className="font-bold text-dlsl-green text-lg mb-1">{thesis.title}</div>
                             <div className="text-xs text-slate-500 mb-1">
-                              {thesis.author} • {thesis.publishDate?.slice(0, 4) || "N/A"} • <span>{thesis.college}</span>
+                              {thesis.author} • {thesis.publish_date?.slice(0, 4) || "N/A"} • <span>{college?.name || thesis.college_id}</span>
                             </div>
                             <div className="text-slate-700 text-sm mb-2">{thesis.abstract?.substring(0, 110)}...</div>
                             <div className="flex flex-wrap gap-2 mt-1">
