@@ -18,6 +18,7 @@ import {
   MessageCircle,
   Share2
 } from 'lucide-react';
+import ThesisPDFPreviewDialog from '@/components/ThesisPDFPreviewDialog';
 
 // Provide EMPTY ARRAY for now. Should be replaced with Supabase-fetched values.
 const theses: any[] = [];
@@ -43,6 +44,8 @@ const ThesisDetail = () => {
   }
 
   const canViewPDF = user?.role && ['researcher', 'archivist', 'admin'].includes(user.role);
+
+  const [showPreview, setShowPreview] = React.useState(false);
 
   const handleSaveToLibrary = () => {
     // Implementation for saving to library
@@ -142,15 +145,22 @@ const ThesisDetail = () => {
                 </div>
               </div>
 
-              {/* PDF Preview */}
+              {/* PDF Preview Button */}
               <div className="bg-white border border-gray-200 rounded-2xl shadow-sm">
                 <div className="p-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Document Preview</h2>
-                  <PDFViewer
-                    pdfUrl={canViewPDF ? "/sample-thesis.pdf" : undefined}
-                    title={thesis.title}
-                    canView={canViewPDF}
-                  />
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900">Document Preview</h2>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowPreview(true)}
+                      className="border-dlsl-green text-dlsl-green hover:bg-dlsl-green/5 font-semibold"
+                    >
+                      Preview PDF (First 10 Pages)
+                    </Button>
+                  </div>
+                  <div className="text-gray-500 text-sm mb-2">
+                    View-only, download/copy/print disabled. This preview is secured via Adobe PDF Viewer.
+                  </div>
                 </div>
               </div>
 
@@ -273,6 +283,15 @@ const ThesisDetail = () => {
             </div>
           </div>
         </div>
+        {/* PDF Secure Preview Dialog */}
+        <ThesisPDFPreviewDialog
+          open={showPreview}
+          onOpenChange={setShowPreview}
+          pdfUrl={"/sample-thesis.pdf"}
+          title={thesis.title}
+          author={thesis.author}
+          year={thesis.year || "N/A"}
+        />
       </main>
 
       <Footer />

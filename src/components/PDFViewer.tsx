@@ -7,6 +7,7 @@ interface PDFViewerProps {
   pdfUrl?: string;
   title: string;
   canView: boolean;
+  maxPages?: number;
   className?: string;
 }
 
@@ -16,7 +17,7 @@ declare global {
   }
 }
 
-const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, title, canView, className = '' }) => {
+const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, title, canView, maxPages, className = '' }) => {
   const viewerRef = useRef<HTMLDivElement>(null);
   const adobeViewerRef = useRef<any>(null);
 
@@ -73,7 +74,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, title, canView, className
         adobeViewerRef.current = null;
       }
     };
-  }, [pdfUrl, canView]);
+  }, [pdfUrl, canView, maxPages]);
 
   const initializeViewer = () => {
     if (!window.AdobeDC || !viewerRef.current || !pdfUrl) return;
@@ -92,24 +93,24 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, title, canView, className
         embedMode: 'SIZED_CONTAINER',
         focusOnRendering: false,
         showAnnotationTools: false,
-        showLeftHandPanel: true,
+        showLeftHandPanel: false,
         showDownloadPDF: false,
         showPrintPDF: false,
-        showZoomControl: true,
-        defaultViewMode: 'FIT_PAGE',
+        showZoomControl: false,
         enableFormFilling: false,
-        showBookmarks: true,
-        showThumbnails: false,
+        showBookmarks: false,
+        showThumbnails: true,
         enableSearchAPIs: false,
         enableLinksAPIs: false,
         includePDFAnnotations: false,
         showPreviewUnavailableBanner: false,
         disableTextSelection: true,
         disableCopyPaste: true,
-        exitPDFViewerType: 'CLOSE'
+        exitPDFViewerType: 'CLOSE',
+        ...(maxPages ? { pageRange: { start: 1, end: maxPages } } : {}),
       });
 
-      // Additional security: disable text selection via CSS
+      // Additional hardening
       const style = document.createElement('style');
       style.textContent = `
         #adobe-dc-view * {
@@ -120,12 +121,9 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, title, canView, className
           -webkit-touch-callout: none !important;
           -webkit-tap-highlight-color: transparent !important;
         }
-        
         #adobe-dc-view {
           pointer-events: auto;
         }
-        
-        /* Disable screenshot tools */
         @media print {
           #adobe-dc-view { display: none !important; }
         }
@@ -201,7 +199,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, title, canView, className
         <div 
           id="adobe-dc-view" 
           ref={viewerRef}
-          style={{ height: '600px', width: '100%' }}
+          style={{ height: '410px', width: '100%' }}
           className="select-none"
         />
       </CardContent>
