@@ -1,10 +1,9 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import PDFViewer from "./PDFViewer";
-import { Badge } from "@/components/ui/badge";
 import { ClipboardCopy, FileText } from "lucide-react";
+import CitationExportPopover from "./CitationExportPopover";
 
 interface ThesisPDFPreviewDialogProps {
   open: boolean;
@@ -43,15 +42,18 @@ const ThesisPDFPreviewDialog: React.FC<ThesisPDFPreviewDialogProps> = ({
               <FileText className="text-dlsl-green mr-2" />
               Secure PDF Preview
             </DialogTitle>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="gap-1 ml-4 text-gray-600 hover:text-dlsl-green"
-              onClick={handleCopyCitation}
-            >
-              <ClipboardCopy className="w-4 h-4" />
-              {copied ? "Copied!" : "Copy Citation"}
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                className="gap-1 ml-2 text-gray-600 hover:text-dlsl-green"
+                onClick={handleCopyCitation}
+              >
+                <ClipboardCopy className="w-4 h-4" />
+                {copied ? "Copied!" : "Copy Citation"}
+              </Button>
+              <CitationExportPopover title={title} author={author} year={year} />
+            </div>
           </div>
           <div className="p-0">
             <PDFViewer
