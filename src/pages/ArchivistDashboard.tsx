@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -36,8 +37,12 @@ const ArchivistDashboard = () => {
       case 'profile':
         navigate('/profile');
         break;
+      case 'settings':
+        navigate('/settings');
+        break;
       default:
-        console.log('Unknown archivist action:', action);
+        toast.info('Feature coming soon!');
+        break;
     }
   };
 

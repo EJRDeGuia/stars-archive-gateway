@@ -61,8 +61,10 @@ const AdminDashboard = () => {
       case 'backup':
         handleBackupDatabase();
         break;
+      // Fix: handle dashboard navigation for unspecified actions gracefully
       default:
-        console.log('Unknown admin action:', action);
+        toast.info('Feature coming soon!');
+        break;
     }
   };
 
