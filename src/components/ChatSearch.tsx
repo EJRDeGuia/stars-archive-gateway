@@ -48,6 +48,14 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
   const [showSaveModal, setShowSaveModal] = useState(false);
   const saveSearch = useSaveSearch();
 
+  // Add effect to close save modal if no user search in chat
+  useEffect(() => {
+    // If chat has no user search, close the modal if open
+    if (!chat.some(item => item.type === "user") && showSaveModal) {
+      setShowSaveModal(false);
+    }
+  }, [chat, showSaveModal]);
+
   // Scroll to bottom on new chat
   useEffect(() => {
     chatEndRef?.current?.scrollIntoView({ behavior: 'smooth' });
@@ -308,12 +316,15 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
           </Button>
         )}
       </form>
-      <SaveSearchModal 
-        open={showSaveModal} 
-        onClose={() => setShowSaveModal(false)} 
-        onSave={handleSaveSearch}
-        defaultName="Research Query"
-      />
+      {/* Only show SaveSearchModal if there are user queries in the chat */}
+      {user && chat.some(item => item.type === "user") && (
+        <SaveSearchModal 
+          open={showSaveModal} 
+          onClose={() => setShowSaveModal(false)} 
+          onSave={handleSaveSearch}
+          defaultName="Research Query"
+        />
+      )}
     </Card>
   );
 };
