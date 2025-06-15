@@ -3,77 +3,30 @@ import Footer from '@/components/Footer';
 import CollegeCard from '@/components/CollegeCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Users, Calendar, TrendingUp, Code, Calculator, Microscope, HeartPulse, UtensilsCrossed } from 'lucide-react';
+import { BookOpen, Users, Calendar, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 const theses = [];
 
 const Collections = () => {
   const navigate = useNavigate();
+  const [colleges, setColleges] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Use the same college data structure as Dashboard
-  const colleges = [
-    {
-    id: '1',
-    name: 'CITE',
-    fullName: 'College of Information Technology and Engineering',
-    color: 'red',
-    thesesCount: 120,
-    icon: Code,
-    bgColor: 'bg-red-500',
-    bgColorLight: 'bg-red-50',
-    textColor: 'text-red-600',
-    borderColor: 'border-red-200',
-    description: 'Advancing technology through innovative research'
-  }, {
-    id: '2',
-    name: 'CBEAM',
-    fullName: 'College of Business, Economics, Accountancy, and Management',
-    color: 'yellow',
-    thesesCount: 145,
-    icon: Calculator,
-    bgColor: 'bg-yellow-500',
-    bgColorLight: 'bg-yellow-50',
-    textColor: 'text-yellow-600',
-    borderColor: 'border-yellow-200',
-    description: 'Driving business excellence and economic growth'
-  }, {
-    id: '3',
-    name: 'CEAS',
-    fullName: 'College of Education, Arts, and Sciences',
-    color: 'blue',
-    thesesCount: 98,
-    icon: Microscope,
-    bgColor: 'bg-blue-500',
-    bgColorLight: 'bg-blue-50',
-    textColor: 'text-blue-600',
-    borderColor: 'border-blue-200',
-    description: 'Exploring knowledge across diverse disciplines'
-  }, {
-    id: '4',
-    name: 'CON',
-    fullName: 'College of Nursing',
-    color: 'gray',
-    thesesCount: 76,
-    icon: HeartPulse,
-    bgColor: 'bg-gray-500',
-    bgColorLight: 'bg-gray-50',
-    textColor: 'text-gray-600',
-    borderColor: 'border-gray-200',
-    description: 'Advancing healthcare through compassionate research'
-  }, {
-    id: '5',
-    name: 'CIHTM',
-    fullName: 'College of International Hospitality and Tourism Management',
-    color: 'green',
-    thesesCount: 110,
-    icon: UtensilsCrossed,
-    bgColor: 'bg-green-500',
-    bgColorLight: 'bg-green-50',
-    textColor: 'text-green-600',
-    borderColor: 'border-green-200',
-    description: 'Shaping the future of hospitality and tourism'
-  }];
+  // Fetch all colleges
+  useEffect(() => {
+    setLoading(true);
+    supabase
+      .from('colleges')
+      .select('*')
+      .order('name', { ascending: true })
+      .then(({ data }) => {
+        setColleges(data || []);
+        setLoading(false);
+      });
+  }, []);
 
   const collections = [
     {
@@ -105,7 +58,6 @@ const Collections = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
           {/* Header */}
@@ -155,23 +107,45 @@ const Collections = () => {
             </div>
             
             <div className="max-w-5xl mx-auto">
-              {/* Top row: CITE, CBEAM, CEAS */}
+              {/* Loading state */}
+              {loading && (
+                <div className="text-center py-12 text-gray-400">Loading colleges...</div>
+              )}
+              {/* Top row: first 3 colleges */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 {colleges.slice(0, 3).map(college => (
                   <CollegeCard
                     key={college.id}
-                    college={college}
+                    college={{
+                      ...college,
+                      thesesCount: college.thesesCount || 0,
+                      icon: null,
+                      bgColor: 'bg-gray-200',
+                      bgColorLight: 'bg-gray-50',
+                      textColor: 'text-gray-700',
+                      borderColor: 'border-gray-200',
+                      description: college.description || 'Advancing knowledge through innovative research and academic excellence',
+                    }}
                     onClick={() => navigate(`/college/${college.id}`)}
                   />
                 ))}
               </div>
               
-              {/* Bottom row: CON and CIHTM centered */}
+              {/* Bottom row: next 2 colleges */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
                 {colleges.slice(3, 5).map(college => (
                   <CollegeCard
                     key={college.id}
-                    college={college}
+                    college={{
+                      ...college,
+                      thesesCount: college.thesesCount || 0,
+                      icon: null,
+                      bgColor: 'bg-gray-200',
+                      bgColorLight: 'bg-gray-50',
+                      textColor: 'text-gray-700',
+                      borderColor: 'border-gray-200',
+                      description: college.description || 'Advancing knowledge through innovative research and academic excellence',
+                    }}
                     onClick={() => navigate(`/college/${college.id}`)}
                   />
                 ))}
@@ -222,7 +196,6 @@ const Collections = () => {
           </div>
         </div>
       </main>
-
       <Footer />
     </div>
   );
