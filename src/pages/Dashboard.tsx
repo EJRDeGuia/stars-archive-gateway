@@ -84,7 +84,8 @@ const Dashboard = () => {
     }
   };
 
-  const { data: chartData, loading: chartLoading } = useResearcherViewsAnalytics();
+  // Removed: const { data: chartData, loading: chartLoading } = useResearcherViewsAnalytics();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -101,17 +102,7 @@ const Dashboard = () => {
             onActionClick={handleQuickAction}
           />
 
-          {/* Analytics Chart */}
-          {user?.role === "researcher" && (
-            <div className="mb-12">
-              <ViewsChart
-                title="Your Theses: Views Analytics"
-                data={chartData}
-                legend="Views"
-                color="#6366f1"
-              />
-            </div>
-          )}
+          {/* Removed Analytics Chart for researcher */}
 
           <MyCollectionsSection />
           <CollegeGrid />
