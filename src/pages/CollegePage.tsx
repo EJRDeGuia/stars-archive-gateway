@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
@@ -39,6 +38,13 @@ const CollegePage = () => {
   const { data: theses = [] } = useTheses();
   const thesesArray: Thesis[] = Array.isArray(theses) ? theses : [];
   const thesesForCollege = thesesArray.filter((t) => t.college_id === id);
+
+  // Debug logs to inspect fetched data and filtered results
+  useEffect(() => {
+    console.log("Raw theses from useTheses:", theses);
+    console.log("Filtered thesesForCollege:", thesesForCollege);
+    console.log("Current college id from route:", id);
+  }, [theses, thesesForCollege, id]);
 
   const { user } = useAuth();
   const userId = user?.id;
@@ -99,7 +105,17 @@ const CollegePage = () => {
               <section className="mb-10 animate-fade-in">
                 <Card className="w-full mb-6 bg-white/95 shadow-md border border-dlsl-green/10">
                   <CardContent className="p-6">
-                    <h2 className="text-2xl font-bold mb-3 text-dlsl-green">All Theses from {college?.name}</h2>
+                    <h2 className="text-2xl font-bold mb-3 text-dlsl-green">
+                      All Theses from {college?.name}
+                    </h2>
+                    {/* ALERT if theses fetched but no results */}
+                    {thesesArray.length > 0 && thesesForCollege.length === 0 && (
+                      <div className="text-center text-yellow-600 py-3 border border-yellow-400 rounded mb-4">
+                        No theses found for this college. (Fetched {thesesArray.length} thesis records, but none match this college.)
+                        <pre className="mt-2 text-xs text-yellow-900 bg-yellow-50 rounded p-2 max-w-full overflow-auto">{JSON.stringify(thesesArray, null, 2)}</pre>
+                        <div className="text-xs text-gray-500 font-mono">College ID: {id}</div>
+                      </div>
+                    )}
                     {thesesForCollege.length === 0 ? (
                       <div className="text-center text-slate-400 py-8">
                         No theses found for this college.
@@ -107,7 +123,10 @@ const CollegePage = () => {
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {thesesForCollege.map((thesis) => (
-                          <div key={thesis.id} className="border border-slate-100 rounded-lg p-5 bg-slate-50 hover:bg-dlsl-green/5 transition-all cursor-pointer shadow-sm relative">
+                          <div
+                            key={thesis.id}
+                            className="border border-slate-100 rounded-lg p-5 bg-slate-50 hover:bg-dlsl-green/5 transition-all cursor-pointer shadow-sm relative"
+                          >
                             {/* Favorite button (top right) */}
                             {userId && (
                               <div className="absolute top-3 right-4 z-10">
@@ -120,12 +139,20 @@ const CollegePage = () => {
                             )}
                             <div className="font-bold text-dlsl-green text-lg mb-1">{thesis.title}</div>
                             <div className="text-xs text-slate-500 mb-1">
-                              {thesis.author} • {thesis.publish_date?.slice(0, 4) || "N/A"} • <span>{college?.name || thesis.college_id}</span>
+                              {thesis.author} • {thesis.publish_date?.slice(0, 4) || "N/A"} •{" "}
+                              <span>{college?.name || thesis.college_id}</span>
                             </div>
-                            <div className="text-slate-700 text-sm mb-2">{thesis.abstract?.substring(0, 110)}...</div>
+                            <div className="text-slate-700 text-sm mb-2">
+                              {thesis.abstract?.substring(0, 110)}...
+                            </div>
                             <div className="flex flex-wrap gap-2 mt-1">
                               {thesis.keywords?.slice(0, 4).map((k, i) => (
-                                <span key={i} className="px-2 py-0.5 rounded-full bg-dlsl-green/10 text-xs text-dlsl-green">{k}</span>
+                                <span
+                                  key={i}
+                                  className="px-2 py-0.5 rounded-full bg-dlsl-green/10 text-xs text-dlsl-green"
+                                >
+                                  {k}
+                                </span>
                               ))}
                             </div>
                           </div>
@@ -156,4 +183,5 @@ const CollegePage = () => {
     </div>
   );
 };
+
 export default CollegePage;
