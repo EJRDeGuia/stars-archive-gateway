@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -20,6 +19,10 @@ import {
   Lock
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import AccountSettingsCard from "@/components/settings/AccountSettingsCard";
+import NotificationSettingsCard from "@/components/settings/NotificationSettingsCard";
+import PrivacySettingsCard from "@/components/settings/PrivacySettingsCard";
+import DataAndStorageCard from "@/components/settings/DataAndStorageCard";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -36,9 +39,6 @@ const Settings = () => {
     activityVisible: false,
     libraryVisible: true
   });
-
-  // Remove theme/font/contrast related state and logic
-  // Hide appearance/accessibility section entirely
 
   const handleSave = () => {
     toast({
@@ -73,230 +73,16 @@ const Settings = () => {
             </div>
           </div>
           <div className="space-y-8">
-            {/* Account Settings */}
-            <Card className="bg-background border-gray-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3 text-2xl text-gray-900">
-                  <User className="w-6 h-6 text-primary" />
-                  Account Settings
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="username" className="text-gray-700">Username</Label>
-                    <Input 
-                      id="username" 
-                      defaultValue="john.researcher" 
-                      className="border-gray-300"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="display-name" className="text-gray-700">Display Name</Label>
-                    <Input 
-                      id="display-name" 
-                      defaultValue="John Researcher" 
-                      className="border-gray-300"
-                    />
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Security</h3>
-                  <div className="space-y-4">
-                    <Button variant="outline" className="justify-start border-gray-300">
-                      <Lock className="mr-2 h-4 w-4" />
-                      Change Password
-                    </Button>
-                    <Button variant="outline" className="justify-start border-gray-300">
-                      <Shield className="mr-2 h-4 w-4" />
-                      Two-Factor Authentication
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Notification Settings */}
-            <Card className="bg-background border-gray-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3 text-2xl text-gray-900">
-                  <Bell className="w-6 h-6 text-primary" />
-                  Notifications
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label className="text-gray-900">Email Notifications</Label>
-                      <p className="text-sm text-gray-600">Receive notifications via email</p>
-                    </div>
-                    <Switch 
-                      checked={notifications.email}
-                      onCheckedChange={(checked) => 
-                        setNotifications({...notifications, email: checked})
-                      }
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label className="text-gray-900">Push Notifications</Label>
-                      <p className="text-sm text-gray-600">Receive push notifications in browser</p>
-                    </div>
-                    <Switch 
-                      checked={notifications.push}
-                      onCheckedChange={(checked) => 
-                        setNotifications({...notifications, push: checked})
-                      }
-                    />
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label className="text-gray-900">New Theses</Label>
-                      <p className="text-sm text-gray-600">Notify when new research papers are uploaded</p>
-                    </div>
-                    <Switch 
-                      checked={notifications.newTheses}
-                      onCheckedChange={(checked) => 
-                        setNotifications({...notifications, newTheses: checked})
-                      }
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label className="text-gray-900">Research Updates</Label>
-                      <p className="text-sm text-gray-600">Notify about research in your field of interest</p>
-                    </div>
-                    <Switch 
-                      checked={notifications.research}
-                      onCheckedChange={(checked) => 
-                        setNotifications({...notifications, research: checked})
-                      }
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label className="text-gray-900">System Updates</Label>
-                      <p className="text-sm text-gray-600">Notify about system maintenance and updates</p>
-                    </div>
-                    <Switch 
-                      checked={notifications.system}
-                      onCheckedChange={(checked) => 
-                        setNotifications({...notifications, system: checked})
-                      }
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Privacy Settings */}
-            <Card className="bg-background border-gray-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3 text-2xl text-gray-900">
-                  <Shield className="w-6 h-6 text-primary" />
-                  Privacy
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label className="text-gray-900">Public Profile</Label>
-                      <p className="text-sm text-gray-600">Make your profile visible to other users</p>
-                    </div>
-                    <Switch 
-                      checked={privacy.profileVisible}
-                      onCheckedChange={(checked) => 
-                        setPrivacy({...privacy, profileVisible: checked})
-                      }
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label className="text-gray-900">Show Activity</Label>
-                      <p className="text-sm text-gray-600">Let others see your reading activity</p>
-                    </div>
-                    <Switch 
-                      checked={privacy.activityVisible}
-                      onCheckedChange={(checked) => 
-                        setPrivacy({...privacy, activityVisible: checked})
-                      }
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label className="text-gray-900">Public Library</Label>
-                      <p className="text-sm text-gray-600">Make your saved papers visible to others</p>
-                    </div>
-                    <Switch 
-                      checked={privacy.libraryVisible}
-                      onCheckedChange={(checked) => 
-                        setPrivacy({...privacy, libraryVisible: checked})
-                      }
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Appearance & Accessibility Settings REMOVED */}
-            {/* Data & Storage */}
-            <Card className="bg-background border-gray-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3 text-2xl text-gray-900">
-                  <Download className="w-6 h-6 text-primary" />
-                  Data & Storage
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-semibold text-gray-900">Download Data</h3>
-                      <p className="text-sm text-gray-600">Export your account data and activity</p>
-                    </div>
-                    <Button variant="outline" className="border-gray-300">
-                      <Download className="mr-2 h-4 w-4" />
-                      Export Data
-                    </Button>
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-semibold text-gray-900">Clear Cache</h3>
-                      <p className="text-sm text-gray-600">Remove locally stored data to free up space</p>
-                    </div>
-                    <Button variant="outline" className="border-gray-300">
-                      Clear Cache
-                    </Button>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-semibold text-red-600">Delete Account</h3>
-                      <p className="text-sm text-gray-600">Permanently delete your account and all data</p>
-                    </div>
-                    <Button variant="destructive">
-                      Delete Account
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <AccountSettingsCard />
+            <NotificationSettingsCard
+              notifications={notifications}
+              setNotifications={setNotifications}
+            />
+            <PrivacySettingsCard
+              privacy={privacy}
+              setPrivacy={setPrivacy}
+            />
+            <DataAndStorageCard />
           </div>
         </div>
       </main>
