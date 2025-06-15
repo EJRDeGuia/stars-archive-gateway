@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -83,18 +82,6 @@ const Upload = () => {
     setUploadedFiles([]);
   };
 
-  // Handler to auto-fill from extracted PDF data
-  const handleExtracted = (meta: Partial<Record<string, string>>) => {
-    setFormData(f => ({
-      ...f,
-      title: f.title || meta.title || "",
-      author: f.author || meta.author || "",
-      abstract: f.abstract || meta.abstract || "",
-      advisor: f.advisor || meta.advisor || "",
-      keywords: f.keywords || meta.keywords || "",
-    }));
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -117,7 +104,6 @@ const Upload = () => {
           <PDFUploadCard
             uploadedFiles={uploadedFiles}
             setUploadedFiles={setUploadedFiles}
-            onExtracted={handleExtracted}
             isExtracting={isExtracting}
             setIsExtracting={setIsExtracting}
           />

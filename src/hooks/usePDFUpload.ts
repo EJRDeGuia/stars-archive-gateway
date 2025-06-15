@@ -11,14 +11,13 @@ interface UploadFile {
 
 interface UsePDFUploadProps {
   setUploadedFiles: React.Dispatch<React.SetStateAction<UploadFile[]>>;
-  onExtracted: (meta: Partial<Record<string, string>>) => void;
   setIsExtracting: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 /**
- * Handles uploading PDF files and extracting metadata via edge function.
+ * Handles uploading PDF files (no extraction step).
  */
-export function usePDFUpload({ setUploadedFiles, onExtracted, setIsExtracting }: UsePDFUploadProps) {
+export function usePDFUpload({ setUploadedFiles, setIsExtracting }: UsePDFUploadProps) {
   const handleFileUpload = useCallback(async (files: File[]) => {
     for (const file of files) {
       const uploadFile: UploadFile = {
@@ -41,29 +40,9 @@ export function usePDFUpload({ setUploadedFiles, onExtracted, setIsExtracting }:
           });
         if (error) throw error;
 
-        // Call Edge Function to extract metadata
-        const response = await fetch(
-          `https://cylsbcjqemluouxblywl.supabase.co/functions/v1/extract-thesis-info`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ path: storagePath }),
-          }
-        );
-        const meta = await response.json();
-        if (!response.ok) throw new Error(meta.error || "Metadata extraction failed.");
-
-        onExtracted({
-          title: meta.title,
-          author: meta.author,
-          abstract: meta.abstract,
-          advisor: meta.advisor,
-          keywords: Array.isArray(meta.keywords) ? meta.keywords.join(", ") : "",
-        });
-
         toast({
-          title: "PDF info extracted!",
-          description: "Thesis fields were filled automatically from the PDF. Please review and edit as needed.",
+          title: "PDF uploaded!",
+          description: "Your document was uploaded. No information was extracted automatically.",
         });
 
         // Simulate progress
@@ -89,7 +68,7 @@ export function usePDFUpload({ setUploadedFiles, onExtracted, setIsExtracting }:
       } catch (err: any) {
         toast({
           title: "Upload failed",
-          description: err?.message || "Could not upload or parse PDF",
+          description: err?.message || "Could not upload PDF",
           variant: "destructive",
         });
         setUploadedFiles((prev) => prev.filter((uf) => uf.file !== file));
@@ -97,7 +76,7 @@ export function usePDFUpload({ setUploadedFiles, onExtracted, setIsExtracting }:
         setIsExtracting(false);
       }
     }
-  }, [setUploadedFiles, onExtracted, setIsExtracting]);
+  }, [setUploadedFiles, setIsExtracting]);
 
   return { handleFileUpload };
 }

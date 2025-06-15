@@ -16,7 +16,6 @@ interface UploadFile {
 interface PDFUploadCardProps {
   uploadedFiles: UploadFile[];
   setUploadedFiles: React.Dispatch<React.SetStateAction<UploadFile[]>>;
-  onExtracted: (meta: Partial<Record<string, string>>) => void;
   isExtracting: boolean;
   setIsExtracting: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -24,11 +23,10 @@ interface PDFUploadCardProps {
 const PDFUploadCard: React.FC<PDFUploadCardProps> = ({
   uploadedFiles,
   setUploadedFiles,
-  onExtracted,
   isExtracting,
   setIsExtracting,
 }) => {
-  const { handleFileUpload } = usePDFUpload({ setUploadedFiles, onExtracted, setIsExtracting });
+  const { handleFileUpload } = usePDFUpload({ setUploadedFiles, setIsExtracting });
 
   const [isDragging, setIsDragging] = React.useState(false);
 
