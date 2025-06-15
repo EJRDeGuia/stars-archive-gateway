@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -5,11 +6,13 @@ import { toast } from 'sonner';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import WelcomeSection from '@/components/dashboard/WelcomeSection';
-import SearchSection from '@/components/dashboard/SearchSection';
 import QuickActions from '@/components/dashboard/QuickActions';
 import CollegeGrid from '@/components/dashboard/CollegeGrid';
 import RecentActivity from '@/components/dashboard/RecentActivity';
 import { semanticSearchService } from '@/services/semanticSearch';
+// Add icon and Button
+import { Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -110,7 +113,6 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
           <WelcomeSection 
@@ -118,32 +120,44 @@ const Dashboard = () => {
             userRole={user?.role || 'researcher'}
             getGreeting={getGreeting}
           />
-          
-          {/* Replacing SearchSection with a semantic search button */}
+
+          {/* Interactive Semantic Search Button */}
           <div className="mb-12 flex justify-center">
-            <button
+            <Button
               type="button"
               onClick={() => navigate('/explore')}
-              className="flex items-center gap-2 px-8 py-3 bg-dlsl-green hover:bg-dlsl-green-dark text-white font-semibold text-lg rounded-xl shadow transition"
+              size="lg"
+              className="group bg-dlsl-green text-white font-semibold text-lg rounded-xl px-8 py-4 shadow-lg relative overflow-hidden hover:bg-dlsl-green-dark hover:scale-105 hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-dlsl-green/50"
             >
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm0 0" />
-              </svg>
-              Semantic Search
-            </button>
+              <span className="flex items-center gap-2">
+                <Sparkles 
+                  className="-ml-1 w-6 h-6 text-yellow-400 group-hover:animate-pulse transition-transform duration-200"
+                  strokeWidth={2.2}
+                  absoluteStrokeWidth
+                />
+                <span className="drop-shadow-sm tracking-wide">
+                  Try Semantic Search
+                </span>
+              </span>
+              {/* Decorative gradient "glow" */}
+              <span
+                className="absolute inset-0 pointer-events-none rounded-xl opacity-0 group-hover:opacity-60 transition-opacity duration-300"
+                style={{
+                  background: 'radial-gradient(circle at 60% 40%, #fff9e5 0%, #fffbe2 30%, transparent 70%)',
+                }}
+              />
+            </Button>
           </div>
-          
+
           <QuickActions 
             userRole={user?.role || 'researcher'}
             onActionClick={handleQuickAction}
           />
           
           <CollegeGrid />
-          
           <RecentActivity />
         </div>
       </main>
-
       <Footer />
     </div>
   );
