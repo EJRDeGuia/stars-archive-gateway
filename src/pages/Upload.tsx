@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
@@ -55,6 +54,36 @@ const Upload = () => {
     advisor: ''
   });
 
+  // Store actual college UUID mapping from backend
+  const [collegeMap, setCollegeMap] = useState<Record<string, string>>({}); // code => uuid
+
+  useEffect(() => {
+    // Fetch colleges from Supabase and build code => uuid map
+    async function fetchColleges() {
+      const { data, error } = await supabase
+        .from('colleges')
+        .select('id,name');
+      if (error) {
+        toast({
+          title: "Could not fetch colleges",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+      // Build a map from code ("cite") to id (uuid)
+      // Use frontend `colleges` declaration to get known code mapping
+      const codeToUuid: Record<string, string> = {};
+      colleges.forEach(c => {
+        // Match college by name
+        const found = data?.find((d: any) => d.name === c.name);
+        if (found) codeToUuid[c.id] = found.id;
+      });
+      setCollegeMap(codeToUuid);
+    }
+    fetchColleges();
+  }, []);
+
   // Insert a row into the theses table after PDF upload
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,21 +114,23 @@ const Upload = () => {
       return;
     }
 
+    // Map code (e.g. "cite") to UUID for college_id
+    const collegeUuid = collegeMap[formData.college];
+    if (!collegeUuid) {
+      toast({
+        title: "College not recognized",
+        description: "Could not find matching college. Please refresh the page or contact admin.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     // Get file info
     const fileObj = uploadedFiles[0];
     const filePath = fileObj.file.name.replace(/[^a-zA-Z0-9.-]+/g, "_");
-    // Find the uploaded file's storage object key (filename with timestamp)
-    // Backend code in usePDFUpload uses: `${Date.now()}-${filename}`
-    // Let's try to match on Storage.
-    // We'll search by filename and expectation that only one file exists for this session.
-
     let thesisFileUrl: string | null = null;
     try {
       setIsExtracting(true);
-
-      // Option 1: The file URL is `thesis-pdfs` bucket + uploaded file's object name (which has Date.now())
-      // Find matching file in storage - this is not reliable if multiple users upload same filename at the same millisecond, but for UI it's fine.
-      // Grab the latest uploaded thesis-pdfs file containing the file base name
       const { data, error } = await supabase
         .storage
         .from("thesis-pdfs")
@@ -109,12 +140,10 @@ const Upload = () => {
         });
 
       if (error) throw error;
-      // Find the file with the original base name at the end (because we attached timestamp to front)
       const match = data?.find(item => item.name.endsWith(filePath));
       if (!match) {
         throw new Error("Could not find the uploaded file in storage.");
       }
-      // Supabase public URL
       thesisFileUrl = supabase.storage.from("thesis-pdfs").getPublicUrl(match.name).data.publicUrl;
       if (!thesisFileUrl) throw new Error("Failed to get public URL for uploaded PDF.");
 
@@ -126,16 +155,15 @@ const Upload = () => {
           author: formData.author,
           co_adviser: formData.coAuthor || null,
           adviser: formData.advisor,
-          college_id: getCollegeIdByCode(formData.college),
-          program_id: null, // could match department to a program_id if available
+          college_id: collegeUuid, // use mapped uuid
+          program_id: null,
           abstract: formData.abstract,
           keywords: formData.keywords
             ? formData.keywords.split(",").map((k) => k.trim())
             : [],
-          publish_date: `${formData.year}-01-01`, // Use year as the publish_date (assume Jan 1)
+          publish_date: `${formData.year}-01-01`,
           file_url: thesisFileUrl,
           status: "pending_review",
-          // uploaded_by handled by supabase if authenticated
         }]);
 
       if (insertError) {
