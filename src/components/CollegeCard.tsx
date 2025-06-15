@@ -22,7 +22,7 @@ interface CollegeCardProps {
 
 const CollegeCard = ({ college, onClick, size = 'default' }: CollegeCardProps) => {
   const IconComponent = college.icon;
-  
+
   return (
     <Card 
       className="group hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-0 overflow-hidden rounded-2xl"
@@ -33,10 +33,16 @@ const CollegeCard = ({ college, onClick, size = 'default' }: CollegeCardProps) =
       
       <CardContent className="p-8 text-center">
         {/* Icon with colored background */}
-        <div className={`w-16 h-16 ${college.bgColorLight} rounded-2xl flex items-center justify-center mx-auto mb-8`}>
-          <IconComponent className={`w-8 h-8 ${college.textColor}`} />
-        </div>
-        
+        {IconComponent ? (
+          <div className={`w-16 h-16 ${college.bgColorLight} rounded-2xl flex items-center justify-center mx-auto mb-8`}>
+            <IconComponent className={`w-8 h-8 ${college.textColor}`} />
+          </div>
+        ) : (
+          <div className={`w-16 h-16 ${college.bgColorLight} rounded-2xl flex items-center justify-center mx-auto mb-8`}>
+            {/* Optionally: Add a default/placeholder icon here, or leave empty */}
+          </div>
+        )}
+
         {/* College Abbreviation */}
         <h3 className="text-2xl font-bold text-gray-900 mb-4">
           {college.name}
