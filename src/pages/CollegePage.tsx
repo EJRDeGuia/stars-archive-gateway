@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from "react";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -43,11 +44,11 @@ const CollegePage = () => {
   const userId = user?.id;
   const {
     data: userFavorites = [],
-  } = useUserFavorites(userId);
+  } = useUserFavorites(userId) as { data: Array<{ id: string; thesis_id: string }> | undefined };
 
   // Map thesisId to favoriteId for fast lookup
   const favoriteMap: Record<string, string> = {};
-  userFavorites.forEach((fav: any) => {
+  (userFavorites || []).forEach((fav) => {
     favoriteMap[fav.thesis_id] = fav.id;
   });
 
@@ -155,5 +156,4 @@ const CollegePage = () => {
     </div>
   );
 };
-
 export default CollegePage;

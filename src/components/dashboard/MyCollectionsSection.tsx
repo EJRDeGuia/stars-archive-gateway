@@ -5,11 +5,23 @@ import { BookOpen, Search } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 
+type Favorite = {
+  id: string;
+  thesis_id: string;
+}
+
+type SavedSearch = {
+  id: string;
+  name: string;
+  query: string;
+  created_at?: string;
+}
+
 export default function MyCollectionsSection() {
   const { user } = useAuth();
   const userId = user?.id;
-  const { data: favorites = [] } = useUserFavorites(userId);
-  const { data: savedSearches = [] } = useSavedSearches(userId);
+  const { data: favorites = [] } = useUserFavorites(userId) as { data: Favorite[] | undefined };
+  const { data: savedSearches = [] } = useSavedSearches(userId) as { data: SavedSearch[] | undefined };
   const navigate = useNavigate();
 
   return (
@@ -25,7 +37,7 @@ export default function MyCollectionsSection() {
             <div className="text-gray-400 text-sm">None yet. Add favorites from thesis pages!</div>
           ) : (
             <ul className="text-dlsl-green font-medium space-y-1">
-              {favorites.slice(0, 5).map((f: any) => (
+              {favorites.slice(0, 5).map((f) => (
                 <li
                   className="hover:underline cursor-pointer"
                   key={f.id}
@@ -49,7 +61,7 @@ export default function MyCollectionsSection() {
             <div className="text-gray-400 text-sm">No saved searches yet.</div>
           ) : (
             <ul className="text-dlsl-green font-medium space-y-1">
-              {savedSearches.slice(0, 5).map((s: any) => (
+              {savedSearches.slice(0, 5).map((s) => (
                 <li
                   key={s.id}
                   className="hover:underline cursor-pointer"

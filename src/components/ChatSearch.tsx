@@ -155,7 +155,7 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
       toast({
         title: "Search Saved",
         description: `Saved "${name}" to your dashboard.`,
-        variant: "success"
+        variant: "default"
       });
     }
   };
