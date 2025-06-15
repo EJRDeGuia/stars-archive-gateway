@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +11,7 @@ import RecentActivity from "@/components/dashboard/RecentActivity";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import SemanticSearchButton from "@/components/dashboard/SemanticSearchButton";
 import { getGreeting } from "@/utils/greetingUtils";
+import MyCollectionsSection from "@/components/dashboard/MyCollectionsSection";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -97,6 +97,7 @@ const Dashboard = () => {
             userRole={user?.role || "researcher"}
             onActionClick={handleQuickAction}
           />
+          <MyCollectionsSection />
           <CollegeGrid />
           <RecentActivity />
         </DashboardLayout>
@@ -107,4 +108,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-

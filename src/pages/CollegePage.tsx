@@ -10,6 +10,9 @@ import type { Thesis } from "@/types/thesis";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import ChatSearch from "@/components/ChatSearch";
+import FavoriteButton from "@/components/FavoriteButton";
+import { useAuth } from "@/hooks/useAuth";
+import { useUserFavorites } from "@/hooks/useApi";
 
 const CollegePage = () => {
   const navigate = useNavigate();
@@ -35,6 +38,18 @@ const CollegePage = () => {
   const { data: theses = [] } = useTheses();
   const thesesArray: Thesis[] = Array.isArray(theses) ? theses : [];
   const thesesForCollege = thesesArray.filter((t) => t.college === id);
+
+  const { user } = useAuth();
+  const userId = user?.id;
+  const {
+    data: userFavorites = [],
+  } = useUserFavorites(userId);
+
+  // Map thesisId to favoriteId for fast lookup
+  const favoriteMap: Record<string, string> = {};
+  userFavorites.forEach((fav: any) => {
+    favoriteMap[fav.thesis_id] = fav.id;
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -91,7 +106,17 @@ const CollegePage = () => {
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {thesesForCollege.map((thesis) => (
-                          <div key={thesis.id} className="border border-slate-100 rounded-lg p-5 bg-slate-50 hover:bg-dlsl-green/5 transition-all cursor-pointer shadow-sm">
+                          <div key={thesis.id} className="border border-slate-100 rounded-lg p-5 bg-slate-50 hover:bg-dlsl-green/5 transition-all cursor-pointer shadow-sm relative">
+                            {/* Favorite button (top right) */}
+                            {userId && (
+                              <div className="absolute top-3 right-4 z-10">
+                                <FavoriteButton
+                                  userId={userId}
+                                  thesisId={thesis.id}
+                                  favoriteId={favoriteMap[thesis.id] || null}
+                                />
+                              </div>
+                            )}
                             <div className="font-bold text-dlsl-green text-lg mb-1">{thesis.title}</div>
                             <div className="text-xs text-slate-500 mb-1">
                               {thesis.author} • {thesis.publishDate?.slice(0, 4) || "N/A"} • <span>{thesis.college}</span>

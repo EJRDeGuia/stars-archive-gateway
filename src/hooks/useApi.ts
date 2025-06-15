@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiService } from '@/services/api';
+import { supabase } from "@/integrations/supabase/client";
 
 // Generic hook for API queries
 export function useApiQuery<T>(
@@ -83,4 +83,111 @@ export function useColleges() {
     ['colleges'],
     () => apiService.getColleges()
   );
+}
+
+// User Favorites Hooks
+export function useUserFavorites(userId: string | undefined) {
+  return useApiQuery(
+    ["user_favorites", userId],
+    async () => {
+      if (!userId) return [];
+      const { data, error } = await supabase
+        .from("user_favorites")
+        .select("*")
+        .eq("user_id", userId);
+      if (error) throw error;
+      return data;
+    },
+    { enabled: !!userId }
+  );
+}
+
+export function useToggleFavorite() {
+  // Adds/removes favorite. Requires { userId, thesisId, favoriteId? }
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      thesisId,
+      favoriteId,
+    }: { userId: string; thesisId: string; favoriteId?: string }) => {
+      if (favoriteId) {
+        // Remove
+        const { error } = await supabase
+          .from("user_favorites")
+          .delete()
+          .eq("id", favoriteId);
+        if (error) throw error;
+        return { removed: true };
+      } else {
+        // Add
+        const { error, data } = await supabase
+          .from("user_favorites")
+          .insert([{ user_id: userId, thesis_id: thesisId }])
+          .select()
+          .single();
+        if (error) throw error;
+        return { added: true, ...data };
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user_favorites"] });
+    },
+  });
+}
+
+// Saved Searches Hooks
+export function useSavedSearches(userId: string | undefined) {
+  return useApiQuery(
+    ["saved_searches", userId],
+    async () => {
+      if (!userId) return [];
+      const { data, error } = await supabase
+        .from("saved_searches")
+        .select("*")
+        .eq("user_id", userId);
+      if (error) throw error;
+      return data;
+    },
+    { enabled: !!userId }
+  );
+}
+
+export function useSaveSearch() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      name,
+      query,
+      filters,
+    }: { userId: string; name: string; query: string; filters?: any }) => {
+      const { data, error } = await supabase
+        .from("saved_searches")
+        .insert([{ user_id: userId, name, query, filters }])
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["saved_searches"] });
+    },
+  });
+}
+
+export function useDeleteSavedSearch() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("saved_searches")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["saved_searches"] });
+    },
+  });
 }

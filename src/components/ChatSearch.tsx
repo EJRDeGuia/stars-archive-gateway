@@ -4,6 +4,9 @@ import { Card } from '@/components/ui/card';
 import { Send, Sparkles, Loader, User, Bot, Lightbulb } from 'lucide-react';
 import { semanticSearchService } from '@/services/semanticSearch';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from "@/hooks/useAuth";
+import { useSaveSearch } from "@/hooks/useApi";
+import SaveSearchModal from "./SaveSearchModal";
 
 type Thesis = {
   id: string;
@@ -41,6 +44,9 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const saveSearch = useSaveSearch();
 
   // Scroll to bottom on new chat
   useEffect(() => {
@@ -133,6 +139,25 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
       // Optionally auto-submit suggestion, or just fill input for refinement:
       // handleSearch();
     }, 100);
+  };
+
+  // Save last query as "search"
+  const handleSaveSearch = (name: string) => {
+    if (user?.id && chat.length > 0) {
+      // Find the last user query
+      const lastQuery = [...chat].reverse().find(i => i.type === "user")?.query || "";
+      saveSearch.mutate({
+        userId: user.id,
+        name,
+        query: lastQuery,
+      });
+      setShowSaveModal(false);
+      toast({
+        title: "Search Saved",
+        description: `Saved "${name}" to your dashboard.`,
+        variant: "success"
+      });
+    }
   };
 
   return (
@@ -271,7 +296,24 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
             ? <Loader className="animate-spin h-5 w-5" />
             : <Send className="h-5 w-5" />}
         </Button>
+        {/* Save Search Button */}
+        {user && (
+          <Button
+            type="button"
+            variant="outline"
+            className="ml-4 text-dlsl-green border-dlsl-green/30 px-3 font-semibold"
+            onClick={() => setShowSaveModal(true)}
+          >
+            Save Search
+          </Button>
+        )}
       </form>
+      <SaveSearchModal 
+        open={showSaveModal} 
+        onClose={() => setShowSaveModal(false)} 
+        onSave={handleSaveSearch}
+        defaultName="Research Query"
+      />
     </Card>
   );
 };
