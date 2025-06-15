@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -10,12 +9,15 @@ import ArchivistQuickActions from '@/components/archivist/ArchivistQuickActions'
 import CollegeGrid from '@/components/dashboard/CollegeGrid';
 import RecentUploads from '@/components/archivist/RecentUploads';
 import { useArchivistDashboardData } from '@/hooks/useArchivistDashboardData';
+import ViewsChart from "@/components/analytics/ViewsChart";
+import { useSystemAnalytics } from "@/hooks/useSystemAnalytics";
 
 const ArchivistDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
   const { stats, recentUploads, loading } = useArchivistDashboardData();
+  const { viewsSeries, uploadsSeries, loading: analyticsLoading } = useSystemAnalytics();
 
   const handleQuickAction = (action: string) => {
     switch (action) {
@@ -60,6 +62,22 @@ const ArchivistDashboard = () => {
             <p className="text-xl text-gray-600">
               Manage and organize the university's thesis repository with powerful tools designed for efficient archival management.
             </p>
+          </div>
+
+          {/* System Analytics */}
+          <div className="mb-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ViewsChart
+              title="Daily Thesis Views (last 7 days)"
+              data={viewsSeries}
+              legend="Views"
+              color="#06b6d4"
+            />
+            <ViewsChart
+              title="New Theses Uploaded (last 7 days)"
+              data={uploadsSeries}
+              legend="Uploads"
+              color="#6366f1"
+            />
           </div>
 
           {loading ? (

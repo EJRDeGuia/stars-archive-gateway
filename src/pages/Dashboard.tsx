@@ -12,6 +12,8 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import SemanticSearchButton from "@/components/dashboard/SemanticSearchButton";
 import { getGreeting } from "@/utils/greetingUtils";
 import MyCollectionsSection from "@/components/dashboard/MyCollectionsSection";
+import ViewsChart from "@/components/analytics/ViewsChart";
+import { useResearcherViewsAnalytics } from "@/hooks/useResearcherViewsAnalytics";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -82,6 +84,7 @@ const Dashboard = () => {
     }
   };
 
+  const { data: chartData, loading: chartLoading } = useResearcherViewsAnalytics();
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -97,6 +100,19 @@ const Dashboard = () => {
             userRole={user?.role || "researcher"}
             onActionClick={handleQuickAction}
           />
+
+          {/* Analytics Chart */}
+          {user?.role === "researcher" && (
+            <div className="mb-12">
+              <ViewsChart
+                title="Your Theses: Views Analytics"
+                data={chartData}
+                legend="Views"
+                color="#6366f1"
+              />
+            </div>
+          )}
+
           <MyCollectionsSection />
           <CollegeGrid />
           <RecentActivity />

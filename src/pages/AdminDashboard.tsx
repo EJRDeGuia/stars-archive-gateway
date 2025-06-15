@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -13,6 +12,8 @@ import AdminCollegesOverview from '@/components/admin/AdminCollegesOverview';
 import AdminRecentActivity from '@/components/admin/AdminRecentActivity';
 import AdminSystemStatus from '@/components/admin/AdminSystemStatus';
 import AdminRecentTheses from '@/components/admin/AdminRecentTheses';
+import ViewsChart from "@/components/analytics/ViewsChart";
+import { useSystemAnalytics } from "@/hooks/useSystemAnalytics";
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -68,6 +69,9 @@ const AdminDashboard = () => {
     }
   };
 
+  // Use custom hook to fetch system analytics data
+  const { viewsSeries, uploadsSeries, loading: analyticsLoading } = useSystemAnalytics();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -85,6 +89,23 @@ const AdminDashboard = () => {
               </div>
             </div>
           </div>
+
+          {/* SYSTEM ANALYTICS */}
+          <div className="mb-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ViewsChart
+              title="Daily Thesis Views (last 7 days)"
+              data={viewsSeries}
+              legend="Views"
+              color="#06b6d4"
+            />
+            <ViewsChart
+              title="New Theses Uploaded (last 7 days)"
+              data={uploadsSeries}
+              legend="Uploads"
+              color="#6366f1"
+            />
+          </div>
+
           <AdminStatsGrid stats={stats} />
           <div className="mb-12">
             <AdminQuickActions onActionClick={handleQuickAction} />
