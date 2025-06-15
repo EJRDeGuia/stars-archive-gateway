@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronDown } from "lucide-react";
 import { useColleges } from "@/hooks/useApi";
+import type { College } from "@/types/thesis";
 
 type Facet = {
   label: string;
@@ -38,7 +39,8 @@ const FacetFilterBar: React.FC<FacetFilterBarProps> = ({
   allAuthors,
   onFilterChange
 }) => {
-  const { data: collegeOptions = [] } = useColleges();
+  const { data: collegeOptionsRaw = [] } = useColleges();
+  const collegeOptions: College[] = Array.isArray(collegeOptionsRaw) ? collegeOptionsRaw : [];
 
   // Utility update methods
   const handleCheckbox = (key: keyof FacetFilterState, val: string) => {
@@ -110,7 +112,7 @@ const FacetFilterBar: React.FC<FacetFilterBarProps> = ({
         <PopoverContent align="start" className="w-72 p-3 space-y-1">
           <div className="font-medium mb-2 text-sm">Colleges</div>
           <div className="max-h-52 overflow-auto pr-1">
-            {collegeOptions.map((c: any) => (
+            {collegeOptions.map((c) => (
               <label key={c.id} className="flex items-center gap-2 cursor-pointer text-[15px] py-1">
                 <Checkbox
                   checked={filters.colleges.includes(c.name)}

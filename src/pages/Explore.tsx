@@ -5,6 +5,7 @@ import Footer from '@/components/Footer';
 import SearchInterface from '@/components/SearchInterface';
 import FacetFilterBar, { FacetFilterState } from '@/components/FacetFilterBar';
 import { useTheses } from '@/hooks/useApi';
+import type { Thesis } from '@/types/thesis';
 
 const defaultFilters: FacetFilterState = {
   authors: [],
@@ -18,19 +19,20 @@ const Explore = () => {
 
   // Get all theses to extract unique years/authors for filters
   const { data: theses = [] } = useTheses();
+  const thesesArray: Thesis[] = Array.isArray(theses) ? theses : [];
 
   const allAuthors = useMemo(() => {
     // Unique list of authors
     const s = new Set<string>();
-    theses.forEach((t: any) => t.author && s.add(t.author));
+    thesesArray.forEach((t) => t.author && s.add(t.author));
     return Array.from(s).sort();
-  }, [theses]);
+  }, [thesesArray]);
 
   const allYears = useMemo(() => {
     const s = new Set<string>();
-    theses.forEach((t: any) => t.year && s.add(String(t.year)));
+    thesesArray.forEach((t) => t.year && s.add(String((t as any)?.year || '')));
     return Array.from(s).sort((a, b) => Number(b) - Number(a));
-  }, [theses]);
+  }, [thesesArray]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-dlsl-green/5">
