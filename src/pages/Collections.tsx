@@ -2,14 +2,15 @@
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CollegeCard from '@/components/CollegeCard';
+import ThemedCollectionCarousel from '@/components/ThemedCollectionCarousel';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Users, Calendar, TrendingUp } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-type FeaturedCollection = {
+type Collection = {
   id: string;
   title: string;
   description: string | null;
@@ -24,9 +25,11 @@ const Collections = () => {
   const [colleges, setColleges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Featured collections
-  const [featured, setFeatured] = useState<FeaturedCollection[]>([]);
-  const [loadingFeatured, setLoadingFeatured] = useState(true);
+  // Sectioned collections
+  const [featured, setFeatured] = useState<Collection[]>([]);
+  const [trending, setTrending] = useState<Collection[]>([]);
+  const [newAdditions, setNewAdditions] = useState<Collection[]>([]);
+  const [loadingSections, setLoadingSections] = useState(true);
 
   useEffect(() => {
     setLoading(true);
@@ -41,16 +44,29 @@ const Collections = () => {
   }, []);
 
   useEffect(() => {
-    setLoadingFeatured(true);
-    supabase
-      .from('collection_highlights')
-      .select('*')
-      .eq('type', 'featured')
-      .order('updated_at', { ascending: false })
-      .then(({ data }) => {
-        setFeatured((data as FeaturedCollection[]) || []);
-        setLoadingFeatured(false);
-      });
+    setLoadingSections(true);
+    Promise.all([
+      supabase
+        .from('collection_highlights')
+        .select('*')
+        .eq('type', 'featured')
+        .order('updated_at', { ascending: false }),
+      supabase
+        .from('collection_highlights')
+        .select('*')
+        .eq('type', 'trending')
+        .order('updated_at', { ascending: false }),
+      supabase
+        .from('collection_highlights')
+        .select('*')
+        .eq('type', 'new')
+        .order('updated_at', { ascending: false }),
+    ]).then(([{ data: feat }, { data: trend }, { data: nadd }]) => {
+      setFeatured(feat || []);
+      setTrending(trend || []);
+      setNewAdditions(nadd || []);
+      setLoadingSections(false);
+    });
   }, []);
 
   return (
@@ -59,58 +75,43 @@ const Collections = () => {
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
           {/* Header */}
-          <div className="text-center mb-16">
+          <div className="text-center mb-12">
             <h1 className="text-5xl font-bold text-gray-900 mb-6">Research Collections</h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Curated collections of academic research organized by themes, colleges, and popularity
             </p>
           </div>
 
-          {/* Featured Collections */}
-          <div className="mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">Featured Collections</h2>
-            {loadingFeatured ? (
-              <div className="text-gray-400 text-center py-20">Loading featured collections...</div>
-            ) : featured.length === 0 ? (
-              <div className="text-gray-400 text-center py-20">No featured collections yet.</div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-                {featured.map((fc) => (
-                  <Card
-                    key={fc.id}
-                    className="hover:shadow-lg transition cursor-pointer relative"
-                    style={{
-                      borderColor: fc.color || '#059669',
-                      borderWidth: 2,
-                    }}
-                    onClick={() =>
-                      fc.collection_id
-                        ? navigate(`/collections/${fc.collection_id}`)
-                        : undefined
-                    }
-                  >
-                    {fc.image_url && (
-                      <img
-                        src={fc.image_url}
-                        alt={fc.title}
-                        className="rounded-t-lg w-full h-40 object-cover"
-                        style={{
-                          backgroundColor: fc.color || '#059669',
-                        }}
-                      />
-                    )}
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold text-lg mb-2" style={{ color: fc.color || '#059669' }}>
-                        {fc.title}
-                      </h3>
-                      <div className="mb-2 text-sm text-gray-600">{fc.description}</div>
-                      <Badge className="absolute top-3 right-3" style={{ backgroundColor: fc.color || '#059669', color: '#fff' }}>
-                        Featured
-                      </Badge>
-                    </CardContent>
-                  </Card>
-                ))}
+          {/* Themed Collections - 3 Section Carousels */}
+          <div className="mb-20">
+            {loadingSections ? (
+              <div className="text-gray-400 text-center py-20">
+                Loading research highlights...
               </div>
+            ) : (
+              <>
+                <ThemedCollectionCarousel
+                  title="Featured Research"
+                  collections={featured}
+                  accentColorClass="border-green-600"
+                  badgeLabel="Featured"
+                  badgeClass="bg-green-600"
+                />
+                <ThemedCollectionCarousel
+                  title="Trending this Month"
+                  collections={trending}
+                  accentColorClass="border-yellow-500"
+                  badgeLabel="Trending"
+                  badgeClass="bg-yellow-500"
+                />
+                <ThemedCollectionCarousel
+                  title="New Additions"
+                  collections={newAdditions}
+                  accentColorClass="border-blue-600"
+                  badgeLabel="New"
+                  badgeClass="bg-blue-600"
+                />
+              </>
             )}
           </div>
 
