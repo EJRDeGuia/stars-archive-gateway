@@ -37,14 +37,22 @@ const CollegePage = () => {
   // Get theses for this college by college_id (UUID)
   const { data: theses = [] } = useTheses();
   const thesesArray: Thesis[] = Array.isArray(theses) ? theses : [];
-  const thesesForCollege = thesesArray.filter((t) => t.college_id === id);
+  // Ensure both sides are string and trimmed for reliable comparison
+  const thesesForCollege = thesesArray.filter((t) => {
+    const match =
+      String(t.college_id).trim() === String(id).trim();
+    // Debug: Show mapping for each thesis
+    console.log(
+      `[CollegePage] thesis.id=${t.id}, t.college_id="${t.college_id}" vs id="${id}" match: ${match}`
+    );
+    return match;
+  });
 
-  // Debug logs to inspect fetched data and filtered results
   useEffect(() => {
-    console.log("Raw theses from useTheses:", theses);
-    console.log("Filtered thesesForCollege:", thesesForCollege);
-    console.log("Current college id from route:", id);
-  }, [theses, thesesForCollege, id]);
+    console.log("[CollegePage] Raw theses from useTheses:", thesesArray);
+    console.log("[CollegePage] Filtered thesesForCollege:", thesesForCollege);
+    console.log("[CollegePage] Current college id from route:", id);
+  }, [thesesArray, thesesForCollege, id]);
 
   const { user } = useAuth();
   const userId = user?.id;
