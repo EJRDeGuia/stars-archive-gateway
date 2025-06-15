@@ -50,6 +50,8 @@ const Upload = () => {
     con: ['Nursing', 'Community Health Nursing', 'Medical-Surgical Nursing']
   };
 
+  const [isExtracting, setIsExtracting] = useState(false);
+
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(true);
@@ -85,39 +87,102 @@ const Upload = () => {
     handleFileUpload(files);
   };
 
-  const handleFileUpload = (files: File[]) => {
-    files.forEach(file => {
+  const handleFileUpload = async (files: File[]) => {
+    for (const file of files) {
       const uploadFile: UploadFile = {
         file,
         progress: 0,
         status: 'uploading'
       };
-
       setUploadedFiles(prev => [...prev, uploadFile]);
 
-      // Simulate upload progress
-      const interval = setInterval(() => {
-        setUploadedFiles(prev => 
-          prev.map(uf => 
-            uf.file === file 
-              ? { ...uf, progress: Math.min(uf.progress + 10, 100) }
-              : uf
-          )
-        );
-      }, 200);
+      // New: upload PDF to Supabase Storage before extraction
+      setIsExtracting(true);
 
-      // Complete upload after 2 seconds
-      setTimeout(() => {
-        clearInterval(interval);
-        setUploadedFiles(prev => 
-          prev.map(uf => 
-            uf.file === file 
-              ? { ...uf, progress: 100, status: 'completed' }
-              : uf
-          )
+      // Create a unique filename with timestamp
+      const storagePath = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]+/g, "_")}`;
+      try {
+        // 1. Upload to Supabase Storage
+        const { data, error } = await window
+          .supabase
+          .storage
+          .from('thesis-pdfs')
+          .upload(storagePath, file, {
+            cacheControl: '3600',
+            upsert: true,
+            contentType: file.type,
+          });
+        if (error) {
+          throw error;
+        }
+
+        // 2. Call Edge Function to extract metadata
+        const response = await fetch(
+          `https://cylsbcjqemluouxblywl.supabase.co/functions/v1/extract-thesis-info`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              apikey: window.supabase?.anonKey ?? "",
+            },
+            body: JSON.stringify({
+              path: storagePath
+            }),
+          }
         );
-      }, 2000);
-    });
+        const meta = await response.json();
+        if (!response.ok) throw new Error(meta.error || "Metadata extraction failed.");
+
+        // 3. Apply detected metadata to formData if empty (let user keep their data if not empty)
+        setFormData(f => ({
+          ...f,
+          title: f.title || meta.title,
+          author: f.author || meta.author,
+          abstract: f.abstract || meta.abstract,
+          advisor: f.advisor || meta.advisor,
+          keywords: f.keywords || (Array.isArray(meta.keywords) ? meta.keywords.join(", ") : ""),
+        }));
+
+        toast({
+          title: "PDF info extracted!",
+          description: "Thesis fields were filled automatically from the PDF. Please review and edit as needed."
+        });
+
+        // Simulate progress (as before)
+        let prog = 0;
+        const intv = setInterval(() => {
+          prog += 10;
+          setUploadedFiles(prev =>
+            prev.map(uf =>
+              uf.file === file
+                ? { ...uf, progress: Math.min(uf.progress + 10, 100) }
+                : uf
+            )
+          );
+        }, 120);
+
+        setTimeout(() => {
+          clearInterval(intv);
+          setUploadedFiles(prev =>
+            prev.map(uf =>
+              uf.file === file
+                ? { ...uf, progress: 100, status: 'completed' }
+                : uf
+            )
+          );
+        }, 1200);
+
+      } catch (err: any) {
+        toast({
+          title: "Upload failed",
+          description: err?.message || "Could not upload or parse PDF",
+          variant: "destructive"
+        });
+        setUploadedFiles(prev => prev.filter(uf => uf.file !== file));
+      } finally {
+        setIsExtracting(false);
+      }
+    }
   };
 
   const removeFile = (fileToRemove: File) => {
@@ -273,7 +338,11 @@ const Upload = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form
+                onSubmit={handleSubmit}
+                className="space-y-6"
+                aria-disabled={isExtracting}
+              >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="title">Title *</Label>
@@ -398,12 +467,14 @@ const Upload = () => {
                     type="button"
                     variant="outline"
                     onClick={() => navigate('/dashboard')}
+                    disabled={isExtracting}
                   >
                     Cancel
                   </Button>
                   <Button
                     type="submit"
                     className="bg-dlsl-green hover:bg-dlsl-green-dark text-white"
+                    disabled={isExtracting}
                   >
                     Upload Thesis
                   </Button>
