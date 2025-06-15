@@ -1,34 +1,23 @@
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import CollegeCard from '@/components/CollegeCard';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { BookOpen, Users, Calendar, TrendingUp, ArrowLeft } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import FacetFilterBar, { FacetFilterState } from "@/components/FacetFilterBar";
-import SearchInterface from "@/components/SearchInterface";
 import { useTheses } from "@/hooks/useApi";
 import type { Thesis } from "@/types/thesis";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import ChatSearch from "@/components/ChatSearch";
 
-const defaultFilters: FacetFilterState = {
-  authors: [],
-  years: [],
-  colleges: [],
-  statuses: [],
-};
-
 const CollegePage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [college, setCollege] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [showChat, setShowChat] = useState(false);
+  const [showChat, setShowChat] = useState(true);
 
   useEffect(() => {
     setLoading(true);
@@ -48,29 +37,6 @@ const CollegePage = () => {
   const thesesArray: Thesis[] = Array.isArray(theses) ? theses : [];
   const thesesForCollege = thesesArray.filter((t) => t.college === id);
 
-  // Set up filters
-  const [filters, setFilters] = useState<FacetFilterState>(defaultFilters);
-
-  // Unique authors and years belonging to this college only
-  const allAuthors = useMemo(() => {
-    const s = new Set<string>();
-    thesesForCollege.forEach((t) => t.author && s.add(t.author));
-    return Array.from(s).sort();
-  }, [thesesForCollege]);
-
-  const allYears = useMemo(() => {
-    const s = new Set<string>();
-    thesesForCollege.forEach((t) => {
-      if (t.publishDate) {
-        const year = new Date(t.publishDate).getFullYear();
-        if (!isNaN(year)) {
-          s.add(year.toString());
-        }
-      }
-    });
-    return Array.from(s).sort((a, b) => Number(b) - Number(a));
-  }, [thesesForCollege]);
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -80,23 +46,21 @@ const CollegePage = () => {
           <div className="mb-12">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <Button variant="ghost" onClick={() => navigate('/collections')}>
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Collections
-                  </Button>
-                </div>
+                <Button variant="ghost" onClick={() => navigate('/collections')}>
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to Collections
+                </Button>
                 {loading ? (
-                  <h1 className="text-4xl font-bold text-gray-900">Loading...</h1>
+                  <h1 className="text-4xl font-bold text-gray-900 mt-4">Loading...</h1>
                 ) : college ? (
-                  <h1 className="text-4xl font-bold text-gray-900">{college.name}</h1>
+                  <h1 className="text-4xl font-bold text-gray-900 mt-4">{college.name}</h1>
                 ) : (
-                  <h1 className="text-4xl font-bold text-gray-900">College Not Found</h1>
+                  <h1 className="text-4xl font-bold text-gray-900 mt-4">College Not Found</h1>
                 )}
-                <p className="text-xl text-gray-600">Explore research papers and theses from {college?.name}</p>
+                <p className="text-xl text-gray-600">Explore research and theses from {college?.name}</p>
               </div>
-              {/* Toggle switch for Chat vs Filters */}
-              <div className="flex flex-col items-end gap-0">
+              {/* Chat Toggle - always visible now */}
+              <div className="flex flex-col items-end">
                 <label htmlFor="chat-toggle" className="text-sm text-gray-600 mb-2 flex items-center gap-2">
                   <span className={showChat ? "font-semibold text-dlsl-green" : ""}>Chat</span>
                   <Switch
@@ -105,29 +69,45 @@ const CollegePage = () => {
                     onCheckedChange={setShowChat}
                     className="mx-2"
                   />
-                  <span className={!showChat ? "font-semibold text-dlsl-green" : ""}>Filters</span>
+                  <span className={!showChat ? "font-semibold text-dlsl-green" : ""}>Theses List</span>
                 </label>
               </div>
             </div>
           </div>
-          {/* Main Content */}
           <div className="max-w-5xl mx-auto pt-8">
             {showChat ? (
-              <div className="mb-10">
-                {/* ChatSearch only */}
+              <div className="mb-10 animate-fade-in">
+                {/* More interactive style for ChatSearch */}
                 <ChatSearch filters={{ college: id }} />
               </div>
             ) : (
-              <>
-                {/* Faceted Filters for college-specific theses */}
-                <FacetFilterBar
-                  filters={filters}
-                  allYears={allYears}
-                  allAuthors={allAuthors}
-                  onFilterChange={setFilters}
-                />
-                <SearchInterface filters={filters} />
-              </>
+              <section className="mb-10 animate-fade-in">
+                <Card className="w-full mb-6 bg-white/95 shadow-md border border-dlsl-green/10">
+                  <CardContent className="p-6">
+                    <h2 className="text-2xl font-bold mb-3 text-dlsl-green">All Theses from {college?.name}</h2>
+                    {thesesForCollege.length === 0 ? (
+                      <div className="text-center text-slate-400 py-8">
+                        No theses found for this college.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {thesesForCollege.map((thesis) => (
+                          <div key={thesis.id} className="border border-slate-100 rounded-lg p-5 bg-slate-50 hover:bg-dlsl-green/5 transition-all cursor-pointer shadow-sm">
+                            <div className="font-bold text-dlsl-green text-lg mb-1">{thesis.title}</div>
+                            <div className="text-xs text-slate-500 mb-1">{thesis.author} • {thesis.year} • <span>{thesis.college}</span></div>
+                            <div className="text-slate-700 text-sm mb-2">{thesis.abstract?.substring(0, 110)}...</div>
+                            <div className="flex flex-wrap gap-2 mt-1">
+                              {thesis.keywords?.slice(0, 4).map((k, i) => (
+                                <span key={i} className="px-2 py-0.5 rounded-full bg-dlsl-green/10 text-xs text-dlsl-green">{k}</span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </section>
             )}
           </div>
           {/* College Details */}

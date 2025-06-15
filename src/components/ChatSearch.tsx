@@ -27,6 +27,14 @@ type ChatSearchProps = {
   filters?: any;
 };
 
+const quickSuggestions = [
+  "Recent AI research in this college",
+  "Best thesis awards 2024",
+  "List projects on business analytics",
+  "Faculty-authored theses",
+  "Most cited papers",
+];
+
 const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
   const [chat, setChat] = useState<ChatItem[]>([]);
   const [input, setInput] = useState('');
@@ -118,8 +126,17 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
     }
   };
 
+  // Add quick suggestion click handler
+  const handleSuggestion = (suggestion: string) => {
+    setInput(suggestion);
+    setTimeout(() => {
+      // Optionally auto-submit suggestion, or just fill input for refinement:
+      // handleSearch();
+    }, 100);
+  };
+
   return (
-    <Card className="w-full max-w-3xl mx-auto sleek-shadow-xl border-0 flex flex-col bg-white/95 overflow-hidden min-h-[580px] h-[70vh]">
+    <Card className="w-full max-w-3xl mx-auto sleek-shadow-xl border-0 flex flex-col bg-white/95 overflow-hidden min-h-[580px] h-[70vh] animate-fade-in">
       {/* Header / Title */}
       <div className="p-6 border-b flex gap-3 items-center bg-gradient-to-r from-dlsl-green/10 to-white">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-dlsl-green to-emerald-400 flex items-center justify-center">
@@ -131,10 +148,24 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
         </div>
       </div>
 
+      {/* Suggestions Bar - NEW */}
+      <div className="flex flex-wrap gap-2 px-6 pt-3 pb-2 bg-slate-50/70 border-b">
+        {quickSuggestions.map((s, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => handleSuggestion(s)}
+            className="px-4 py-1 rounded-full bg-white border border-slate-200 text-xs text-slate-500 hover:border-dlsl-green hover:text-dlsl-green transition-all duration-200 hover:shadow"
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+
       {/* Chat body */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6 bg-slate-50/70">
         {chat.length === 0 && (
-          <div className="flex flex-col items-center text-slate-400 mt-20">
+          <div className="flex flex-col items-center text-slate-400 mt-20 transition-all duration-150 animate-fade-in">
             <Sparkles className="w-10 h-10 mb-3" />
             <div className="text-xl font-semibold">Ask anything about research</div>
             <div className="text-md text-slate-400 mt-2">Type your question below – e.g. "Show me AI theses in 2023"</div>
