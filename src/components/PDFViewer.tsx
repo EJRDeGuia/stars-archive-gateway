@@ -1,7 +1,13 @@
-import React, { useEffect, useRef } from 'react';
+
+import React, { useState } from 'react';
+import { Document, Page, pdfjs } from 'react-pdf';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileText, ExternalLink, Lock } from 'lucide-react';
+
+// For react-pdf to work:
+// Set the workerSrc property to use the pdfjs-dist CDN build
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 interface PDFViewerProps {
   pdfUrl?: string;
@@ -11,136 +17,22 @@ interface PDFViewerProps {
   className?: string;
 }
 
-declare global {
-  interface Window {
-    AdobeDC: any;
-  }
-}
+const PDFViewer: React.FC<PDFViewerProps> = ({
+  pdfUrl,
+  title,
+  canView,
+  maxPages,
+  className = '',
+}) => {
+  const [numPages, setNumPages] = useState<number | null>(null);
+  const [pageNumber, setPageNumber] = useState(1);
 
-const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, title, canView, maxPages, className = '' }) => {
-  const viewerRef = useRef<HTMLDivElement>(null);
-  const adobeViewerRef = useRef<any>(null);
+  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+    setNumPages(numPages);
+    setPageNumber(1);
+  };
 
-  useEffect(() => {
-    if (!canView || !pdfUrl) return;
-
-    // Disable right-click context menu and common shortcuts
-    const disableInteractions = (e: any) => {
-      // Disable right-click
-      if (e.type === 'contextmenu') {
-        e.preventDefault();
-        return false;
-      }
-      
-      // Disable common copy shortcuts
-      if (e.ctrlKey || e.metaKey) {
-        if (e.keyCode === 67 || e.keyCode === 65 || e.keyCode === 83 || e.keyCode === 80) {
-          e.preventDefault();
-          return false;
-        }
-      }
-      
-      // Disable F12 (dev tools)
-      if (e.keyCode === 123) {
-        e.preventDefault();
-        return false;
-      }
-      
-      // Disable print screen
-      if (e.keyCode === 44) {
-        e.preventDefault();
-        return false;
-      }
-    };
-
-    document.addEventListener('contextmenu', disableInteractions);
-    document.addEventListener('keydown', disableInteractions);
-    document.addEventListener('selectstart', (e) => e.preventDefault());
-    document.addEventListener('dragstart', (e) => e.preventDefault());
-
-    const initializeViewer = () => {
-      // FIX: Only run if AdobeDC is loaded and viewerRef exists
-      if (!window.AdobeDC || !viewerRef.current || !pdfUrl) return;
-
-      // Prevent multiple initializations
-      if (adobeViewerRef.current) return;
-
-      adobeViewerRef.current = new window.AdobeDC.View({
-        clientId: 'YOUR_ADOBE_CLIENT_ID', // Replace with your Adobe client ID
-        divId: 'adobe-dc-view',
-        locale: 'en-US',
-      });
-
-      adobeViewerRef.current.previewFile({
-        content: { location: { url: pdfUrl } },
-        metaData: { fileName: `${title}.pdf` }
-      }, {
-        embedMode: 'SIZED_CONTAINER',
-        focusOnRendering: false,
-        showAnnotationTools: false,
-        showLeftHandPanel: false,
-        showDownloadPDF: false,
-        showPrintPDF: false,
-        showZoomControl: false,
-        enableFormFilling: false,
-        showBookmarks: false,
-        showThumbnails: true,
-        enableSearchAPIs: false,
-        enableLinksAPIs: false,
-        includePDFAnnotations: false,
-        showPreviewUnavailableBanner: false,
-        disableTextSelection: true,
-        disableCopyPaste: true,
-        exitPDFViewerType: 'CLOSE',
-        ...(maxPages ? { pageRange: { start: 1, end: maxPages } } : {}),
-      });
-
-      // Additional hardening
-      const style = document.createElement('style');
-      style.textContent = `
-        #adobe-dc-view * {
-          -webkit-user-select: none !important;
-          -moz-user-select: none !important;
-          -ms-user-select: none !important;
-          user-select: none !important;
-          -webkit-touch-callout: none !important;
-          -webkit-tap-highlight-color: transparent !important;
-        }
-        #adobe-dc-view {
-          pointer-events: auto;
-        }
-        @media print {
-          #adobe-dc-view { display: none !important; }
-        }
-      `;
-      document.head.appendChild(style);
-    };
-
-    // Make sure the script only loads once
-    let script: HTMLScriptElement | null = document.getElementById('adobe-view-sdk') as HTMLScriptElement;
-    if (!script) {
-      script = document.createElement('script');
-      script.id = 'adobe-view-sdk';
-      script.src = 'https://documentservices.adobe.com/view-sdk/viewer.js';
-      script.onload = initializeViewer;
-      document.head.appendChild(script);
-    } else if (window.AdobeDC) {
-      initializeViewer();
-    } else {
-      script.onload = initializeViewer;
-    }
-
-    return () => {
-      document.removeEventListener('contextmenu', disableInteractions);
-      document.removeEventListener('keydown', disableInteractions);
-      document.removeEventListener('selectstart', (e) => e.preventDefault());
-      document.removeEventListener('dragstart', (e) => e.preventDefault());
-      if (adobeViewerRef.current) {
-        adobeViewerRef.current = null;
-      }
-    };
-  }, [pdfUrl, canView, maxPages]);
-
+  // NO ACCESS
   if (!canView) {
     return (
       <Card className={`${className}`}>
@@ -168,6 +60,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, title, canView, maxPages,
     );
   }
 
+  // NO PDF PROVIDED
   if (!pdfUrl) {
     return (
       <Card className={`${className}`}>
@@ -197,20 +90,47 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, title, canView, maxPages,
     );
   }
 
+  // LIMIT pages shown, if maxPages is set
+  const totalPagesToShow = maxPages && numPages ? Math.min(maxPages, numPages) : numPages;
+
   return (
     <Card className={`${className}`}>
       <CardContent className="p-0">
         <div className="bg-red-50 border-b border-red-200 p-3">
           <p className="text-red-800 text-sm text-center">
-            <strong>Security Notice:</strong> This document is protected. Downloading, copying, and screenshots are disabled.
+            <strong>Security Notice:</strong> This document is protected. Downloading, copying, and printing are disabled in the viewer.
           </p>
         </div>
-        <div 
-          id="adobe-dc-view" 
-          ref={viewerRef}
-          style={{ height: '410px', width: '100%' }}
-          className="select-none"
-        />
+        <div className="flex flex-col items-center bg-gray-50" style={{ minHeight: 460 }}>
+          <Document
+            file={pdfUrl}
+            onLoadSuccess={onDocumentLoadSuccess}
+            loading={<div className="w-full text-center py-12 text-gray-400">Loading PDF...</div>}
+            error={<div className="w-full text-center py-12 text-red-400">Failed to load PDF</div>}
+            className="w-full flex flex-col items-center"
+          >
+            {/* Multiple page preview */}
+            {Array.from(
+              new Array(totalPagesToShow || 0),
+              (el, index) => (
+                <Page
+                  key={`page_${index + 1}`}
+                  pageNumber={index + 1}
+                  width={720}
+                  renderAnnotationLayer={false}
+                  renderTextLayer={false}
+                  loading={<div className="text-center text-gray-300 py-5">Loading page...</div>}
+                  className="mx-auto my-2 rounded-lg border border-gray-200 shadow"
+                />
+              ),
+            )}
+          </Document>
+          {numPages && maxPages && numPages > maxPages && (
+            <div className="mt-4 text-sm text-gray-500 bg-yellow-50 rounded p-3 border border-yellow-100">
+              Only the first {maxPages} pages are visible. Log in or request access for the full document.
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
