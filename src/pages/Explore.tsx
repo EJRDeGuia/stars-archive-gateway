@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -30,7 +29,14 @@ const Explore = () => {
 
   const allYears = useMemo(() => {
     const s = new Set<string>();
-    thesesArray.forEach((t) => t.year && s.add(String((t as any)?.year || '')));
+    thesesArray.forEach((t) => {
+      if (t.publishDate) {
+        const year = new Date(t.publishDate).getFullYear();
+        if (!isNaN(year)) {
+          s.add(year.toString());
+        }
+      }
+    });
     return Array.from(s).sort((a, b) => Number(b) - Number(a));
   }, [thesesArray]);
 
