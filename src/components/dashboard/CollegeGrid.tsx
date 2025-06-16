@@ -31,7 +31,7 @@ const CollegeGrid: React.FC = () => {
             // Ensure database values take precedence for content
             id: dbCollege.id,
             name: dbCollege.name,
-            fullName: dbCollege.full_name || dbCollege.fullName,
+            fullName: dbCollege.full_name || designData?.fullName,
             description: dbCollege.description || designData?.description || 'Advancing knowledge through innovative research and academic excellence'
           };
         });
