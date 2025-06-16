@@ -7,7 +7,8 @@ import {
   FolderOpen, 
   Calendar, 
   Search, 
-  User 
+  User,
+  Settings
 } from 'lucide-react';
 import { ReportService } from '@/services/reportService';
 import { toast } from 'sonner';
@@ -35,12 +36,11 @@ const ArchivistQuickActions: React.FC<ArchivistQuickActionsProps> = ({ onActionC
   };
 
   const handleManageClick = () => {
-    // Navigate to a manage records page (you may need to create this)
     navigate('/archivist/manage-records');
   };
 
   const handleCollectionsClick = () => {
-    navigate('/collections');
+    navigate('/archivist/manage-collections');
   };
 
   const actions = [
@@ -60,8 +60,8 @@ const ArchivistQuickActions: React.FC<ArchivistQuickActionsProps> = ({ onActionC
     },
     {
       id: 'collections',
-      title: 'Collections',
-      description: 'Organize by topic or theme',
+      title: 'Manage Collections',
+      description: 'Create and organize collections',
       icon: FolderOpen,
       onClick: handleCollectionsClick
     },

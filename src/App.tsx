@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -28,6 +27,7 @@ import CollegeManagement from "./pages/CollegeManagement";
 import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 import SystemSettings from "./pages/SystemSettings";
 import SecurityMonitor from "./pages/SecurityMonitor";
+import ManageCollections from '@/pages/ManageCollections';
 
 const queryClient = new QueryClient();
 
@@ -123,6 +123,11 @@ const App = () => (
             <Route path="/settings" element={
               <ProtectedRoute>
                 <Settings />
+              </ProtectedRoute>
+            } />
+            <Route path="/archivist/manage-collections" element={
+              <ProtectedRoute requiredRole="archivist">
+                <ManageCollections />
               </ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />
