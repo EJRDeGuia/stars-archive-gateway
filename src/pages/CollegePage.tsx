@@ -1,15 +1,16 @@
-
 import React, { useState, useEffect } from "react";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Card, CardContent } from '@/components/ui/card';
-import { BookOpen, Users, Calendar, TrendingUp, ArrowLeft } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { BookOpen, Users, Calendar, TrendingUp, ArrowLeft, Search, Filter, Grid, List } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTheses } from "@/hooks/useApi";
 import type { Thesis } from "@/types/thesis";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import ChatSearch from "@/components/ChatSearch";
 import FavoriteButton from "@/components/FavoriteButton";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,6 +22,8 @@ const CollegePage = () => {
   const [college, setCollege] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showChat, setShowChat] = useState(true);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchCollege = async () => {
@@ -56,6 +59,13 @@ const CollegePage = () => {
   const { data: theses = [], isLoading: thesesLoading, error: thesesError } = useTheses();
   const thesesArray: Thesis[] = Array.isArray(theses) ? theses : [];
   
+  // Filter theses based on search term
+  const filteredTheses = thesesForCollege.filter(thesis =>
+    thesis.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    thesis.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    thesis.abstract?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   // Filter theses for this college with better comparison
   const thesesForCollege = thesesArray.filter((t) => {
     const match = String(t.college_id).trim() === String(id).trim();
@@ -88,14 +98,15 @@ const CollegePage = () => {
 
   if (!id) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         <Header />
         <main className="flex-1">
           <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
-            <div className="text-center py-12">
+            <div className="text-center py-20">
+              <BookOpen className="h-20 w-20 text-dlsl-green mx-auto mb-6 opacity-50" />
               <h1 className="text-4xl font-bold text-gray-900 mb-4">College Not Found</h1>
               <p className="text-xl text-gray-600 mb-8">The college you're looking for doesn't exist.</p>
-              <Button onClick={() => navigate('/collections')}>
+              <Button onClick={() => navigate('/collections')} className="bg-dlsl-green hover:bg-dlsl-green/90">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Collections
               </Button>
@@ -108,147 +119,245 @@ const CollegePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header />
       <main className="flex-1">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
-          {/* Header */}
-          <div className="mb-12">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <Button variant="ghost" onClick={() => navigate('/collections')}>
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Collections
-                </Button>
-                {loading ? (
-                  <h1 className="text-4xl font-bold text-gray-900 mt-4">Loading...</h1>
-                ) : college ? (
-                  <h1 className="text-4xl font-bold text-gray-900 mt-4">{college.name}</h1>
-                ) : (
-                  <h1 className="text-4xl font-bold text-gray-900 mt-4">College Not Found</h1>
-                )}
-                <p className="text-xl text-gray-600">
-                  {college ? `Explore research and theses from ${college.name}` : 'The college you\'re looking for doesn\'t exist'}
-                </p>
-              </div>
-              {/* Chat Toggle */}
-              <div className="flex flex-col items-end">
-                <label htmlFor="chat-toggle" className="text-sm text-gray-600 mb-2 flex items-center gap-2">
-                  <span className={showChat ? "font-semibold text-dlsl-green" : ""}>Chat</span>
-                  <Switch
-                    id="chat-toggle"
-                    checked={showChat}
-                    onCheckedChange={setShowChat}
-                    className="mx-2"
-                  />
-                  <span className={!showChat ? "font-semibold text-dlsl-green" : ""}>Theses List</span>
-                </label>
-              </div>
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          {/* Hero Section */}
+          <div className="relative py-16 mb-8">
+            <div className="absolute inset-0 bg-gradient-to-r from-dlsl-green/10 to-dlsl-green/5 rounded-3xl"></div>
+            <div className="relative">
+              <Button 
+                variant="ghost" 
+                onClick={() => navigate('/collections')}
+                className="mb-6 text-dlsl-green hover:bg-dlsl-green/10"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Collections
+              </Button>
+              
+              {loading ? (
+                <div className="animate-pulse">
+                  <div className="h-12 bg-gray-300 rounded w-64 mb-4"></div>
+                  <div className="h-6 bg-gray-200 rounded w-96"></div>
+                </div>
+              ) : college ? (
+                <div>
+                  <h1 className="text-5xl font-bold text-gray-900 mb-4">{college.name}</h1>
+                  <p className="text-xl text-gray-600 mb-6">
+                    {college.full_name || college.name}
+                  </p>
+                  <div className="flex items-center gap-4">
+                    <Badge variant="secondary" className="bg-dlsl-green/10 text-dlsl-green px-4 py-2">
+                      <BookOpen className="w-4 h-4 mr-2" />
+                      {thesesForCollege.length} Theses
+                    </Badge>
+                    <Badge variant="outline" className="px-4 py-2">
+                      <Users className="w-4 h-4 mr-2" />
+                      Active Research
+                    </Badge>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <h1 className="text-5xl font-bold text-gray-900 mb-4">College Not Found</h1>
+                  <p className="text-xl text-gray-600">The college you're looking for doesn't exist or has been removed.</p>
+                </div>
+              )}
             </div>
           </div>
-          
-          <div className="max-w-5xl mx-auto pt-8">
-            {showChat ? (
-              <div className="mb-10 animate-fade-in">
-                <ChatSearch filters={{ college: id }} />
-              </div>
-            ) : (
-              <section className="mb-10 animate-fade-in">
-                <Card className="w-full mb-6 bg-white/95 shadow-md border border-dlsl-green/10">
-                  <CardContent className="p-6">
-                    <h2 className="text-2xl font-bold mb-3 text-dlsl-green">
-                      All Theses from {college?.name || 'this College'}
-                    </h2>
-                    
-                    {thesesLoading ? (
-                      <div className="text-center py-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-dlsl-green mx-auto"></div>
-                        <p className="mt-2 text-gray-600">Loading theses...</p>
+
+          {/* Content Tabs */}
+          <div className="mb-8">
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-4">
+                    <h2 className="text-2xl font-bold text-gray-900">Research Collection</h2>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <span className={showChat ? "font-semibold text-dlsl-green" : ""}>AI Search</span>
+                      <Switch
+                        checked={showChat}
+                        onCheckedChange={setShowChat}
+                        className="mx-2"
+                      />
+                      <span className={!showChat ? "font-semibold text-dlsl-green" : ""}>Browse Theses</span>
+                    </div>
+                  </div>
+                </div>
+
+                {showChat ? (
+                  <div className="animate-fade-in">
+                    <ChatSearch filters={{ college: id }} />
+                  </div>
+                ) : (
+                  <div className="space-y-6 animate-fade-in">
+                    {/* Search and Filter Bar */}
+                    <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                      <div className="relative flex-1 max-w-md">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                        <Input
+                          placeholder="Search theses..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-10 bg-white border-gray-200 focus:border-dlsl-green focus:ring-dlsl-green"
+                        />
                       </div>
-                    ) : thesesError ? (
-                      <div className="text-center text-red-600 py-3 border border-red-400 rounded mb-4">
-                        Error loading theses: {thesesError.message}
-                      </div>
-                    ) : thesesArray.length > 0 && thesesForCollege.length === 0 ? (
-                      <div className="text-center text-yellow-600 py-3 border border-yellow-400 rounded mb-4">
-                        No theses found for this college. (Fetched {thesesArray.length} thesis records, but none match this college.)
-                        <div className="text-xs text-gray-500 font-mono mt-2">College ID: {id}</div>
-                      </div>
-                    ) : thesesForCollege.length === 0 ? (
-                      <div className="text-center text-slate-400 py-8">
-                        <BookOpen className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                        <h3 className="text-xl font-semibold text-gray-700 mb-2">No theses found</h3>
-                        <p className="text-gray-500 mb-6">This college doesn't have any published theses yet.</p>
-                        <Button 
-                          onClick={() => navigate('/explore')}
-                          className="bg-dlsl-green hover:bg-dlsl-green/90"
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant={viewMode === 'grid' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setViewMode('grid')}
+                          className={viewMode === 'grid' ? 'bg-dlsl-green hover:bg-dlsl-green/90' : ''}
                         >
-                          Explore Other Theses
+                          <Grid className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant={viewMode === 'list' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setViewMode('list')}
+                          className={viewMode === 'list' ? 'bg-dlsl-green hover:bg-dlsl-green/90' : ''}
+                        >
+                          <List className="w-4 h-4" />
                         </Button>
                       </div>
+                    </div>
+
+                    {/* Theses Display */}
+                    {thesesLoading ? (
+                      <div className="text-center py-12">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-dlsl-green mx-auto mb-4"></div>
+                        <p className="text-gray-600">Loading theses...</p>
+                      </div>
+                    ) : thesesError ? (
+                      <Card className="border-red-200 bg-red-50">
+                        <CardContent className="p-6 text-center">
+                          <div className="text-red-600">
+                            <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                            <h3 className="text-lg font-semibold mb-2">Error Loading Theses</h3>
+                            <p>{thesesError.message}</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ) : filteredTheses.length === 0 ? (
+                      <Card className="border-gray-200 bg-gray-50">
+                        <CardContent className="p-12 text-center">
+                          <BookOpen className="h-16 w-16 text-gray-300 mx-auto mb-6" />
+                          <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                            {searchTerm ? 'No matching theses found' : 'No theses available'}
+                          </h3>
+                          <p className="text-gray-500 mb-6">
+                            {searchTerm 
+                              ? 'Try adjusting your search terms or browse all theses.'
+                              : 'This college doesn\'t have any published theses yet.'
+                            }
+                          </p>
+                          {searchTerm ? (
+                            <Button 
+                              onClick={() => setSearchTerm('')}
+                              variant="outline"
+                              className="border-dlsl-green text-dlsl-green hover:bg-dlsl-green hover:text-white"
+                            >
+                              Clear Search
+                            </Button>
+                          ) : (
+                            <Button 
+                              onClick={() => navigate('/explore')}
+                              className="bg-dlsl-green hover:bg-dlsl-green/90"
+                            >
+                              Explore Other Theses
+                            </Button>
+                          )}
+                        </CardContent>
+                      </Card>
                     ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {thesesForCollege.map((thesis) => (
-                          <div
+                      <div className={viewMode === 'grid' 
+                        ? "grid grid-cols-1 lg:grid-cols-2 gap-6" 
+                        : "space-y-4"
+                      }>
+                        {filteredTheses.map((thesis) => (
+                          <Card
                             key={thesis.id}
-                            className="border border-slate-100 rounded-lg p-5 bg-slate-50 hover:bg-dlsl-green/5 transition-all cursor-pointer shadow-sm relative"
+                            className={`group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-md bg-white hover:bg-gradient-to-br hover:from-white hover:to-dlsl-green/5 ${
+                              viewMode === 'list' ? 'hover:scale-[1.02]' : 'hover:scale-105'
+                            }`}
                             onClick={() => navigate(`/thesis/${thesis.id}`)}
                           >
-                            {/* Favorite button */}
-                            {userId && (
-                              <div className="absolute top-3 right-4 z-10">
-                                <FavoriteButton
-                                  userId={userId}
-                                  thesisId={thesis.id}
-                                  favoriteId={favoriteMap[thesis.id] || null}
-                                />
+                            <CardContent className="p-6 relative">
+                              {/* Favorite button */}
+                              {userId && (
+                                <div className="absolute top-4 right-4 z-10">
+                                  <FavoriteButton
+                                    userId={userId}
+                                    thesisId={thesis.id}
+                                    favoriteId={favoriteMap[thesis.id] || null}
+                                  />
+                                </div>
+                              )}
+                              
+                              <div className="space-y-3">
+                                <h3 className="font-bold text-lg text-gray-900 group-hover:text-dlsl-green transition-colors line-clamp-2">
+                                  {thesis.title}
+                                </h3>
+                                
+                                <div className="flex items-center gap-4 text-sm text-gray-600">
+                                  <div className="flex items-center gap-1">
+                                    <Users className="w-3 h-3" />
+                                    <span className="font-medium">{thesis.author}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="w-3 h-3" />
+                                    <span>{thesis.publish_date?.slice(0, 4) || "N/A"}</span>
+                                  </div>
+                                </div>
+                                
+                                <p className="text-gray-700 text-sm leading-relaxed line-clamp-3">
+                                  {thesis.abstract || 'No abstract available.'}
+                                </p>
+                                
+                                {thesis.keywords && thesis.keywords.length > 0 && (
+                                  <div className="flex flex-wrap gap-2 pt-2">
+                                    {thesis.keywords.slice(0, 4).map((keyword, i) => (
+                                      <Badge
+                                        key={i}
+                                        variant="secondary"
+                                        className="bg-dlsl-green/10 text-dlsl-green text-xs px-2 py-1 hover:bg-dlsl-green/20 transition-colors"
+                                      >
+                                        {keyword}
+                                      </Badge>
+                                    ))}
+                                    {thesis.keywords.length > 4 && (
+                                      <Badge variant="outline" className="text-xs">
+                                        +{thesis.keywords.length - 4} more
+                                      </Badge>
+                                    )}
+                                  </div>
+                                )}
                               </div>
-                            )}
-                            <div className="font-bold text-dlsl-green text-lg mb-1">{thesis.title}</div>
-                            <div className="text-xs text-slate-500 mb-1">
-                              {thesis.author} • {thesis.publish_date?.slice(0, 4) || "N/A"} •{" "}
-                              <span>{college?.name || thesis.college_id}</span>
-                            </div>
-                            <div className="text-slate-700 text-sm mb-2">
-                              {thesis.abstract?.substring(0, 110)}...
-                            </div>
-                            <div className="flex flex-wrap gap-2 mt-1">
-                              {thesis.keywords?.slice(0, 4).map((k, i) => (
-                                <span
-                                  key={i}
-                                  className="px-2 py-0.5 rounded-full bg-dlsl-green/10 text-xs text-dlsl-green"
-                                >
-                                  {k}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
+                            </CardContent>
+                          </Card>
                         ))}
                       </div>
                     )}
-                  </CardContent>
-                </Card>
-              </section>
-            )}
-          </div>
-          
-          {/* College Details */}
-          {loading ? (
-            <div className="text-center py-12 text-gray-400">Loading college details...</div>
-          ) : college ? (
-            <Card className="bg-white border border-gray-200 shadow-sm">
-              <CardContent className="p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">About {college.name}</h2>
-                <p className="text-gray-700 leading-relaxed">
-                  {college.description || 'This college is dedicated to advancing knowledge through innovative research and academic excellence.'}
-                </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
-          ) : (
-            <Card className="bg-white border border-gray-200 shadow-sm">
-              <CardContent className="p-8 text-center">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">College Not Found</h2>
-                <p className="text-gray-700">The college you're looking for doesn't exist or has been removed.</p>
+          </div>
+
+          {/* College Details */}
+          {college && (
+            <Card className="mb-12 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3 text-2xl text-gray-900">
+                  <div className="w-2 h-8 bg-dlsl-green rounded"></div>
+                  About {college.name}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <p className="text-gray-700 leading-relaxed text-lg">
+                  {college.description || 'This college is dedicated to advancing knowledge through innovative research and academic excellence, fostering an environment where students and faculty collaborate to push the boundaries of their respective fields.'}
+                </p>
               </CardContent>
             </Card>
           )}
