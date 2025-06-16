@@ -2,34 +2,30 @@
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CollegeCard from '@/components/CollegeCard';
-import ThemedCollectionCarousel from '@/components/ThemedCollectionCarousel';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, FolderOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 type Collection = {
   id: string;
-  title: string;
+  name: string;
   description: string | null;
-  image_url: string | null;
-  color: string;
-  type: string;
-  collection_id: string | null;
+  is_public: boolean;
+  created_at: string;
+  _count?: {
+    collection_theses: number;
+  };
 };
 
 const Collections = () => {
   const navigate = useNavigate();
   const [colleges, setColleges] = useState<any[]>([]);
+  const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Sectioned collections
-  const [featured, setFeatured] = useState<Collection[]>([]);
-  const [trending, setTrending] = useState<Collection[]>([]);
-  const [newAdditions, setNewAdditions] = useState<Collection[]>([]);
-  const [loadingSections, setLoadingSections] = useState(true);
+  const [collectionsLoading, setCollectionsLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
@@ -44,29 +40,44 @@ const Collections = () => {
   }, []);
 
   useEffect(() => {
-    setLoadingSections(true);
-    Promise.all([
-      supabase
-        .from('collection_highlights')
-        .select('*')
-        .eq('type', 'featured')
-        .order('updated_at', { ascending: false }),
-      supabase
-        .from('collection_highlights')
-        .select('*')
-        .eq('type', 'trending')
-        .order('updated_at', { ascending: false }),
-      supabase
-        .from('collection_highlights')
-        .select('*')
-        .eq('type', 'new')
-        .order('updated_at', { ascending: false }),
-    ]).then(([{ data: feat }, { data: trend }, { data: nadd }]) => {
-      setFeatured(feat || []);
-      setTrending(trend || []);
-      setNewAdditions(nadd || []);
-      setLoadingSections(false);
-    });
+    const fetchCollections = async () => {
+      setCollectionsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('collections')
+          .select(`
+            *,
+            collection_theses(count)
+          `)
+          .eq('is_public', true)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        // Count theses for each collection
+        const collectionsWithCounts = await Promise.all(
+          (data || []).map(async (collection) => {
+            const { count } = await supabase
+              .from('collection_theses')
+              .select('*', { count: 'exact', head: true })
+              .eq('collection_id', collection.id);
+
+            return {
+              ...collection,
+              _count: { collection_theses: count || 0 }
+            };
+          })
+        );
+
+        setCollections(collectionsWithCounts);
+      } catch (error) {
+        console.error('Error fetching collections:', error);
+      } finally {
+        setCollectionsLoading(false);
+      }
+    };
+
+    fetchCollections();
   }, []);
 
   return (
@@ -82,36 +93,58 @@ const Collections = () => {
             </p>
           </div>
 
-          {/* Themed Collections - 3 Section Carousels */}
+          {/* Research Collections */}
           <div className="mb-20">
-            {loadingSections ? (
-              <div className="text-gray-400 text-center py-20">
-                Loading research highlights...
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-3xl font-bold text-gray-900">Featured Collections</h2>
+              <div className="flex items-center gap-2 text-gray-600">
+                <FolderOpen className="w-5 h-5" />
+                <span>{collections.length} Collections</span>
               </div>
+            </div>
+            
+            {collectionsLoading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-dlsl-green mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading collections...</p>
+              </div>
+            ) : collections.length === 0 ? (
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <FolderOpen className="h-16 w-16 text-gray-300 mx-auto mb-6" />
+                  <h3 className="text-xl font-semibold text-gray-700 mb-2">No collections available</h3>
+                  <p className="text-gray-500">
+                    Collections will appear here once they are created and made public by archivists.
+                  </p>
+                </CardContent>
+              </Card>
             ) : (
-              <>
-                <ThemedCollectionCarousel
-                  title="Featured Research"
-                  collections={featured}
-                  accentColorClass="border-green-600"
-                  badgeLabel="Featured"
-                  badgeClass="bg-green-600"
-                />
-                <ThemedCollectionCarousel
-                  title="Trending this Month"
-                  collections={trending}
-                  accentColorClass="border-yellow-500"
-                  badgeLabel="Trending"
-                  badgeClass="bg-yellow-500"
-                />
-                <ThemedCollectionCarousel
-                  title="New Additions"
-                  collections={newAdditions}
-                  accentColorClass="border-blue-600"
-                  badgeLabel="New"
-                  badgeClass="bg-blue-600"
-                />
-              </>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {collections.map((collection) => (
+                  <Card key={collection.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{collection.name}</h3>
+                        <Badge variant="default" className="bg-dlsl-green">
+                          Public
+                        </Badge>
+                      </div>
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                        {collection.description || 'No description available.'}
+                      </p>
+                      <div className="flex items-center justify-between text-sm text-gray-500">
+                        <div className="flex items-center">
+                          <BookOpen className="w-4 h-4 mr-1" />
+                          {collection._count?.collection_theses || 0} theses
+                        </div>
+                        <span>
+                          {new Date(collection.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             )}
           </div>
 
@@ -191,4 +224,3 @@ const Collections = () => {
 };
 
 export default Collections;
-
