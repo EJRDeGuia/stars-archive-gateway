@@ -5,6 +5,7 @@ import { Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CollegeCard from '@/components/CollegeCard';
 import { supabase } from '@/integrations/supabase/client';
+import { collegeData } from '@/data/collegeData';
 
 const CollegeGrid: React.FC = () => {
   const navigate = useNavigate();
@@ -18,7 +19,24 @@ const CollegeGrid: React.FC = () => {
       .select('*')
       .order('name', { ascending: true })
       .then(({ data }) => {
-        setColleges(data || []);
+        // Map database colleges with design data
+        const mappedColleges = (data || []).map(dbCollege => {
+          const designData = collegeData.find(design => 
+            design.id === dbCollege.id || design.name === dbCollege.name
+          );
+          
+          return {
+            ...dbCollege,
+            ...designData,
+            // Ensure database values take precedence for content
+            id: dbCollege.id,
+            name: dbCollege.name,
+            fullName: dbCollege.full_name || dbCollege.fullName,
+            description: dbCollege.description || designData?.description || 'Advancing knowledge through innovative research and academic excellence'
+          };
+        });
+        
+        setColleges(mappedColleges);
         setLoading(false);
       });
   }, []);
@@ -38,41 +56,24 @@ const CollegeGrid: React.FC = () => {
         {loading && (
           <div className="text-center py-12 text-gray-400">Loading colleges...</div>
         )}
+        
         {/* Top row: 3 colleges */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           {colleges.slice(0, 3).map(college => (
             <CollegeCard
               key={college.id}
-              college={{
-                ...college,
-                // fallback for missing values
-                thesesCount: college.thesesCount || 0,
-                icon: null, // handled inside CollegeCard if you want to choose dynamically
-                bgColor: 'bg-gray-200',
-                bgColorLight: 'bg-gray-50',
-                textColor: 'text-gray-700',
-                borderColor: 'border-gray-200',
-                description: college.description || 'Advancing knowledge through innovative research and academic excellence',
-              }}
+              college={college}
               onClick={() => navigate(`/college/${college.id}`)}
             />
           ))}
         </div>
+        
         {/* Bottom row: next 2 colleges */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
           {colleges.slice(3, 5).map(college => (
             <CollegeCard
               key={college.id}
-              college={{
-                ...college,
-                thesesCount: college.thesesCount || 0,
-                icon: null,
-                bgColor: 'bg-gray-200',
-                bgColorLight: 'bg-gray-50',
-                textColor: 'text-gray-700',
-                borderColor: 'border-gray-200',
-                description: college.description || 'Advancing knowledge through innovative research and academic excellence',
-              }}
+              college={college}
               onClick={() => navigate(`/college/${college.id}`)}
             />
           ))}

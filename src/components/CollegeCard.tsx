@@ -2,6 +2,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { useTheses } from '@/hooks/useApi';
 import { useMemo } from 'react';
+import { collegeData } from '@/data/collegeData';
 
 interface CollegeCardProps {
   college: {
@@ -23,8 +24,19 @@ interface CollegeCardProps {
 }
 
 const CollegeCard = ({ college, onClick, size = 'default' }: CollegeCardProps) => {
-  const IconComponent = college.icon;
   const { data: allTheses = [] } = useTheses();
+
+  // Get the college data from the static data to get the proper styling and icon
+  const collegeDesign = collegeData.find(c => c.id === college.id || c.name === college.name) || {
+    icon: null,
+    bgColor: 'bg-gray-500',
+    bgColorLight: 'bg-gray-50',
+    textColor: 'text-gray-600',
+    borderColor: 'border-gray-200',
+    description: 'Advancing knowledge through innovative research and academic excellence'
+  };
+
+  const IconComponent = collegeDesign.icon;
 
   // Calculate actual thesis count for this college
   const actualThesesCount = useMemo(() => {
@@ -40,17 +52,17 @@ const CollegeCard = ({ college, onClick, size = 'default' }: CollegeCardProps) =
       onClick={onClick}
     >
       {/* Colored top bar */}
-      <div className={`h-4 ${college.bgColor}`}></div>
+      <div className={`h-4 ${collegeDesign.bgColor}`}></div>
       
       <CardContent className="p-8 text-center">
         {/* Icon with colored background */}
         {IconComponent ? (
-          <div className={`w-16 h-16 ${college.bgColorLight} rounded-2xl flex items-center justify-center mx-auto mb-8`}>
-            <IconComponent className={`w-8 h-8 ${college.textColor}`} />
+          <div className={`w-16 h-16 ${collegeDesign.bgColorLight} rounded-2xl flex items-center justify-center mx-auto mb-8`}>
+            <IconComponent className={`w-8 h-8 ${collegeDesign.textColor}`} />
           </div>
         ) : (
-          <div className={`w-16 h-16 ${college.bgColorLight} rounded-2xl flex items-center justify-center mx-auto mb-8`}>
-            {/* Optionally: Add a default/placeholder icon here, or leave empty */}
+          <div className={`w-16 h-16 ${collegeDesign.bgColorLight} rounded-2xl flex items-center justify-center mx-auto mb-8`}>
+            {/* Default placeholder */}
           </div>
         )}
 
@@ -66,12 +78,12 @@ const CollegeCard = ({ college, onClick, size = 'default' }: CollegeCardProps) =
         
         {/* Description */}
         <p className="text-sm text-gray-600 leading-relaxed mb-8 min-h-[48px]">
-          {college.description || 'Advancing knowledge through innovative research and academic excellence'}
+          {college.description || collegeDesign.description}
         </p>
         
         {/* Thesis Count with colored indicator - now shows actual count */}
         <div className="flex items-center justify-center gap-2">
-          <div className={`w-3 h-3 ${college.bgColor} rounded`}></div>
+          <div className={`w-3 h-3 ${collegeDesign.bgColor} rounded`}></div>
           <span className="text-sm text-gray-700 font-medium">
             {actualThesesCount} Theses
           </span>
