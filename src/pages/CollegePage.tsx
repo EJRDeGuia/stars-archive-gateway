@@ -59,14 +59,7 @@ const CollegePage = () => {
   const { data: theses = [], isLoading: thesesLoading, error: thesesError } = useTheses();
   const thesesArray: Thesis[] = Array.isArray(theses) ? theses : [];
   
-  // Filter theses based on search term
-  const filteredTheses = thesesForCollege.filter(thesis =>
-    thesis.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    thesis.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    thesis.abstract?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Filter theses for this college with better comparison
+  // Filter theses for this college with better comparison - moved before filteredTheses
   const thesesForCollege = thesesArray.filter((t) => {
     const match = String(t.college_id).trim() === String(id).trim();
     console.log(
@@ -74,6 +67,13 @@ const CollegePage = () => {
     );
     return match;
   });
+
+  // Filter theses based on search term - now uses the correctly declared thesesForCollege
+  const filteredTheses = thesesForCollege.filter(thesis =>
+    thesis.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    thesis.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    thesis.abstract?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   useEffect(() => {
     console.log("[CollegePage] Raw theses from useTheses:", thesesArray);
