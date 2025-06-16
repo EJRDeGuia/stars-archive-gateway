@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -69,8 +68,21 @@ const CollectionThesesManager: React.FC<CollectionThesesManagerProps> = ({
             keywords,
             status,
             publish_date,
+            adviser,
+            co_adviser,
+            cover_image_url,
+            created_at,
+            download_count,
+            embedding,
+            file_url,
+            program_id,
+            updated_at,
+            uploaded_by,
+            view_count,
             colleges (
-              name
+              id,
+              name,
+              description
             )
           )
         `)
@@ -94,7 +106,9 @@ const CollectionThesesManager: React.FC<CollectionThesesManagerProps> = ({
         .select(`
           *,
           colleges (
-            name
+            id,
+            name,
+            description
           )
         `)
         .eq('status', 'approved');
