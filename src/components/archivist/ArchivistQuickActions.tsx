@@ -9,48 +9,82 @@ import {
   Search, 
   User 
 } from 'lucide-react';
+import { ReportService } from '@/services/reportService';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 interface ArchivistQuickActionsProps {
   onActionClick: (action: string) => void;
 }
 
 const ArchivistQuickActions: React.FC<ArchivistQuickActionsProps> = ({ onActionClick }) => {
+  const navigate = useNavigate();
+
+  const handleReportsClick = async () => {
+    toast.info('Generating thesis report...');
+    try {
+      const result = await ReportService.generateThesesReport();
+      if (result.success) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      toast.error('Failed to generate report');
+    }
+  };
+
+  const handleManageClick = () => {
+    // Navigate to a manage records page (you may need to create this)
+    navigate('/archivist/manage-records');
+  };
+
+  const handleCollectionsClick = () => {
+    navigate('/collections');
+  };
+
   const actions = [
     {
       id: 'upload',
       title: 'Upload Thesis',
       description: 'Add new thesis to repository',
-      icon: Upload
+      icon: Upload,
+      onClick: () => onActionClick('upload')
     },
     {
       id: 'manage',
       title: 'Manage Records',
       description: 'Edit and organize theses',
-      icon: Database
+      icon: Database,
+      onClick: handleManageClick
     },
     {
       id: 'collections',
       title: 'Collections',
       description: 'Organize by topic or theme',
-      icon: FolderOpen
+      icon: FolderOpen,
+      onClick: handleCollectionsClick
     },
     {
       id: 'reports',
       title: 'Reports',
       description: 'Generate archival reports',
-      icon: Calendar
+      icon: Calendar,
+      onClick: handleReportsClick
     },
     {
       id: 'search',
       title: 'Advanced Search',
       description: 'Find specific theses',
-      icon: Search
+      icon: Search,
+      onClick: () => onActionClick('search')
     },
     {
       id: 'profile',
       title: 'Profile',
       description: 'Manage your account',
-      icon: User
+      icon: User,
+      onClick: () => onActionClick('profile')
     }
   ];
 
@@ -63,7 +97,7 @@ const ArchivistQuickActions: React.FC<ArchivistQuickActionsProps> = ({ onActionC
             <Card 
               key={action.id}
               className="hover:shadow-lg transition-all duration-300 cursor-pointer group" 
-              onClick={() => onActionClick(action.id)}
+              onClick={action.onClick}
             >
               <CardContent className="p-6 text-center">
                 <div className="w-16 h-16 bg-dlsl-green/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-dlsl-green group-hover:scale-110 transition-all duration-300">

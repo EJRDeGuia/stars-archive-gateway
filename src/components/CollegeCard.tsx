@@ -1,5 +1,7 @@
 
 import { Card, CardContent } from '@/components/ui/card';
+import { useTheses } from '@/hooks/useApi';
+import { useMemo } from 'react';
 
 interface CollegeCardProps {
   college: {
@@ -22,6 +24,15 @@ interface CollegeCardProps {
 
 const CollegeCard = ({ college, onClick, size = 'default' }: CollegeCardProps) => {
   const IconComponent = college.icon;
+  const { data: allTheses = [] } = useTheses();
+
+  // Calculate actual thesis count for this college
+  const actualThesesCount = useMemo(() => {
+    if (!Array.isArray(allTheses)) return 0;
+    return allTheses.filter((thesis: any) => 
+      String(thesis.college_id).trim() === String(college.id).trim()
+    ).length;
+  }, [allTheses, college.id]);
 
   return (
     <Card 
@@ -58,11 +69,11 @@ const CollegeCard = ({ college, onClick, size = 'default' }: CollegeCardProps) =
           {college.description || 'Advancing knowledge through innovative research and academic excellence'}
         </p>
         
-        {/* Thesis Count with colored indicator */}
+        {/* Thesis Count with colored indicator - now shows actual count */}
         <div className="flex items-center justify-center gap-2">
           <div className={`w-3 h-3 ${college.bgColor} rounded`}></div>
           <span className="text-sm text-gray-700 font-medium">
-            {college.thesesCount}+ Theses
+            {actualThesesCount} Theses
           </span>
         </div>
       </CardContent>

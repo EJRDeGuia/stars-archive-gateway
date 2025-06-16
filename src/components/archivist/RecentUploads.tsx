@@ -14,8 +14,11 @@ import {
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import { Checkbox } from '@/components/ui/checkbox';
+import { ThesisManagementService } from '@/services/thesisManagement';
+import CollectionSelectionDialog from '@/components/CollectionSelectionDialog';
+import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 
-// TypeScript interface for a thesis upload
 interface Upload {
   id: string;
   title: string;
@@ -31,15 +34,14 @@ interface RecentUploadsProps {
 
 const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads }) => {
   const navigate = useNavigate();
-
-  // For selection state
+  const queryClient = useQueryClient();
   const [selected, setSelected] = useState<string[]>([]);
+  const [showCollectionDialog, setShowCollectionDialog] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // 'Select All' logic
   const allIds = uploads.map((t) => t.id);
   const isAllSelected = selected.length === uploads.length && uploads.length > 0;
 
-  // Status badge renderer
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       pending_review: { label: 'Pending Review', variant: 'secondary' as const },
@@ -60,14 +62,66 @@ const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads }) => {
     else setSelected(allIds);
   };
 
-  // Dummy Handlers for Actions
-  const handleBulkAction = (action: string) => {
-    // Replace this with backend call (e.g., Supabase update/delete) as needed
-    alert(
-      `Action: ${action}\nSelected IDs: ${selected.join(', ')}`
-    );
-    // After action, clear selection
-    setSelected([]);
+  const handleBulkAction = async (action: string) => {
+    if (selected.length === 0) return;
+
+    setLoading(true);
+    let result;
+
+    try {
+      switch (action) {
+        case 'approve':
+          result = await ThesisManagementService.bulkApprove(selected);
+          break;
+        case 'reject':
+          result = await ThesisManagementService.bulkReject(selected);
+          break;
+        case 'move':
+          setShowCollectionDialog(true);
+          setLoading(false);
+          return;
+        case 'delete':
+          result = await ThesisManagementService.bulkDelete(selected);
+          break;
+        default:
+          toast.error('Unknown action');
+          setLoading(false);
+          return;
+      }
+
+      if (result?.success) {
+        toast.success(result.message);
+        setSelected([]);
+        // Refresh the data
+        queryClient.invalidateQueries({ queryKey: ['theses'] });
+        queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
+      } else {
+        toast.error(result?.message || 'Action failed');
+      }
+    } catch (error) {
+      toast.error('An error occurred while performing the action');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMoveToCollection = async (collectionId: string) => {
+    setLoading(true);
+    try {
+      const result = await ThesisManagementService.moveToCollection(selected, collectionId);
+      
+      if (result.success) {
+        toast.success(result.message);
+        setSelected([]);
+        queryClient.invalidateQueries({ queryKey: ['theses'] });
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      toast.error('Failed to move theses to collection');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -88,7 +142,7 @@ const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads }) => {
           </span>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="sm" className="gap-2">
+              <Button variant="secondary" size="sm" className="gap-2" disabled={loading}>
                 Bulk Actions <ArrowDown className="h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>
@@ -159,7 +213,7 @@ const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads }) => {
                       {getStatusBadge(thesis.status).label}
                     </Badge>
                     <div className="flex gap-2">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => navigate(`/thesis/${thesis.id}`)}>
                         <Eye className="h-4 w-4 text-dlsl-green" />
                       </Button>
                       <Button variant="ghost" size="sm">
@@ -176,6 +230,13 @@ const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads }) => {
           )}
         </CardContent>
       </Card>
+
+      <CollectionSelectionDialog
+        open={showCollectionDialog}
+        onClose={() => setShowCollectionDialog(false)}
+        onConfirm={handleMoveToCollection}
+        selectedCount={selected.length}
+      />
     </div>
   );
 };
