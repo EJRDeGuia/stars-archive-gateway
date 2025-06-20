@@ -19,31 +19,31 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock users for demonstration with updated names
+// Mock users for demonstration with proper UUID format IDs
 const mockUsers: (User & { password: string })[] = [
   {
-    id: '1',
+    id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
     name: 'Researcher User',
     email: 'researcher@dlsl.edu.ph',
     role: 'researcher',
     password: 'password123'
   },
   {
-    id: '2',
+    id: 'b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
     name: 'Archivist User',
     email: 'archivist@dlsl.edu.ph',
     role: 'archivist',
     password: 'password123'
   },
   {
-    id: '3',
+    id: 'c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
     name: 'Admin User',
     email: 'admin@dlsl.edu.ph',
     role: 'admin',
     password: 'password123'
   },
   {
-    id: '4',
+    id: 'd3eebc99-9c0b-4ef8-bb6d-6bb9bd380a44',
     name: 'Guest Researcher',
     email: 'guest@dlsl.edu.ph',
     role: 'guest_researcher',
