@@ -109,23 +109,34 @@ const ManageCollections = () => {
       return;
     }
 
+    if (!user) {
+      toast.error('You must be logged in to create collections');
+      return;
+    }
+
     try {
+      console.log('Creating collection with user ID:', user.id);
+      
       const { error } = await supabase
         .from('collections')
         .insert([{
           name: formData.name.trim(),
           description: formData.description.trim() || null,
           is_public: formData.is_public,
-          created_by: user?.id,
+          created_by: user.id,
         }]);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
       toast.success('Collection created successfully');
       setIsCreateDialogOpen(false);
       setFormData({ name: '', description: '', is_public: true });
       fetchCollections();
     } catch (error: any) {
+      console.error('Failed to create collection:', error);
       toast.error('Failed to create collection: ' + error.message);
     }
   };

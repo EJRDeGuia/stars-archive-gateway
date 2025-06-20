@@ -9,50 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      collection_highlights: {
-        Row: {
-          collection_id: string | null
-          color: string
-          created_at: string | null
-          description: string | null
-          id: string
-          image_url: string | null
-          title: string
-          type: string
-          updated_at: string | null
-        }
-        Insert: {
-          collection_id?: string | null
-          color?: string
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          title: string
-          type: string
-          updated_at?: string | null
-        }
-        Update: {
-          collection_id?: string | null
-          color?: string
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          title?: string
-          type?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "collection_highlights_collection_id_fkey"
-            columns: ["collection_id"]
-            isOneToOne: false
-            referencedRelation: "collections"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       collection_theses: {
         Row: {
           added_at: string | null
