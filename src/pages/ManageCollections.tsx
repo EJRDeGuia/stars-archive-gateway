@@ -33,9 +33,12 @@ import {
   ArrowLeft,
   Search,
   Filter,
+  Eye,
+  Users,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import CollectionThesesManager from '@/components/archivist/CollectionThesesManager';
 
 interface Collection {
   id: string;
@@ -43,6 +46,8 @@ interface Collection {
   description: string | null;
   is_public: boolean;
   created_at: string;
+  created_by: string;
+  updated_at: string | null;
   _count?: {
     collection_theses: number;
   };
@@ -57,6 +62,7 @@ const ManageCollections = () => {
   const [filterType, setFilterType] = useState<'all' | 'public' | 'private'>('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
+  const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -64,29 +70,41 @@ const ManageCollections = () => {
   });
 
   useEffect(() => {
-    fetchCollections();
-  }, []);
+    if (user) {
+      fetchCollections();
+    }
+  }, [user]);
 
   const fetchCollections = async () => {
+    if (!user) return;
+    
     setLoading(true);
     try {
+      console.log('Fetching collections for user:', user.id);
+      
       const { data, error } = await supabase
         .from('collections')
-        .select(`
-          *,
-          collection_theses(count)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching collections:', error);
+        throw error;
+      }
+
+      console.log('Fetched collections:', data);
 
       // Count theses for each collection
       const collectionsWithCounts = await Promise.all(
         (data || []).map(async (collection) => {
-          const { count } = await supabase
+          const { count, error: countError } = await supabase
             .from('collection_theses')
             .select('*', { count: 'exact', head: true })
             .eq('collection_id', collection.id);
+
+          if (countError) {
+            console.error('Error counting theses for collection:', collection.id, countError);
+          }
 
           return {
             ...collection,
@@ -97,44 +115,62 @@ const ManageCollections = () => {
 
       setCollections(collectionsWithCounts);
     } catch (error: any) {
+      console.error('Failed to fetch collections:', error);
       toast.error('Failed to fetch collections: ' + error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCreateCollection = async () => {
+  const validateForm = () => {
     if (!formData.name.trim()) {
       toast.error('Collection name is required');
-      return;
+      return false;
     }
+    if (formData.name.trim().length < 3) {
+      toast.error('Collection name must be at least 3 characters long');
+      return false;
+    }
+    return true;
+  };
 
+  const handleCreateCollection = async () => {
+    if (!validateForm()) return;
+    
     if (!user) {
       toast.error('You must be logged in to create collections');
       return;
     }
 
     try {
-      console.log('Creating collection with user ID:', user.id);
+      console.log('Creating collection with data:', {
+        name: formData.name.trim(),
+        description: formData.description.trim() || null,
+        is_public: formData.is_public,
+        created_by: user.id,
+      });
       
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('collections')
         .insert([{
           name: formData.name.trim(),
           description: formData.description.trim() || null,
           is_public: formData.is_public,
           created_by: user.id,
-        }]);
+        }])
+        .select()
+        .single();
 
       if (error) {
-        console.error('Supabase error:', error);
+        console.error('Supabase error creating collection:', error);
         throw error;
       }
 
-      toast.success('Collection created successfully');
+      console.log('Collection created successfully:', data);
+      toast.success('Collection created successfully!');
       setIsCreateDialogOpen(false);
-      setFormData({ name: '', description: '', is_public: true });
-      fetchCollections();
+      resetForm();
+      await fetchCollections();
     } catch (error: any) {
       console.error('Failed to create collection:', error);
       toast.error('Failed to create collection: ' + error.message);
@@ -142,55 +178,66 @@ const ManageCollections = () => {
   };
 
   const handleUpdateCollection = async () => {
-    if (!editingCollection || !formData.name.trim()) {
-      toast.error('Collection name is required');
-      return;
-    }
+    if (!validateForm() || !editingCollection) return;
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('collections')
         .update({
           name: formData.name.trim(),
           description: formData.description.trim() || null,
           is_public: formData.is_public,
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', editingCollection.id);
+        .eq('id', editingCollection.id)
+        .select()
+        .single();
 
       if (error) throw error;
 
-      toast.success('Collection updated successfully');
+      console.log('Collection updated successfully:', data);
+      toast.success('Collection updated successfully!');
       setEditingCollection(null);
-      setFormData({ name: '', description: '', is_public: true });
-      fetchCollections();
+      resetForm();
+      await fetchCollections();
     } catch (error: any) {
+      console.error('Failed to update collection:', error);
       toast.error('Failed to update collection: ' + error.message);
     }
   };
 
-  const handleDeleteCollection = async (collectionId: string) => {
-    if (!confirm('Are you sure you want to delete this collection? This action cannot be undone.')) {
-      return;
-    }
+  const handleDeleteCollection = async (collectionId: string, collectionName: string) => {
+    const confirmed = confirm(`Are you sure you want to delete "${collectionName}"? This will also remove all theses from this collection. This action cannot be undone.`);
+    
+    if (!confirmed) return;
 
     try {
       // First delete collection_theses entries
-      await supabase
+      const { error: thesesError } = await supabase
         .from('collection_theses')
         .delete()
         .eq('collection_id', collectionId);
 
+      if (thesesError) {
+        console.error('Error deleting collection theses:', thesesError);
+        throw thesesError;
+      }
+
       // Then delete the collection
-      const { error } = await supabase
+      const { error: collectionError } = await supabase
         .from('collections')
         .delete()
         .eq('id', collectionId);
 
-      if (error) throw error;
+      if (collectionError) {
+        console.error('Error deleting collection:', collectionError);
+        throw collectionError;
+      }
 
       toast.success('Collection deleted successfully');
-      fetchCollections();
+      await fetchCollections();
     } catch (error: any) {
+      console.error('Failed to delete collection:', error);
       toast.error('Failed to delete collection: ' + error.message);
     }
   };
@@ -204,6 +251,18 @@ const ManageCollections = () => {
     });
   };
 
+  const resetForm = () => {
+    setFormData({ name: '', description: '', is_public: true });
+  };
+
+  const handleManageTheses = (collection: Collection) => {
+    setSelectedCollection(collection);
+  };
+
+  const handleBackToCollections = () => {
+    setSelectedCollection(null);
+  };
+
   const filteredCollections = collections.filter(collection => {
     const matchesSearch = collection.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          collection.description?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -214,6 +273,33 @@ const ManageCollections = () => {
 
     return matchesSearch && matchesFilter;
   });
+
+  // If viewing a specific collection's theses
+  if (selectedCollection) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <Header />
+        <main className="flex-1">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+            <Button 
+              variant="ghost" 
+              onClick={handleBackToCollections}
+              className="mb-6 text-dlsl-green hover:bg-dlsl-green/10"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Collections
+            </Button>
+            
+            <CollectionThesesManager 
+              collectionId={selectedCollection.id}
+              collectionName={selectedCollection.name}
+            />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -237,6 +323,20 @@ const ManageCollections = () => {
                 <p className="text-xl text-gray-600">
                   Create and organize research collections for better thesis discovery
                 </p>
+                <div className="flex items-center gap-4 mt-4 text-sm text-gray-500">
+                  <span className="flex items-center gap-1">
+                    <FolderOpen className="w-4 h-4" />
+                    {collections.length} Total Collections
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Users className="w-4 h-4" />
+                    {collections.filter(c => c.is_public).length} Public
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Eye className="w-4 h-4" />
+                    {collections.filter(c => !c.is_public).length} Private
+                  </span>
+                </div>
               </div>
               
               <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -252,20 +352,22 @@ const ManageCollections = () => {
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div>
-                      <label className="text-sm font-medium mb-2 block">Collection Name</label>
+                      <label className="text-sm font-medium mb-2 block">Collection Name *</label>
                       <Input
-                        placeholder="Enter collection name"
+                        placeholder="Enter collection name (min. 3 characters)"
                         value={formData.name}
                         onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                        className="w-full"
                       />
                     </div>
                     <div>
                       <label className="text-sm font-medium mb-2 block">Description</label>
                       <Textarea
-                        placeholder="Enter collection description"
+                        placeholder="Enter collection description (optional)"
                         value={formData.description}
                         onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                         rows={3}
+                        className="w-full"
                       />
                     </div>
                     <div className="flex items-center space-x-2">
@@ -277,12 +379,15 @@ const ManageCollections = () => {
                         className="rounded border-gray-300"
                       />
                       <label htmlFor="is_public" className="text-sm font-medium">
-                        Make this collection public
+                        Make this collection public (visible to all users)
                       </label>
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                    <Button variant="outline" onClick={() => {
+                      setIsCreateDialogOpen(false);
+                      resetForm();
+                    }}>
                       Cancel
                     </Button>
                     <Button onClick={handleCreateCollection} className="bg-dlsl-green hover:bg-dlsl-green/90">
@@ -301,7 +406,7 @@ const ManageCollections = () => {
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    placeholder="Search collections..."
+                    placeholder="Search collections by name or description..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
@@ -310,7 +415,7 @@ const ManageCollections = () => {
                 <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
                   <SelectTrigger className="w-full sm:w-48">
                     <Filter className="mr-2 h-4 w-4" />
-                    <SelectValue placeholder="Filter by type" />
+                    <SelectValue placeholder="Filter by visibility" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Collections</SelectItem>
@@ -359,7 +464,7 @@ const ManageCollections = () => {
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <CardTitle className="text-lg mb-2">{collection.name}</CardTitle>
+                        <CardTitle className="text-lg mb-2 line-clamp-2">{collection.name}</CardTitle>
                         <div className="flex items-center gap-2 mb-2">
                           <Badge variant={collection.is_public ? "default" : "secondary"}>
                             {collection.is_public ? 'Public' : 'Private'}
@@ -380,16 +485,23 @@ const ManageCollections = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => openEditDialog(collection)}
+                        onClick={() => handleManageTheses(collection)}
                         className="flex-1"
                       >
-                        <Edit2 className="w-3 h-3 mr-1" />
-                        Edit
+                        <BookOpen className="w-3 h-3 mr-1" />
+                        Manage Theses
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleDeleteCollection(collection.id)}
+                        onClick={() => openEditDialog(collection)}
+                      >
+                        <Edit2 className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteCollection(collection.id, collection.name)}
                         className="text-red-600 hover:text-red-700 hover:bg-red-50"
                       >
                         <Trash2 className="w-3 h-3" />
@@ -397,6 +509,9 @@ const ManageCollections = () => {
                     </div>
                     <p className="text-xs text-gray-400 mt-2">
                       Created {new Date(collection.created_at).toLocaleDateString()}
+                      {collection.updated_at && collection.updated_at !== collection.created_at && (
+                        <span> • Updated {new Date(collection.updated_at).toLocaleDateString()}</span>
+                      )}
                     </p>
                   </CardContent>
                 </Card>
@@ -405,27 +520,34 @@ const ManageCollections = () => {
           )}
 
           {/* Edit Dialog */}
-          <Dialog open={!!editingCollection} onOpenChange={(open) => !open && setEditingCollection(null)}>
+          <Dialog open={!!editingCollection} onOpenChange={(open) => {
+            if (!open) {
+              setEditingCollection(null);
+              resetForm();
+            }
+          }}>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Edit Collection</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Collection Name</label>
+                  <label className="text-sm font-medium mb-2 block">Collection Name *</label>
                   <Input
-                    placeholder="Enter collection name"
+                    placeholder="Enter collection name (min. 3 characters)"
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full"
                   />
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-2 block">Description</label>
                   <Textarea
-                    placeholder="Enter collection description"
+                    placeholder="Enter collection description (optional)"
                     value={formData.description}
                     onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                     rows={3}
+                    className="w-full"
                   />
                 </div>
                 <div className="flex items-center space-x-2">
@@ -437,12 +559,15 @@ const ManageCollections = () => {
                     className="rounded border-gray-300"
                   />
                   <label htmlFor="edit_is_public" className="text-sm font-medium">
-                    Make this collection public
+                    Make this collection public (visible to all users)
                   </label>
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setEditingCollection(null)}>
+                <Button variant="outline" onClick={() => {
+                  setEditingCollection(null);
+                  resetForm();
+                }}>
                   Cancel
                 </Button>
                 <Button onClick={handleUpdateCollection} className="bg-dlsl-green hover:bg-dlsl-green/90">

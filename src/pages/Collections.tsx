@@ -4,7 +4,7 @@ import Footer from '@/components/Footer';
 import CollegeCard from '@/components/CollegeCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, FolderOpen } from 'lucide-react';
+import { BookOpen, FolderOpen, Calendar, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,6 +15,7 @@ type Collection = {
   description: string | null;
   is_public: boolean;
   created_at: string;
+  updated_at: string | null;
   _count?: {
     collection_theses: number;
   };
@@ -28,57 +29,61 @@ const Collections = () => {
   const [collectionsLoading, setCollectionsLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
-    supabase
-      .from('colleges')
-      .select('*')
-      .order('name', { ascending: true })
-      .then(({ data }) => {
-        setColleges(data || []);
-        setLoading(false);
-      });
-  }, []);
-
-  useEffect(() => {
-    const fetchCollections = async () => {
-      setCollectionsLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('collections')
-          .select(`
-            *,
-            collection_theses(count)
-          `)
-          .eq('is_public', true)
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-
-        // Count theses for each collection
-        const collectionsWithCounts = await Promise.all(
-          (data || []).map(async (collection) => {
-            const { count } = await supabase
-              .from('collection_theses')
-              .select('*', { count: 'exact', head: true })
-              .eq('collection_id', collection.id);
-
-            return {
-              ...collection,
-              _count: { collection_theses: count || 0 }
-            };
-          })
-        );
-
-        setCollections(collectionsWithCounts);
-      } catch (error) {
-        console.error('Error fetching collections:', error);
-      } finally {
-        setCollectionsLoading(false);
-      }
-    };
-
+    fetchColleges();
     fetchCollections();
   }, []);
+
+  const fetchColleges = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('colleges')
+        .select('*')
+        .order('name', { ascending: true });
+
+      if (error) throw error;
+      setColleges(data || []);
+    } catch (error) {
+      console.error('Error fetching colleges:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCollections = async () => {
+    setCollectionsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('collections')
+        .select('*')
+        .eq('is_public', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Count theses for each collection
+      const collectionsWithCounts = await Promise.all(
+        (data || []).map(async (collection) => {
+          const { count } = await supabase
+            .from('collection_theses')
+            .select('*', { count: 'exact', head: true })
+            .eq('collection_id', collection.id);
+
+          return {
+            ...collection,
+            _count: { collection_theses: count || 0 }
+          };
+        })
+      );
+
+      console.log('Fetched public collections:', collectionsWithCounts);
+      setCollections(collectionsWithCounts);
+    } catch (error) {
+      console.error('Error fetching collections:', error);
+    } finally {
+      setCollectionsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -89,7 +94,7 @@ const Collections = () => {
           <div className="text-center mb-12">
             <h1 className="text-5xl font-bold text-gray-900 mb-6">Research Collections</h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Curated collections of academic research organized by themes, colleges, and popularity
+              Curated collections of academic research organized by themes, colleges, and topics
             </p>
           </div>
 
@@ -99,7 +104,7 @@ const Collections = () => {
               <h2 className="text-3xl font-bold text-gray-900">Featured Collections</h2>
               <div className="flex items-center gap-2 text-gray-600">
                 <FolderOpen className="w-5 h-5" />
-                <span>{collections.length} Collections</span>
+                <span>{collections.length} Public Collections</span>
               </div>
             </div>
             
@@ -112,7 +117,7 @@ const Collections = () => {
               <Card>
                 <CardContent className="p-12 text-center">
                   <FolderOpen className="h-16 w-16 text-gray-300 mx-auto mb-6" />
-                  <h3 className="text-xl font-semibold text-gray-700 mb-2">No collections available</h3>
+                  <h3 className="text-xl font-semibold text-gray-700 mb-2">No public collections available</h3>
                   <p className="text-gray-500">
                     Collections will appear here once they are created and made public by archivists.
                   </p>
@@ -121,25 +126,38 @@ const Collections = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {collections.map((collection) => (
-                  <Card key={collection.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                  <Card key={collection.id} className="hover:shadow-lg transition-shadow cursor-pointer group">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{collection.name}</h3>
-                        <Badge variant="default" className="bg-dlsl-green">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-dlsl-green transition-colors">
+                          {collection.name}
+                        </h3>
+                        <Badge variant="default" className="bg-dlsl-green hover:bg-dlsl-green/90">
                           Public
                         </Badge>
                       </div>
+                      
                       <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                        {collection.description || 'No description available.'}
+                        {collection.description || 'A curated collection of academic research papers and theses.'}
                       </p>
-                      <div className="flex items-center justify-between text-sm text-gray-500">
-                        <div className="flex items-center">
-                          <BookOpen className="w-4 h-4 mr-1" />
-                          {collection._count?.collection_theses || 0} theses
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center text-dlsl-green">
+                            <BookOpen className="w-4 h-4 mr-1" />
+                            <span className="font-medium">{collection._count?.collection_theses || 0} theses</span>
+                          </div>
+                          <div className="flex items-center text-gray-500">
+                            <Calendar className="w-3 h-3 mr-1" />
+                            <span>{new Date(collection.created_at).toLocaleDateString()}</span>
+                          </div>
                         </div>
-                        <span>
-                          {new Date(collection.created_at).toLocaleDateString()}
-                        </span>
+                        
+                        {collection.updated_at && collection.updated_at !== collection.created_at && (
+                          <div className="flex items-center text-xs text-gray-400">
+                            <span>Last updated: {new Date(collection.updated_at).toLocaleDateString()}</span>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -157,63 +175,103 @@ const Collections = () => {
                 <span>{colleges.length} Colleges</span>
               </div>
             </div>
-            <div className="max-w-5xl mx-auto">
-              {loading && (
-                <div className="text-center py-12 text-gray-400">Loading colleges...</div>
-              )}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                {colleges.slice(0, 3).map(college => (
-                  <CollegeCard
-                    key={college.id}
-                    college={{
-                      ...college,
-                      thesesCount: college.thesesCount || 0,
-                      icon: null,
-                      bgColor: 'bg-gray-200',
-                      bgColorLight: 'bg-gray-50',
-                      textColor: 'text-gray-700',
-                      borderColor: 'border-gray-200',
-                      description: college.description,
-                    }}
-                    onClick={() => navigate(`/college/${college.id}`)}
-                  />
-                ))}
+            
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-dlsl-green mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading colleges...</p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-                {colleges.slice(3, 5).map(college => (
-                  <CollegeCard
-                    key={college.id}
-                    college={{
-                      ...college,
-                      thesesCount: college.thesesCount || 0,
-                      icon: null,
-                      bgColor: 'bg-gray-200',
-                      bgColorLight: 'bg-gray-50',
-                      textColor: 'text-gray-700',
-                      borderColor: 'border-gray-200',
-                      description: college.description,
-                    }}
-                    onClick={() => navigate(`/college/${college.id}`)}
-                  />
-                ))}
+            ) : colleges.length === 0 ? (
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <BookOpen className="h-16 w-16 text-gray-300 mx-auto mb-6" />
+                  <h3 className="text-xl font-semibold text-gray-700 mb-2">No colleges available</h3>
+                  <p className="text-gray-500">
+                    College information will appear here once configured.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="max-w-5xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                  {colleges.slice(0, 3).map(college => (
+                    <CollegeCard
+                      key={college.id}
+                      college={{
+                        ...college,
+                        thesesCount: college.thesesCount || 0,
+                        icon: null,
+                        bgColor: college.color || 'bg-gray-200',
+                        bgColorLight: 'bg-gray-50',
+                        textColor: 'text-gray-700',
+                        borderColor: 'border-gray-200',
+                        description: college.description || `Explore research from ${college.name}`,
+                      }}
+                      onClick={() => navigate(`/college/${college.id}`)}
+                    />
+                  ))}
+                </div>
+                {colleges.length > 3 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+                    {colleges.slice(3, 5).map(college => (
+                      <CollegeCard
+                        key={college.id}
+                        college={{
+                          ...college,
+                          thesesCount: college.thesesCount || 0,
+                          icon: null,
+                          bgColor: college.color || 'bg-gray-200',
+                          bgColorLight: 'bg-gray-50',
+                          textColor: 'text-gray-700',
+                          borderColor: 'border-gray-200',
+                          description: college.description || `Explore research from ${college.name}`,
+                        }}
+                        onClick={() => navigate(`/college/${college.id}`)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
+            )}
           </div>
 
           {/* Statistics */}
           <div className="bg-white rounded-3xl p-12 border border-gray-200 shadow-sm">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">Repository Statistics</h2>
-              <p className="text-lg text-gray-600">Statistics not available.</p>
+              <p className="text-lg text-gray-600">Explore our growing collection of academic research</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="text-center text-gray-300">
-                  <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4" />
-                  <div className="text-3xl font-bold text-gray-300 mb-2">—</div>
-                  <div className="text-gray-300">Empty</div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-dlsl-green/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <FolderOpen className="h-8 w-8 text-dlsl-green" />
                 </div>
-              ))}
+                <div className="text-3xl font-bold text-dlsl-green mb-2">{collections.length}</div>
+                <div className="text-gray-600">Public Collections</div>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <BookOpen className="h-8 w-8 text-blue-600" />
+                </div>
+                <div className="text-3xl font-bold text-blue-600 mb-2">{colleges.length}</div>
+                <div className="text-gray-600">Colleges</div>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="h-8 w-8 text-purple-600" />
+                </div>
+                <div className="text-3xl font-bold text-purple-600 mb-2">
+                  {collections.reduce((sum, c) => sum + (c._count?.collection_theses || 0), 0)}
+                </div>
+                <div className="text-gray-600">Total Theses</div>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <User className="h-8 w-8 text-orange-600" />
+                </div>
+                <div className="text-3xl font-bold text-orange-600 mb-2">24/7</div>
+                <div className="text-gray-600">Access Available</div>
+              </div>
             </div>
           </div>
         </div>
