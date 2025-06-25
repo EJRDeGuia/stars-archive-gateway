@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, ExternalLink, Lock, AlertCircle } from 'lucide-react';
+import { FileText, ExternalLink, Lock, AlertCircle, X } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Set the workerSrc property for pdf.js
@@ -25,6 +25,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   className = '',
 }) => {
   const [numPages, setNumPages] = useState<number | null>(null);
+  const [showSecurityNotice, setShowSecurityNotice] = useState(true);
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
@@ -118,14 +119,23 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   return (
     <Card className={className}>
       <CardContent className="p-0">
-        <div className="bg-red-50 border-b border-red-200 p-3 rounded-t-2xl">
-          <div className="flex items-start space-x-2 justify-center">
-            <Lock className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
-            <p className="text-red-800 text-sm text-center">
-              <strong>Security Notice:</strong> This document is protected: copying, printing, and screenshots are not allowed. To access this document, please contact the LRC directly.
-            </p>
+        {showSecurityNotice && (
+          <div className="bg-red-50 border-b border-red-200 p-3 rounded-t-2xl relative">
+            <button
+              onClick={() => setShowSecurityNotice(false)}
+              className="absolute right-3 top-3 text-red-600 hover:text-red-800 transition-colors"
+              aria-label="Close security notice"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <div className="flex items-start space-x-2 justify-center pr-8">
+              <Lock className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+              <p className="text-red-800 text-sm text-center">
+                <strong>Security Notice:</strong> This document is protected: copying, printing, and screenshots are not allowed. To access the full document, please contact the LRC directly.
+              </p>
+            </div>
           </div>
-        </div>
+        )}
         {/* Improved Scrollable PDF Area */}
         <div className="relative bg-gray-50 rounded-b-2xl" style={{ minHeight: 300, maxHeight: 640 }}>
           {/* Add overflow-auto and full height for scrollability */}
