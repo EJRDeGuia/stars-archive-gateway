@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Eye, Mail, Check, X, Clock, FileText, Users, Filter, Download, CheckSquare } from 'lucide-react';
+import { Eye, Mail, Check, X, Clock, FileText, Users, Filter, Download, CheckSquare, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface AccessRequest {
@@ -33,20 +32,30 @@ interface AccessRequest {
   };
 }
 
+interface RequesterGroup {
+  requester_email: string;
+  requester_name: string;
+  institution: string;
+  purpose: string;
+  created_at: string;
+  requests: AccessRequest[];
+}
+
 const AccessRequestsManager = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedRequest, setSelectedRequest] = useState<AccessRequest | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<RequesterGroup | null>(null);
   const [notes, setNotes] = useState('');
   const [selectedRequests, setSelectedRequests] = useState<string[]>([]);
   const [bulkAction, setBulkAction] = useState<'approve' | 'reject' | ''>('');
   const [bulkNotes, setBulkNotes] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  const [viewMode, setViewMode] = useState<'individual' | 'grouped'>('grouped');
 
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ['access-requests'],
     queryFn: async () => {
-      // First get the access requests
       const { data: requestsData, error: requestsError } = await supabase
         .from('thesis_access_requests')
         .select('*')
@@ -86,6 +95,46 @@ const AccessRequestsManager = () => {
       return requestsWithTheses;
     },
   });
+
+  // Group requests by requester and date
+  const groupedRequests = React.useMemo(() => {
+    const groups: RequesterGroup[] = [];
+    const processedEmails = new Set<string>();
+
+    requests.forEach(request => {
+      const key = `${request.requester_email}-${new Date(request.created_at).toDateString()}`;
+      
+      if (!processedEmails.has(key)) {
+        const relatedRequests = requests.filter(r => 
+          r.requester_email === request.requester_email &&
+          new Date(r.created_at).toDateString() === new Date(request.created_at).toDateString()
+        );
+
+        if (relatedRequests.length > 1) {
+          groups.push({
+            requester_email: request.requester_email,
+            requester_name: request.requester_name,
+            institution: request.institution,
+            purpose: request.purpose,
+            created_at: request.created_at,
+            requests: relatedRequests
+          });
+        }
+
+        processedEmails.add(key);
+      }
+    });
+
+    return groups;
+  }, [requests]);
+
+  // Individual requests (not part of groups)
+  const individualRequests = React.useMemo(() => {
+    const groupedRequestIds = new Set(
+      groupedRequests.flatMap(group => group.requests.map(r => r.id))
+    );
+    return requests.filter(request => !groupedRequestIds.has(request.id));
+  }, [requests, groupedRequests]);
 
   const updateRequestMutation = useMutation({
     mutationFn: async ({ id, status, notes }: { id: string; status: string; notes?: string }) => {
@@ -134,14 +183,24 @@ const AccessRequestsManager = () => {
     },
   });
 
-  const sendThesisMutation = useMutation({
-    mutationFn: async ({ requestId, thesisId, email }: { requestId: string; thesisId: string; email: string }) => {
-      await updateRequestMutation.mutateAsync({ id: requestId, status: 'approved' });
-      toast.success(`Thesis sent to ${email}`);
-    },
-  });
+  const handleGroupAction = (group: RequesterGroup, action: 'approve' | 'reject') => {
+    const requestIds = group.requests.map(r => r.id);
+    bulkUpdateMutation.mutate({
+      ids: requestIds,
+      status: action,
+      notes: notes || undefined
+    });
+  };
 
   const filteredRequests = requests.filter(request => 
+    filterStatus === 'all' || request.status === filterStatus
+  );
+
+  const filteredGroups = groupedRequests.filter(group =>
+    filterStatus === 'all' || group.requests.some(r => r.status === filterStatus)
+  );
+
+  const filteredIndividualRequests = individualRequests.filter(request =>
     filterStatus === 'all' || request.status === filterStatus
   );
 
@@ -192,11 +251,12 @@ const AccessRequestsManager = () => {
   };
 
   const handleSendThesis = (request: AccessRequest) => {
-    sendThesisMutation.mutate({
-      requestId: request.id,
-      thesisId: request.thesis_id,
-      email: request.requester_email
-    });
+    // sendThesisMutation.mutate({
+    //   requestId: request.id,
+    //   thesisId: request.thesis_id,
+    //   email: request.requester_email
+    // });
+    toast.info('This feature is coming soon!');
   };
 
   const getStatusBadge = (status: string) => {
@@ -238,13 +298,30 @@ const AccessRequestsManager = () => {
             Thesis Access Requests ({requests.length})
           </CardTitle>
           <div className="flex items-center gap-2">
+            <div className="flex border rounded-lg">
+              <Button
+                variant={viewMode === 'grouped' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('grouped')}
+                className="rounded-r-none"
+              >
+                <BookOpen className="h-4 w-4 mr-1" />
+                Grouped
+              </Button>
+              <Button
+                variant={viewMode === 'individual' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('individual')}
+                className="rounded-l-none"
+              >
+                <FileText className="h-4 w-4 mr-1" />
+                Individual
+              </Button>
+            </div>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
-                // Export functionality could be implemented here
-                toast.info('Export feature coming soon!');
-              }}
+              onClick={() => toast.info('Export feature coming soon!')}
             >
               <Download className="h-4 w-4 mr-1" />
               Export
@@ -271,6 +348,16 @@ const AccessRequestsManager = () => {
             <div className="text-sm text-red-600">Rejected</div>
           </div>
         </div>
+
+        {/* Multi-thesis Alert */}
+        {groupedRequests.length > 0 && (
+          <Alert className="bg-orange-50 border-orange-200">
+            <BookOpen className="h-4 w-4 text-orange-600" />
+            <AlertDescription className="text-orange-800">
+              <strong>{groupedRequests.length} multi-thesis requests</strong> found where requesters are asking for multiple theses at once.
+            </AlertDescription>
+          </Alert>
+        )}
       </CardHeader>
       
       <CardContent>
@@ -281,218 +368,465 @@ const AccessRequestsManager = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {/* Filters and Bulk Actions */}
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-gray-500" />
-                <span className="text-sm font-medium">Filter:</span>
-                <div className="flex gap-1">
-                  {(['all', 'pending', 'approved', 'rejected'] as const).map((status) => (
-                    <Button
-                      key={status}
-                      variant={filterStatus === status ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setFilterStatus(status)}
-                    >
-                      {status === 'all' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1)}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {selectedRequests.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm font-medium">{selectedRequests.length} selected</span>
-                  <select
-                    value={bulkAction}
-                    onChange={(e) => setBulkAction(e.target.value as 'approve' | 'reject' | '')}
-                    className="px-2 py-1 border rounded text-sm"
+            {/* Filters */}
+            <div className="flex items-center gap-2 p-4 bg-gray-50 rounded-lg">
+              <Filter className="h-4 w-4 text-gray-500" />
+              <span className="text-sm font-medium">Filter:</span>
+              <div className="flex gap-1">
+                {(['all', 'pending', 'approved', 'rejected'] as const).map((status) => (
+                  <Button
+                    key={status}
+                    variant={filterStatus === status ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFilterStatus(status)}
                   >
-                    <option value="">Bulk Action</option>
-                    <option value="approve">Approve All</option>
-                    <option value="reject">Reject All</option>
-                  </select>
-                  {bulkAction && (
-                    <Button
-                      size="sm"
-                      onClick={handleBulkAction}
-                      disabled={bulkUpdateMutation.isPending}
-                      className="bg-dlsl-green hover:bg-dlsl-green/90"
-                    >
-                      <CheckSquare className="h-4 w-4 mr-1" />
-                      Apply
-                    </Button>
-                  )}
-                </div>
-              )}
+                    {status === 'all' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1)}
+                  </Button>
+                ))}
+              </div>
             </div>
 
-            {/* Bulk Notes Input */}
-            {selectedRequests.length > 0 && bulkAction && (
-              <Alert>
-                <AlertDescription>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">
-                      Notes for bulk {bulkAction} (optional):
-                    </label>
-                    <Textarea
-                      value={bulkNotes}
-                      onChange={(e) => setBulkNotes(e.target.value)}
-                      placeholder="Add notes for all selected requests..."
-                      rows={2}
-                    />
-                  </div>
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {/* Requests Table */}
-            <div className="border rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12">
-                      <Checkbox
-                        checked={selectedRequests.length === filteredRequests.length && filteredRequests.length > 0}
-                        onCheckedChange={handleSelectAll}
-                      />
-                    </TableHead>
-                    <TableHead>Requester</TableHead>
-                    <TableHead>Thesis</TableHead>
-                    <TableHead>Purpose</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredRequests.map((request) => (
-                    <TableRow key={request.id}>
-                      <TableCell>
-                        <Checkbox
-                          checked={selectedRequests.includes(request.id)}
-                          onCheckedChange={(checked) => handleSelectRequest(request.id, checked as boolean)}
-                        />
-                      </TableCell>
-                      <TableCell>
+            {viewMode === 'grouped' && (
+              <div className="space-y-4">
+                {/* Multi-thesis Groups */}
+                {filteredGroups.map((group, index) => (
+                  <Card key={`group-${index}`} className="border-l-4 border-l-orange-400">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
                         <div>
-                          <div className="font-medium">{request.requester_name}</div>
-                          <div className="text-sm text-gray-500">{request.requester_email}</div>
-                          {request.institution && (
-                            <div className="text-xs text-gray-400">{request.institution}</div>
-                          )}
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <BookOpen className="h-4 w-4 text-orange-600" />
+                            Multi-Thesis Request ({group.requests.length} theses)
+                          </CardTitle>
+                          <p className="text-sm text-gray-600">{group.requester_name} • {group.requester_email}</p>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium text-sm">{request.thesis?.title || 'Unknown Thesis'}</div>
-                          <div className="text-xs text-gray-500">by {request.thesis?.author || 'Unknown Author'}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="max-w-xs">
-                          <p className="text-sm text-gray-600 line-clamp-2">{request.purpose}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>{getStatusBadge(request.status)}</TableCell>
-                      <TableCell>
-                        <div className="text-sm text-gray-500">
-                          {new Date(request.created_at).toLocaleDateString()}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => navigate(`/thesis/${request.thesis_id}`)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          
-                          {request.status === 'pending' && (
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
-                                    setSelectedRequest(request);
-                                    setNotes('');
-                                  }}
-                                >
-                                  Review
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Review Access Request</DialogTitle>
-                                </DialogHeader>
-                                <div className="space-y-4">
-                                  <div>
-                                    <h4 className="font-medium mb-2">Request Details</h4>
-                                    <div className="space-y-2 text-sm">
-                                      <p><strong>Requester:</strong> {request.requester_name}</p>
-                                      <p><strong>Email:</strong> {request.requester_email}</p>
-                                      <p><strong>Institution:</strong> {request.institution || 'Not specified'}</p>
-                                      <p><strong>Purpose:</strong> {request.purpose}</p>
-                                    </div>
-                                  </div>
-                                  
-                                  <div>
-                                    <label className="block text-sm font-medium mb-2">
-                                      Notes (optional)
-                                    </label>
-                                    <Textarea
-                                      value={notes}
-                                      onChange={(e) => setNotes(e.target.value)}
-                                      placeholder="Add any notes about this decision..."
-                                      rows={3}
-                                    />
-                                  </div>
-                                  
-                                  <div className="flex gap-2">
-                                    <Button
-                                      onClick={() => handleApprove(request)}
-                                      className="bg-green-600 hover:bg-green-700"
-                                      disabled={updateRequestMutation.isPending}
-                                    >
-                                      <Check className="h-4 w-4 mr-2" />
-                                      Approve
-                                    </Button>
-                                    <Button
-                                      onClick={() => handleReject(request)}
-                                      variant="destructive"
-                                      disabled={updateRequestMutation.isPending}
-                                    >
-                                      <X className="h-4 w-4 mr-2" />
-                                      Reject
-                                    </Button>
+                        <div className="flex gap-2">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setSelectedGroup(group);
+                                  setNotes('');
+                                }}
+                              >
+                                Review All
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-4xl">
+                              <DialogHeader>
+                                <DialogTitle>Review Multi-Thesis Request</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <div>
+                                  <h4 className="font-medium mb-2">Requester Information</h4>
+                                  <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <p><strong>Name:</strong> {group.requester_name}</p>
+                                    <p><strong>Email:</strong> {group.requester_email}</p>
+                                    <p><strong>Institution:</strong> {group.institution || 'Not specified'}</p>
+                                    <p><strong>Date:</strong> {new Date(group.created_at).toLocaleDateString()}</p>
                                   </div>
                                 </div>
-                              </DialogContent>
-                            </Dialog>
-                          )}
-                          
-                          {request.status === 'approved' && (
+                                
+                                <div>
+                                  <h4 className="font-medium mb-2">Purpose</h4>
+                                  <p className="text-sm text-gray-600">{group.purpose}</p>
+                                </div>
+
+                                <div>
+                                  <h4 className="font-medium mb-2">Requested Theses ({group.requests.length})</h4>
+                                  <div className="border rounded-lg">
+                                    <Table>
+                                      <TableHeader>
+                                        <TableRow>
+                                          <TableHead>Title</TableHead>
+                                          <TableHead>Author</TableHead>
+                                          <TableHead>Status</TableHead>
+                                        </TableRow>
+                                      </TableHeader>
+                                      <TableBody>
+                                        {group.requests.map((request) => (
+                                          <TableRow key={request.id}>
+                                            <TableCell className="font-medium">
+                                              {request.thesis?.title || 'Unknown Thesis'}
+                                            </TableCell>
+                                            <TableCell>{request.thesis?.author || 'Unknown Author'}</TableCell>
+                                            <TableCell>
+                                              <Badge variant={
+                                                request.status === 'approved' ? 'default' :
+                                                request.status === 'rejected' ? 'destructive' : 'secondary'
+                                              }>
+                                                {request.status}
+                                              </Badge>
+                                            </TableCell>
+                                          </TableRow>
+                                        ))}
+                                      </TableBody>
+                                    </Table>
+                                  </div>
+                                </div>
+                                
+                                <div>
+                                  <label className="block text-sm font-medium mb-2">
+                                    Notes for all requests (optional)
+                                  </label>
+                                  <Textarea
+                                    value={notes}
+                                    onChange={(e) => setNotes(e.target.value)}
+                                    placeholder="Add notes that will apply to all theses in this request..."
+                                    rows={3}
+                                  />
+                                </div>
+                                
+                                <div className="flex gap-2">
+                                  <Button
+                                    onClick={() => handleGroupAction(group, 'approve')}
+                                    className="bg-green-600 hover:bg-green-700"
+                                    disabled={updateRequestMutation.isPending}
+                                  >
+                                    <Check className="h-4 w-4 mr-2" />
+                                    Approve All ({group.requests.length})
+                                  </Button>
+                                  <Button
+                                    onClick={() => handleGroupAction(group, 'reject')}
+                                    variant="destructive"
+                                    disabled={updateRequestMutation.isPending}
+                                  >
+                                    <X className="h-4 w-4 mr-2" />
+                                    Reject All ({group.requests.length})
+                                  </Button>
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <p className="text-sm"><strong>Purpose:</strong> {group.purpose}</p>
+                        <div>
+                          <p className="text-sm font-medium mb-1">Requested Theses:</p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {group.requests.map((request) => (
+                              <div key={request.id} className="text-sm p-2 bg-gray-50 rounded flex items-center justify-between">
+                                <div>
+                                  <p className="font-medium line-clamp-1">{request.thesis?.title || 'Unknown'}</p>
+                                  <p className="text-gray-600">by {request.thesis?.author || 'Unknown'}</p>
+                                </div>
+                                <Badge variant={
+                                  request.status === 'approved' ? 'default' :
+                                  request.status === 'rejected' ? 'destructive' : 'secondary'
+                                }>
+                                  {request.status}
+                                </Badge>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+
+                {/* Individual Requests */}
+                {filteredIndividualRequests.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Individual Requests ({filteredIndividualRequests.length})</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="border rounded-lg overflow-hidden">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Requester</TableHead>
+                              <TableHead>Thesis</TableHead>
+                              <TableHead>Purpose</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead>Date</TableHead>
+                              <TableHead>Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {filteredIndividualRequests.map((request) => (
+                              <TableRow key={request.id}>
+                                <TableCell>
+                                  <div>
+                                    <div className="font-medium">{request.requester_name}</div>
+                                    <div className="text-sm text-gray-500">{request.requester_email}</div>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div>
+                                    <div className="font-medium text-sm">{request.thesis?.title || 'Unknown Thesis'}</div>
+                                    <div className="text-xs text-gray-500">by {request.thesis?.author || 'Unknown Author'}</div>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="max-w-xs">
+                                    <p className="text-sm text-gray-600 line-clamp-2">{request.purpose}</p>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant={
+                                    request.status === 'approved' ? 'default' :
+                                    request.status === 'rejected' ? 'destructive' : 'secondary'
+                                  }>
+                                    {request.status}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="text-sm text-gray-500">
+                                    {new Date(request.created_at).toLocaleDateString()}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => navigate(`/thesis/${request.thesis_id}`)}
+                                    >
+                                      <Eye className="h-4 w-4" />
+                                    </Button>
+                                    
+                                    {request.status === 'pending' && (
+                                      <Dialog>
+                                        <DialogTrigger asChild>
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => {
+                                              setSelectedRequest(request);
+                                              setNotes('');
+                                            }}
+                                          >
+                                            Review
+                                          </Button>
+                                        </DialogTrigger>
+                                        <DialogContent>
+                                          <DialogHeader>
+                                            <DialogTitle>Review Access Request</DialogTitle>
+                                          </DialogHeader>
+                                          <div className="space-y-4">
+                                            <div>
+                                              <h4 className="font-medium mb-2">Request Details</h4>
+                                              <div className="space-y-2 text-sm">
+                                                <p><strong>Requester:</strong> {request.requester_name}</p>
+                                                <p><strong>Email:</strong> {request.requester_email}</p>
+                                                <p><strong>Institution:</strong> {request.institution || 'Not specified'}</p>
+                                                <p><strong>Purpose:</strong> {request.purpose}</p>
+                                              </div>
+                                            </div>
+                                            
+                                            <div>
+                                              <label className="block text-sm font-medium mb-2">
+                                                Notes (optional)
+                                              </label>
+                                              <Textarea
+                                                value={notes}
+                                                onChange={(e) => setNotes(e.target.value)}
+                                                placeholder="Add any notes about this decision..."
+                                                rows={3}
+                                              />
+                                            </div>
+                                            
+                                            <div className="flex gap-2">
+                                              <Button
+                                                onClick={() => updateRequestMutation.mutate({ id: request.id, status: 'approved', notes })}
+                                                className="bg-green-600 hover:bg-green-700"
+                                                disabled={updateRequestMutation.isPending}
+                                              >
+                                                <Check className="h-4 w-4 mr-2" />
+                                                Approve
+                                              </Button>
+                                              <Button
+                                                onClick={() => updateRequestMutation.mutate({ id: request.id, status: 'rejected', notes })}
+                                                variant="destructive"
+                                                disabled={updateRequestMutation.isPending}
+                                              >
+                                                <X className="h-4 w-4 mr-2" />
+                                                Reject
+                                              </Button>
+                                            </div>
+                                          </div>
+                                        </DialogContent>
+                                      </Dialog>
+                                    )}
+                                    
+                                    {request.status === 'approved' && (
+                                      <Button
+                                        size="sm"
+                                        onClick={() => handleSendThesis(request)}
+                                        className="bg-blue-600 hover:bg-blue-700"
+                                        disabled={updateRequestMutation.isPending}
+                                      >
+                                        <Mail className="h-4 w-4 mr-2" />
+                                        Send
+                                      </Button>
+                                    )}
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            )}
+
+            {viewMode === 'individual' && (
+              <div className="border rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">
+                        <Checkbox
+                          checked={selectedRequests.length === filteredRequests.length && filteredRequests.length > 0}
+                          onCheckedChange={handleSelectAll}
+                        />
+                      </TableHead>
+                      <TableHead>Requester</TableHead>
+                      <TableHead>Thesis</TableHead>
+                      <TableHead>Purpose</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredRequests.map((request) => (
+                      <TableRow key={request.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedRequests.includes(request.id)}
+                            onCheckedChange={(checked) => handleSelectRequest(request.id, checked as boolean)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{request.requester_name}</div>
+                            <div className="text-sm text-gray-500">{request.requester_email}</div>
+                            {request.institution && (
+                              <div className="text-xs text-gray-400">{request.institution}</div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium text-sm">{request.thesis?.title || 'Unknown Thesis'}</div>
+                            <div className="text-xs text-gray-500">by {request.thesis?.author || 'Unknown Author'}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="max-w-xs">
+                            <p className="text-sm text-gray-600 line-clamp-2">{request.purpose}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell>{getStatusBadge(request.status)}</TableCell>
+                        <TableCell>
+                          <div className="text-sm text-gray-500">
+                            {new Date(request.created_at).toLocaleDateString()}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
                             <Button
                               size="sm"
-                              onClick={() => handleSendThesis(request)}
-                              className="bg-blue-600 hover:bg-blue-700"
-                              disabled={sendThesisMutation.isPending}
+                              variant="ghost"
+                              onClick={() => navigate(`/thesis/${request.thesis_id}`)}
                             >
-                              <Mail className="h-4 w-4 mr-2" />
-                              Send
+                              <Eye className="h-4 w-4" />
                             </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                            
+                            {request.status === 'pending' && (
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setSelectedRequest(request);
+                                      setNotes('');
+                                    }}
+                                  >
+                                    Review
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Review Access Request</DialogTitle>
+                                  </DialogHeader>
+                                  <div className="space-y-4">
+                                    <div>
+                                      <h4 className="font-medium mb-2">Request Details</h4>
+                                      <div className="space-y-2 text-sm">
+                                        <p><strong>Requester:</strong> {request.requester_name}</p>
+                                        <p><strong>Email:</strong> {request.requester_email}</p>
+                                        <p><strong>Institution:</strong> {request.institution || 'Not specified'}</p>
+                                        <p><strong>Purpose:</strong> {request.purpose}</p>
+                                      </div>
+                                    </div>
+                                    
+                                    <div>
+                                      <label className="block text-sm font-medium mb-2">
+                                        Notes (optional)
+                                      </label>
+                                      <Textarea
+                                        value={notes}
+                                        onChange={(e) => setNotes(e.target.value)}
+                                        placeholder="Add any notes about this decision..."
+                                        rows={3}
+                                      />
+                                    </div>
+                                    
+                                    <div className="flex gap-2">
+                                      <Button
+                                        onClick={() => handleApprove(request)}
+                                        className="bg-green-600 hover:bg-green-700"
+                                        disabled={updateRequestMutation.isPending}
+                                      >
+                                        <Check className="h-4 w-4 mr-2" />
+                                        Approve
+                                      </Button>
+                                      <Button
+                                        onClick={() => handleReject(request)}
+                                        variant="destructive"
+                                        disabled={updateRequestMutation.isPending}
+                                      >
+                                        <X className="h-4 w-4 mr-2" />
+                                        Reject
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                            )}
+                            
+                            {request.status === 'approved' && (
+                              <Button
+                                size="sm"
+                                onClick={() => handleSendThesis(request)}
+                                className="bg-blue-600 hover:bg-blue-700"
+                                disabled={updateRequestMutation.isPending}
+                              >
+                                <Mail className="h-4 w-4 mr-2" />
+                                Send
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </div>
         )}
       </CardContent>

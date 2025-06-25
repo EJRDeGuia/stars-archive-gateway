@@ -9,13 +9,22 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { ArrowLeft, FileText, Send, Plus, X, CheckCircle, Clock, User, Building2 } from 'lucide-react';
+import { ArrowLeft, FileText, Send, Plus, X, CheckCircle, Clock, User, Building2, Search, BookOpen } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useThesis } from '@/hooks/useApi';
 import type { Thesis } from '@/types/thesis';
+
+interface SelectedThesis {
+  id: string;
+  title: string;
+  author: string;
+  college_name?: string;
+  publish_date?: string;
+}
 
 interface RequestFormData {
   requesterName: string;
@@ -29,104 +38,141 @@ const RequestThesisAccess = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [requests, setRequests] = useState<RequestFormData[]>([]);
+  const [selectedTheses, setSelectedTheses] = useState<SelectedThesis[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
-  const [submittedRequests, setSubmittedRequests] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Thesis[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   
-  const { data: thesis, isLoading } = useThesis(id || '') as { data: Thesis | undefined, isLoading: boolean };
+  const { data: initialThesis, isLoading } = useThesis(id || '') as { data: Thesis | undefined, isLoading: boolean };
   
-  const [baseForm, setBaseForm] = useState<RequestFormData>({
+  const [formData, setFormData] = useState<RequestFormData>({
     requesterName: user?.name || '',
     requesterEmail: user?.email || '',
     institution: '',
     purpose: ''
   });
 
-  const addRequest = () => {
-    setRequests([...requests, { ...baseForm }]);
-  };
+  // Add initial thesis to selected theses when loaded
+  React.useEffect(() => {
+    if (initialThesis && selectedTheses.length === 0) {
+      setSelectedTheses([{
+        id: initialThesis.id,
+        title: initialThesis.title,
+        author: initialThesis.author,
+        college_name: initialThesis.colleges?.name,
+        publish_date: initialThesis.publish_date
+      }]);
+    }
+  }, [initialThesis]);
 
-  const removeRequest = (index: number) => {
-    setRequests(requests.filter((_, i) => i !== index));
-  };
+  const searchTheses = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
 
-  const updateRequest = (index: number, field: keyof RequestFormData, value: string) => {
-    const updated = [...requests];
-    updated[index] = { ...updated[index], [field]: value };
-    setRequests(updated);
-  };
-
-  const handleSubmitSingle = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || !id) return;
-
-    setIsSubmitting(true);
+    setIsSearching(true);
     try {
-      const { error } = await supabase
-        .from('thesis_access_requests')
-        .insert([
-          {
-            thesis_id: id,
-            user_id: user.id,
-            requester_name: baseForm.requesterName,
-            requester_email: baseForm.requesterEmail,
-            institution: baseForm.institution,
-            purpose: baseForm.purpose
-          }
-        ]);
+      const { data, error } = await supabase
+        .from('theses')
+        .select(`
+          id,
+          title,
+          author,
+          publish_date,
+          colleges (
+            name
+          )
+        `)
+        .or(`title.ilike.%${query}%, author.ilike.%${query}%`)
+        .eq('status', 'approved')
+        .limit(10);
 
       if (error) throw error;
-      toast.success('Access request submitted successfully!');
-      navigate(`/thesis/${id}`);
+      setSearchResults(data || []);
     } catch (error: any) {
-      toast.error(error.message || 'Failed to submit request');
+      toast.error('Failed to search theses');
     } finally {
-      setIsSubmitting(false);
+      setIsSearching(false);
     }
   };
 
-  const handleSubmitMultiple = async () => {
-    if (!user || !id) return;
+  const addThesis = (thesis: Thesis) => {
+    const isAlreadySelected = selectedTheses.some(t => t.id === thesis.id);
+    if (isAlreadySelected) {
+      toast.info('This thesis is already selected');
+      return;
+    }
+
+    const newThesis: SelectedThesis = {
+      id: thesis.id,
+      title: thesis.title,
+      author: thesis.author,
+      college_name: thesis.colleges?.name,
+      publish_date: thesis.publish_date
+    };
+
+    setSelectedTheses([...selectedTheses, newThesis]);
+    setSearchQuery('');
+    setSearchResults([]);
+    toast.success('Thesis added to request');
+  };
+
+  const removeThesis = (thesisId: string) => {
+    if (selectedTheses.length === 1) {
+      toast.error('You must have at least one thesis in your request');
+      return;
+    }
+    setSelectedTheses(selectedTheses.filter(t => t.id !== thesisId));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || selectedTheses.length === 0) return;
 
     setIsSubmitting(true);
-    const failedRequests: number[] = [];
+    const failedRequests: string[] = [];
 
     try {
-      for (let i = 0; i < requests.length; i++) {
-        const request = requests[i];
+      for (const thesis of selectedTheses) {
         try {
           const { error } = await supabase
             .from('thesis_access_requests')
             .insert([
               {
-                thesis_id: id,
+                thesis_id: thesis.id,
                 user_id: user.id,
-                requester_name: request.requesterName,
-                requester_email: request.requesterEmail,
-                institution: request.institution,
-                purpose: request.purpose
+                requester_name: formData.requesterName,
+                requester_email: formData.requesterEmail,
+                institution: formData.institution,
+                purpose: formData.purpose
               }
             ]);
 
           if (error) throw error;
-          setSubmittedRequests(prev => [...prev, `request-${i}`]);
         } catch (error) {
-          failedRequests.push(i + 1);
+          failedRequests.push(thesis.title);
         }
       }
 
       if (failedRequests.length === 0) {
-        toast.success(`All ${requests.length} requests submitted successfully!`);
-        navigate(`/thesis/${id}`);
+        toast.success(`Successfully submitted requests for ${selectedTheses.length} thesis(es)!`);
+        // Navigate to the first thesis if we started from a single thesis page
+        if (id) {
+          navigate(`/thesis/${id}`);
+        } else {
+          navigate('/explore');
+        }
       } else {
-        toast.error(`Failed to submit requests: ${failedRequests.join(', ')}`);
+        toast.error(`Failed to submit requests for: ${failedRequests.join(', ')}`);
       }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (isLoading) {
+  if (isLoading && id) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -143,25 +189,7 @@ const RequestThesisAccess = () => {
     );
   }
 
-  if (!thesis) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="flex-1">
-          <div className="max-w-4xl mx-auto px-6 lg:px-8 py-12">
-            <Alert className="border-red-200 bg-red-50">
-              <AlertDescription className="text-red-800">
-                Thesis not found. Please check the URL and try again.
-              </AlertDescription>
-            </Alert>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  const progressValue = currentStep === 1 ? 33 : currentStep === 2 ? 66 : 100;
+  const progressValue = currentStep === 1 ? 50 : 100;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -169,325 +197,256 @@ const RequestThesisAccess = () => {
       <main className="flex-1">
         <div className="max-w-6xl mx-auto px-6 lg:px-8 py-8">
           <Button 
-            onClick={() => navigate(`/thesis/${id}`)} 
+            onClick={() => id ? navigate(`/thesis/${id}`) : navigate('/explore')} 
             variant="ghost" 
             className="mb-6 text-gray-600 hover:text-gray-900"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Thesis
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back to {id ? 'Thesis' : 'Explore'}
           </Button>
 
           {/* Progress Bar */}
           <div className="mb-8">
             <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
               <span>Request Progress</span>
-              <span>{currentStep}/3</span>
+              <span>{currentStep}/2</span>
             </div>
             <Progress value={progressValue} className="h-2" />
             <div className="flex justify-between text-xs text-gray-500 mt-1">
-              <span>Choose Type</span>
-              <span>Fill Details</span>
-              <span>Submit</span>
+              <span>Select Theses</span>
+              <span>Submit Request</span>
             </div>
           </div>
 
           {currentStep === 1 && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Thesis Info */}
-              <div className="lg:col-span-1">
-                <Card className="sticky top-8">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="h-5 w-5 text-dlsl-green" />
-                      Thesis Information
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="font-semibold text-gray-900 mb-2">{thesis.title}</h3>
-                        <p className="text-sm text-gray-600 flex items-center gap-1">
-                          <User className="h-3 w-3" />
-                          by {thesis.author}
-                        </p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-sm text-gray-600 flex items-center gap-1">
-                          <Building2 className="h-3 w-3" />
-                          <strong>College:</strong> {thesis.colleges?.name || 'Unknown'}
-                        </p>
-                        <p className="text-sm text-gray-600 flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          <strong>Year:</strong> {thesis.publish_date ? new Date(thesis.publish_date).getFullYear() : 'N/A'}
-                        </p>
-                      </div>
-                      {thesis.abstract && (
-                        <div>
-                          <p className="text-sm font-medium text-gray-700 mb-1">Abstract:</p>
-                          <p className="text-sm text-gray-600 line-clamp-4">{thesis.abstract}</p>
+            <div className="space-y-6">
+              {/* Selected Theses */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span className="flex items-center gap-2">
+                      <BookOpen className="h-5 w-5 text-dlsl-green" />
+                      Selected Theses ({selectedTheses.length})
+                    </span>
+                    <Button
+                      onClick={() => setCurrentStep(2)}
+                      disabled={selectedTheses.length === 0}
+                      className="bg-dlsl-green hover:bg-dlsl-green/90"
+                    >
+                      Continue to Request Details
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {selectedTheses.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>No theses selected. Search and add theses below.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {selectedTheses.map((thesis) => (
+                        <Card key={thesis.id} className="border-l-4 border-l-dlsl-green">
+                          <CardContent className="p-4">
+                            <div className="flex justify-between items-start mb-2">
+                              <h3 className="font-medium text-sm line-clamp-2">{thesis.title}</h3>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeThesis(thesis.id)}
+                                className="text-red-600 hover:text-red-800 ml-2"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            <p className="text-sm text-gray-600 mb-2">by {thesis.author}</p>
+                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                              {thesis.college_name && (
+                                <Badge variant="outline">{thesis.college_name}</Badge>
+                              )}
+                              {thesis.publish_date && (
+                                <span>{new Date(thesis.publish_date).getFullYear()}</span>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Search and Add Theses */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Search className="h-5 w-5 text-dlsl-green" />
+                    Search and Add More Theses
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="relative">
+                      <Input
+                        value={searchQuery}
+                        onChange={(e) => {
+                          setSearchQuery(e.target.value);
+                          searchTheses(e.target.value);
+                        }}
+                        placeholder="Search by title or author..."
+                        className="pr-10"
+                      />
+                      {isSearching && (
+                        <div className="absolute right-3 top-3">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-dlsl-green"></div>
                         </div>
                       )}
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
 
-              {/* Request Type Selection */}
-              <div className="lg:col-span-2">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Choose Request Type</CardTitle>
-                    <p className="text-sm text-gray-600">
-                      Select how you'd like to submit your access request.
-                    </p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <Card 
-                        className="cursor-pointer hover:bg-blue-50 hover:border-blue-200 transition-colors"
-                        onClick={() => setCurrentStep(2)}
-                      >
-                        <CardContent className="p-6 text-center">
-                          <User className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-                          <h3 className="font-semibold mb-2">Single Request</h3>
-                          <p className="text-sm text-gray-600">
-                            Submit one request for yourself or on behalf of one person.
-                          </p>
-                        </CardContent>
-                      </Card>
-
-                      <Card 
-                        className="cursor-pointer hover:bg-green-50 hover:border-green-200 transition-colors"
-                        onClick={() => {
-                          addRequest();
-                          setCurrentStep(2);
-                        }}
-                      >
-                        <CardContent className="p-6 text-center">
-                          <Plus className="h-12 w-12 text-green-600 mx-auto mb-4" />
-                          <h3 className="font-semibold mb-2">Multiple Requests</h3>
-                          <p className="text-sm text-gray-600">
-                            Submit requests for multiple people or institutions at once.
-                          </p>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+                    {searchResults.length > 0 && (
+                      <div className="border rounded-lg max-h-60 overflow-y-auto">
+                        {searchResults.map((thesis) => (
+                          <div
+                            key={thesis.id}
+                            className="p-3 hover:bg-gray-50 border-b last:border-b-0 cursor-pointer"
+                            onClick={() => addThesis(thesis)}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <h4 className="font-medium text-sm line-clamp-1">{thesis.title}</h4>
+                                <p className="text-sm text-gray-600">by {thesis.author}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  {thesis.colleges?.name && (
+                                    <Badge variant="outline" className="text-xs">{thesis.colleges.name}</Badge>
+                                  )}
+                                  {thesis.publish_date && (
+                                    <span className="text-xs text-gray-500">
+                                      {new Date(thesis.publish_date).getFullYear()}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <Button size="sm" variant="outline">
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
 
           {currentStep === 2 && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Thesis Info */}
+              {/* Selected Theses Summary */}
               <div className="lg:col-span-1">
                 <Card className="sticky top-8">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <FileText className="h-5 w-5 text-dlsl-green" />
-                      Thesis Information
+                      Request Summary
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       <div>
-                        <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{thesis.title}</h3>
-                        <p className="text-sm text-gray-600">by {thesis.author}</p>
+                        <p className="font-medium mb-2">Requesting access to {selectedTheses.length} thesis(es):</p>
+                        <div className="space-y-2 max-h-40 overflow-y-auto">
+                          {selectedTheses.map((thesis) => (
+                            <div key={thesis.id} className="text-sm">
+                              <p className="font-medium line-clamp-1">{thesis.title}</p>
+                              <p className="text-gray-600">by {thesis.author}</p>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm text-gray-600">
-                          <strong>College:</strong> {thesis.colleges?.name || 'Unknown'}
-                        </p>
-                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentStep(1)}
+                        className="w-full"
+                      >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Modify Selection
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
               </div>
 
-              {/* Request Forms */}
+              {/* Request Form */}
               <div className="lg:col-span-2">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <span>Request Details</span>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setCurrentStep(1)}
-                        >
-                          Back
-                        </Button>
-                        {requests.length === 0 && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={addRequest}
-                          >
-                            <Plus className="h-4 w-4 mr-1" />
-                            Add Multiple
-                          </Button>
-                        )}
-                      </div>
-                    </CardTitle>
+                    <CardTitle>Request Details</CardTitle>
+                    <p className="text-sm text-gray-600">
+                      Provide your information and the purpose for requesting access to these theses.
+                    </p>
                   </CardHeader>
                   <CardContent>
-                    {requests.length === 0 ? (
-                      // Single Request Form
-                      <form onSubmit={handleSubmitSingle} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="requesterName">Full Name *</Label>
-                            <Input
-                              id="requesterName"
-                              value={baseForm.requesterName}
-                              onChange={(e) => setBaseForm({ ...baseForm, requesterName: e.target.value })}
-                              required
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="requesterEmail">Email Address *</Label>
-                            <Input
-                              id="requesterEmail"
-                              type="email"
-                              value={baseForm.requesterEmail}
-                              onChange={(e) => setBaseForm({ ...baseForm, requesterEmail: e.target.value })}
-                              required
-                            />
-                          </div>
-                        </div>
-
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="institution">Institution/Organization</Label>
+                          <Label htmlFor="requesterName">Full Name *</Label>
                           <Input
-                            id="institution"
-                            value={baseForm.institution}
-                            onChange={(e) => setBaseForm({ ...baseForm, institution: e.target.value })}
-                            placeholder="e.g., De La Salle Lipa, University of the Philippines"
-                          />
-                        </div>
-
-                        <div>
-                          <Label htmlFor="purpose">Purpose of Request *</Label>
-                          <Textarea
-                            id="purpose"
-                            value={baseForm.purpose}
-                            onChange={(e) => setBaseForm({ ...baseForm, purpose: e.target.value })}
-                            placeholder="Please describe how you intend to use this thesis..."
-                            rows={4}
+                            id="requesterName"
+                            value={formData.requesterName}
+                            onChange={(e) => setFormData({ ...formData, requesterName: e.target.value })}
                             required
                           />
                         </div>
-
-                        <Button 
-                          type="submit" 
-                          className="w-full bg-dlsl-green hover:bg-dlsl-green/90"
-                          disabled={isSubmitting}
-                        >
-                          {isSubmitting ? (
-                            <>Submitting...</>
-                          ) : (
-                            <>
-                              <Send className="mr-2 h-4 w-4" />
-                              Submit Access Request
-                            </>
-                          )}
-                        </Button>
-                      </form>
-                    ) : (
-                      // Multiple Requests Form
-                      <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-lg font-medium">Multiple Requests ({requests.length})</h3>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={addRequest}
-                          >
-                            <Plus className="h-4 w-4 mr-1" />
-                            Add Another
-                          </Button>
+                        <div>
+                          <Label htmlFor="requesterEmail">Email Address *</Label>
+                          <Input
+                            id="requesterEmail"
+                            type="email"
+                            value={formData.requesterEmail}
+                            onChange={(e) => setFormData({ ...formData, requesterEmail: e.target.value })}
+                            required
+                          />
                         </div>
-
-                        <div className="space-y-6">
-                          {requests.map((request, index) => (
-                            <Card key={index} className="border-l-4 border-l-dlsl-green">
-                              <CardHeader className="pb-3">
-                                <div className="flex items-center justify-between">
-                                  <CardTitle className="text-base">Request #{index + 1}</CardTitle>
-                                  {requests.length > 1 && (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => removeRequest(index)}
-                                      className="text-red-600 hover:text-red-800"
-                                    >
-                                      <X className="h-4 w-4" />
-                                    </Button>
-                                  )}
-                                </div>
-                              </CardHeader>
-                              <CardContent>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                  <div>
-                                    <Label>Full Name *</Label>
-                                    <Input
-                                      value={request.requesterName}
-                                      onChange={(e) => updateRequest(index, 'requesterName', e.target.value)}
-                                      required
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label>Email Address *</Label>
-                                    <Input
-                                      type="email"
-                                      value={request.requesterEmail}
-                                      onChange={(e) => updateRequest(index, 'requesterEmail', e.target.value)}
-                                      required
-                                    />
-                                  </div>
-                                </div>
-
-                                <div className="mb-4">
-                                  <Label>Institution/Organization</Label>
-                                  <Input
-                                    value={request.institution}
-                                    onChange={(e) => updateRequest(index, 'institution', e.target.value)}
-                                    placeholder="e.g., De La Salle Lipa"
-                                  />
-                                </div>
-
-                                <div>
-                                  <Label>Purpose of Request *</Label>
-                                  <Textarea
-                                    value={request.purpose}
-                                    onChange={(e) => updateRequest(index, 'purpose', e.target.value)}
-                                    placeholder="Describe the intended use..."
-                                    rows={3}
-                                    required
-                                  />
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-
-                        <Button 
-                          onClick={handleSubmitMultiple}
-                          className="w-full bg-dlsl-green hover:bg-dlsl-green/90"
-                          disabled={isSubmitting}
-                        >
-                          {isSubmitting ? (
-                            <>Submitting {requests.length} Requests...</>
-                          ) : (
-                            <>
-                              <Send className="mr-2 h-4 w-4" />
-                              Submit All {requests.length} Requests
-                            </>
-                          )}
-                        </Button>
                       </div>
-                    )}
+
+                      <div>
+                        <Label htmlFor="institution">Institution/Organization</Label>
+                        <Input
+                          id="institution"
+                          value={formData.institution}
+                          onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
+                          placeholder="e.g., De La Salle Lipa, University of the Philippines"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="purpose">Purpose of Request *</Label>
+                        <Textarea
+                          id="purpose"
+                          value={formData.purpose}
+                          onChange={(e) => setFormData({ ...formData, purpose: e.target.value })}
+                          placeholder="Please describe how you intend to use these theses..."
+                          rows={4}
+                          required
+                        />
+                      </div>
+
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-dlsl-green hover:bg-dlsl-green/90"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? (
+                          <>Submitting {selectedTheses.length} Request(s)...</>
+                        ) : (
+                          <>
+                            <Send className="mr-2 h-4 w-4" />
+                            Submit Access Request for {selectedTheses.length} Thesis(es)
+                          </>
+                        )}
+                      </Button>
+                    </form>
                   </CardContent>
                 </Card>
               </div>
@@ -503,7 +462,7 @@ const RequestThesisAccess = () => {
                 <ul className="space-y-1 text-sm">
                   <li>• Your request(s) will be reviewed by our archivists</li>
                   <li>• You'll receive email notifications once reviewed</li>
-                  <li>• If approved, the full thesis will be sent to the specified email address(es)</li>
+                  <li>• If approved, the full theses will be sent to your email address</li>
                   <li>• Processing typically takes 1-3 business days</li>
                 </ul>
               </AlertDescription>
