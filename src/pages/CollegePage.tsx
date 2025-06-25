@@ -162,9 +162,9 @@ const CollegePage = () => {
           <div className="relative mb-12 overflow-hidden">
             {/* Hero Container with Background */}
             <div className={`relative bg-gradient-to-br ${collegeGradient} rounded-3xl shadow-2xl`}>
-              {/* Background Image */}
-              <div className="absolute inset-0 flex items-center justify-end pr-12">
-                <div className="w-64 h-64 opacity-10">
+              {/* Background Image - Made bigger and less transparent */}
+              <div className="absolute inset-0 flex items-center justify-end pr-8">
+                <div className="w-80 h-80 opacity-30">
                   <img 
                     src={collegeImage} 
                     alt={`${college?.name || 'College'} Background`}
