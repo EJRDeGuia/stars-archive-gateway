@@ -80,7 +80,7 @@ const ManageCollections = () => {
     
     setLoading(true);
     try {
-      console.log('Fetching collections for user:', user.id);
+      console.log('Fetching collections...');
       
       const { data, error } = await supabase
         .from('collections')

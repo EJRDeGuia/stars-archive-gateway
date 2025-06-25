@@ -401,13 +401,6 @@ export type Database = {
         Args: { "": unknown[] }
         Returns: number
       }
-      has_role: {
-        Args: {
-          _user_id: string
-          _role: Database["public"]["Enums"]["user_role"]
-        }
-        Returns: boolean
-      }
       hnsw_bit_support: {
         Args: { "": unknown }
         Returns: unknown
