@@ -13,6 +13,7 @@ import { ArrowLeft, FileText, Send } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useThesis } from '@/hooks/useApi';
+import type { Thesis } from '@/types/thesis';
 
 const RequestThesisAccess = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,7 +21,7 @@ const RequestThesisAccess = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { data: thesis, isLoading } = useThesis(id || '');
+  const { data: thesis, isLoading } = useThesis(id || '') as { data: Thesis | undefined, isLoading: boolean };
   
   const [formData, setFormData] = useState({
     requesterName: user?.name || '',

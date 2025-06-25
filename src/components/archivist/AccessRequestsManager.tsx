@@ -58,7 +58,7 @@ const AccessRequestsManager = () => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as AccessRequest[];
+      return data || [];
     },
   });
 

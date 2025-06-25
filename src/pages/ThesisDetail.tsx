@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -230,6 +231,7 @@ const ThesisDetail = () => {
                         canView={canViewPDF}
                         maxPages={10}
                         className="border-0 shadow-none"
+                        thesisId={thesis.id}
                       />
                     </div>
                   ) : (
@@ -349,6 +351,7 @@ const ThesisDetail = () => {
           title={thesis.title}
           author={thesis.author}
           year={thesisYearString}
+          thesisId={thesis.id}
         />
       </main>
 
