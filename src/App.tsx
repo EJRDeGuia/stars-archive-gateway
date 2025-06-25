@@ -30,6 +30,7 @@ import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 import SystemSettings from "./pages/SystemSettings";
 import SecurityMonitor from "./pages/SecurityMonitor";
 import ManageCollections from '@/pages/ManageCollections';
+import RequestThesisAccess from './pages/RequestThesisAccess';
 
 const queryClient = new QueryClient();
 
@@ -110,6 +111,11 @@ const App = () => (
                 <NetworkAccessChecker>
                   <ThesisDetail />
                 </NetworkAccessChecker>
+              </ProtectedRoute>
+            } />
+            <Route path="/request-access/:id" element={
+              <ProtectedRoute>
+                <RequestThesisAccess />
               </ProtectedRoute>
             } />
             <Route path="/upload" element={

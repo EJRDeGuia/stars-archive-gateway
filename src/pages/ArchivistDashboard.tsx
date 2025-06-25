@@ -9,6 +9,7 @@ import StatisticsCards from '@/components/archivist/StatisticsCards';
 import ArchivistQuickActions from '@/components/archivist/ArchivistQuickActions';
 import CollegeGrid from '@/components/dashboard/CollegeGrid';
 import RecentUploads from '@/components/archivist/RecentUploads';
+import AccessRequestsManager from '@/components/archivist/AccessRequestsManager';
 import { useArchivistDashboardData } from '@/hooks/useArchivistDashboardData';
 import ViewsChart from "@/components/analytics/ViewsChart";
 import { useSystemAnalytics } from "@/hooks/useSystemAnalytics";
@@ -86,6 +87,12 @@ const ArchivistDashboard = () => {
             <>
               <StatisticsCards />
               <ArchivistQuickActions onActionClick={handleQuickAction} />
+              
+              {/* Access Requests Management */}
+              <div className="mb-12">
+                <AccessRequestsManager />
+              </div>
+              
               <CollegeGrid />
               <RecentUploads uploads={recentUploads} />
             </>

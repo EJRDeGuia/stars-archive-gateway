@@ -415,6 +415,54 @@ export type Database = {
           },
         ]
       }
+      thesis_access_requests: {
+        Row: {
+          created_at: string
+          id: string
+          institution: string | null
+          notes: string | null
+          purpose: string
+          requester_email: string
+          requester_name: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          thesis_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          institution?: string | null
+          notes?: string | null
+          purpose: string
+          requester_email: string
+          requester_name: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          thesis_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          institution?: string | null
+          notes?: string | null
+          purpose?: string
+          requester_email?: string
+          requester_name?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          thesis_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       thesis_downloads: {
         Row: {
           downloaded_at: string | null
@@ -532,6 +580,10 @@ export type Database = {
       halfvec_typmod_in: {
         Args: { "": unknown[] }
         Returns: number
+      }
+      has_elevated_access: {
+        Args: { _user_id: string }
+        Returns: boolean
       }
       hnsw_bit_support: {
         Args: { "": unknown }

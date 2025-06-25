@@ -5,6 +5,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileText, ExternalLink, Lock, AlertCircle, X } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useAuth } from '@/contexts/AuthContext';
+import RequestAccessButton from './RequestAccessButton';
 
 // Set the workerSrc property for pdf.js
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
@@ -15,6 +17,7 @@ interface PDFViewerProps {
   canView: boolean;
   maxPages?: number;
   className?: string;
+  thesisId?: string;
 }
 
 const PDFViewer: React.FC<PDFViewerProps> = ({
@@ -23,9 +26,17 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   canView,
   maxPages,
   className = '',
+  thesisId,
 }) => {
+  const { user } = useAuth();
   const [numPages, setNumPages] = useState<number | null>(null);
   const [showSecurityNotice, setShowSecurityNotice] = useState(true);
+
+  // Check if user has elevated access (archivist or admin)
+  const hasElevatedAccess = user && ['archivist', 'admin'].includes(user.role);
+  
+  // Determine actual max pages based on user role
+  const actualMaxPages = hasElevatedAccess ? undefined : (maxPages || 10);
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
@@ -57,6 +68,9 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                 </p>
               </div>
             </div>
+            {thesisId && (
+              <RequestAccessButton thesisId={thesisId} className="mb-4" />
+            )}
             <Button variant="outline" className="mr-0 w-full max-w-[210px] shadow-sm">
               <ExternalLink className="w-4 h-4 mr-2" />
               Contact LRC
@@ -103,6 +117,9 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                 </p>
               </div>
             </div>
+            {thesisId && !hasElevatedAccess && (
+              <RequestAccessButton thesisId={thesisId} className="mb-4" />
+            )}
             <Button className="bg-dlsl-green text-white shadow" disabled>
               <ExternalLink className="w-4 h-4 mr-2 opacity-70" />
               Contact LRC for Access
@@ -114,12 +131,12 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   }
 
   // Set the number of preview pages to show
-  const totalPagesToShow = maxPages && numPages ? Math.min(maxPages, numPages) : numPages;
+  const totalPagesToShow = actualMaxPages && numPages ? Math.min(actualMaxPages, numPages) : numPages;
 
   return (
     <Card className={className}>
       <CardContent className="p-0">
-        {showSecurityNotice && (
+        {showSecurityNotice && !hasElevatedAccess && (
           <div className="bg-red-50 border-b border-red-200 p-3 rounded-t-2xl relative">
             <button
               onClick={() => setShowSecurityNotice(false)}
@@ -131,11 +148,26 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
             <div className="flex items-start space-x-2 justify-center pr-8">
               <Lock className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
               <p className="text-red-800 text-sm text-center">
-                <strong>Security Notice:</strong> This document is protected: copying, printing, and screenshots are not allowed. To access the full document, please contact the LRC directly.
+                <strong>Security Notice:</strong> This document is protected: copying, printing, and screenshots are not allowed. 
+                {!hasElevatedAccess && thesisId && (
+                  <span> You are viewing a limited preview. <RequestAccessButton thesisId={thesisId} className="ml-2 text-xs px-2 py-1 h-auto" /> for full access.</span>
+                )}
               </p>
             </div>
           </div>
         )}
+
+        {hasElevatedAccess && (
+          <div className="bg-green-50 border-b border-green-200 p-3 rounded-t-2xl">
+            <div className="flex items-center justify-center gap-2">
+              <AlertCircle className="w-5 h-5 text-green-600" />
+              <p className="text-green-800 text-sm text-center">
+                <strong>Full Access Granted:</strong> As an {user?.role}, you have access to the complete document.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Improved Scrollable PDF Area */}
         <div className="relative bg-gray-50 rounded-b-2xl" style={{ minHeight: 300, maxHeight: 640 }}>
           {/* Add overflow-auto and full height for scrollability */}
@@ -183,10 +215,13 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                   ),
                 )}
               </Document>
-              {numPages && maxPages && numPages > maxPages && (
+              {numPages && actualMaxPages && numPages > actualMaxPages && !hasElevatedAccess && (
                 <div className="mt-4 mb-2 text-sm text-gray-600 bg-yellow-50 rounded p-3 border border-yellow-100 shadow flex items-center gap-2">
                   <Lock className="w-4 h-4 text-yellow-500 mr-1" />
-                  Only the first {maxPages} pages are visible. To access the full document, please contact the LRC directly.
+                  Only the first {actualMaxPages} pages are visible. 
+                  {thesisId && (
+                    <RequestAccessButton thesisId={thesisId} className="ml-2 text-xs px-2 py-1 h-auto" />
+                  )}
                 </div>
               )}
             </div>
