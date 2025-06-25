@@ -52,7 +52,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
               <div className="flex items-start space-x-2">
                 <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                 <p className="text-blue-800 text-sm leading-relaxed">
-                  <strong>To access or download this document, please contact the LRC directly.</strong>
+                  <strong>To access this document, please contact the LRC directly.</strong>
                 </p>
               </div>
             </div>
@@ -90,7 +90,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
               <div className="flex items-start space-x-2">
                 <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                 <p className="text-blue-800 text-sm leading-relaxed">
-                  <strong>Document Access:</strong> To access or download this document, please contact the LRC directly.
+                  <strong>Document Access:</strong> To access this document, please contact the LRC directly.
                 </p>
               </div>
             </div>
@@ -98,7 +98,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
               <div className="flex items-start space-x-2">
                 <Lock className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
                 <p className="text-red-800 text-sm leading-relaxed">
-                  <strong>Security Notice:</strong> All thesis documents are secured against downloading, copying, screenshots, and printing. Access is available for reading only.
+                  <strong>Security Notice:</strong> All thesis documents are secured against copying, screenshots, and printing. Access is available for reading only.
                 </p>
               </div>
             </div>
@@ -122,7 +122,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           <div className="flex items-start space-x-2 justify-center">
             <Lock className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
             <p className="text-red-800 text-sm text-center">
-              <strong>Security Notice:</strong> This document is protected: downloading, copying, printing, and screenshots are not allowed. To access or download this document, please contact the LRC directly.
+              <strong>Security Notice:</strong> This document is protected: copying, printing, and screenshots are not allowed. To access this document, please contact the LRC directly.
             </p>
           </div>
         </div>
