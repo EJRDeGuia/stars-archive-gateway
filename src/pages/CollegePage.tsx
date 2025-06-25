@@ -16,6 +16,16 @@ import FavoriteButton from "@/components/FavoriteButton";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserFavorites } from "@/hooks/useApi";
 
+// College image mapping
+const collegeImages: Record<string, string> = {
+  'CITE': '/lovable-uploads/6bf09977-6df4-4933-bfc8-34fd6f51a931.png',
+  'CBEAM': '/lovable-uploads/563b3ad8-1ee8-4770-9de8-b9a1383c9ec6.png',
+  'CEAS': '/lovable-uploads/f2244dbc-5d8a-4c9f-8a64-4aec1893ad30.png',
+  'CIHTM': '/lovable-uploads/468c9af5-ab3b-4867-95f9-8dd1c72176c5.png',
+  'NURSING': '/lovable-uploads/cc51f057-9aa5-4894-8fef-9cd1eb9df743.png',
+  'CON': '/lovable-uploads/cc51f057-9aa5-4894-8fef-9cd1eb9df743.png'
+};
+
 const CollegePage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -118,19 +128,26 @@ const CollegePage = () => {
     );
   }
 
+  // Get college image based on college name
+  const collegeImage = college ? collegeImages[college.name] || collegeImages['CITE'] : collegeImages['CITE'];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header />
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          {/* Hero Section */}
-          <div className="relative py-16 mb-8">
-            <div className="absolute inset-0 bg-gradient-to-r from-dlsl-green/10 to-dlsl-green/5 rounded-3xl"></div>
-            <div className="relative">
+          {/* Enhanced Hero Section */}
+          <div className="relative py-20 mb-12 overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-gradient-to-r from-white via-dlsl-green/5 to-dlsl-green/10 rounded-3xl"></div>
+            <div className="absolute top-0 right-0 w-96 h-96 bg-dlsl-green/5 rounded-full -translate-y-48 translate-x-48"></div>
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-dlsl-green/10 rounded-full translate-y-32 -translate-x-32"></div>
+            
+            <div className="relative z-10">
               <Button 
                 variant="ghost" 
                 onClick={() => navigate('/collections')}
-                className="mb-6 text-dlsl-green hover:bg-dlsl-green/10"
+                className="mb-8 text-dlsl-green hover:bg-dlsl-green/10 backdrop-blur-sm"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Collections
@@ -138,28 +155,76 @@ const CollegePage = () => {
               
               {loading ? (
                 <div className="animate-pulse">
-                  <div className="h-12 bg-gray-300 rounded w-64 mb-4"></div>
-                  <div className="h-6 bg-gray-200 rounded w-96"></div>
+                  <div className="h-16 bg-gray-300 rounded w-80 mb-6"></div>
+                  <div className="h-8 bg-gray-200 rounded w-96 mb-4"></div>
+                  <div className="h-6 bg-gray-200 rounded w-64"></div>
                 </div>
               ) : college ? (
-                <div>
-                  <h1 className="text-5xl font-bold text-gray-900 mb-4">{college.name}</h1>
-                  <p className="text-xl text-gray-600 mb-6">
-                    {college.full_name || college.name}
-                  </p>
-                  <div className="flex items-center gap-4">
-                    <Badge variant="secondary" className="bg-dlsl-green/10 text-dlsl-green px-4 py-2">
-                      <BookOpen className="w-4 h-4 mr-2" />
-                      {thesesForCollege.length} Theses
-                    </Badge>
-                    <Badge variant="outline" className="px-4 py-2">
-                      <Users className="w-4 h-4 mr-2" />
-                      Active Research
-                    </Badge>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                  {/* Left Column - Text Content */}
+                  <div className="space-y-8">
+                    {/* College Name */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-12 bg-dlsl-green rounded-full"></div>
+                        <h1 className="text-6xl font-bold text-gray-900 leading-tight">
+                          {college.name}
+                        </h1>
+                      </div>
+                      
+                      {/* Full Name */}
+                      <div className="ml-5">
+                        <h2 className="text-2xl font-medium text-gray-700 leading-relaxed">
+                          {college.full_name || college.name}
+                        </h2>
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    <div className="ml-5 space-y-4">
+                      <p className="text-lg text-gray-600 leading-relaxed max-w-2xl">
+                        {college.description || 'This college is dedicated to advancing knowledge through innovative research and academic excellence, fostering an environment where students and faculty collaborate to push the boundaries of their respective fields.'}
+                      </p>
+                    </div>
+
+                    {/* Stats Badges */}
+                    <div className="ml-5 flex flex-wrap items-center gap-4">
+                      <Badge variant="secondary" className="bg-dlsl-green/15 text-dlsl-green px-6 py-3 text-base font-medium">
+                        <BookOpen className="w-5 h-5 mr-2" />
+                        {thesesForCollege.length} Research Papers
+                      </Badge>
+                      <Badge variant="outline" className="px-6 py-3 text-base border-dlsl-green/30">
+                        <Users className="w-5 h-5 mr-2 text-dlsl-green" />
+                        Active Research Hub
+                      </Badge>
+                      <Badge variant="outline" className="px-6 py-3 text-base border-dlsl-green/30">
+                        <TrendingUp className="w-5 h-5 mr-2 text-dlsl-green" />
+                        Growing Collection
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {/* Right Column - College Image */}
+                  <div className="flex justify-center lg:justify-end">
+                    <div className="relative">
+                      {/* Image Container with Styling */}
+                      <div className="relative w-80 h-80 bg-white rounded-3xl shadow-2xl p-8 transform hover:scale-105 transition-transform duration-300">
+                        <div className="absolute inset-0 bg-gradient-to-br from-dlsl-green/5 to-dlsl-green/10 rounded-3xl"></div>
+                        <img 
+                          src={collegeImage} 
+                          alt={`${college.name} Logo`}
+                          className="relative z-10 w-full h-full object-contain filter drop-shadow-lg"
+                        />
+                      </div>
+                      
+                      {/* Decorative Elements */}
+                      <div className="absolute -top-4 -right-4 w-16 h-16 bg-dlsl-green/10 rounded-full"></div>
+                      <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-dlsl-green/20 rounded-full"></div>
+                    </div>
                   </div>
                 </div>
               ) : (
-                <div>
+                <div className="text-center">
                   <h1 className="text-5xl font-bold text-gray-900 mb-4">College Not Found</h1>
                   <p className="text-xl text-gray-600">The college you're looking for doesn't exist or has been removed.</p>
                 </div>
