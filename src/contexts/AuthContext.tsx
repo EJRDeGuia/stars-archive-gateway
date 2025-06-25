@@ -19,7 +19,7 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock users for demonstration with proper UUID format IDs
+// Mock users with proper UUID format IDs that match database expectations
 const mockUsers: (User & { password: string })[] = [
   {
     id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
