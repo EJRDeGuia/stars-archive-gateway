@@ -1,4 +1,3 @@
-
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CollegeCard from '@/components/CollegeCard';
@@ -85,6 +84,10 @@ const Collections = () => {
     }
   };
 
+  const handleCollectionClick = (collectionId: string) => {
+    navigate(`/collection/${collectionId}`);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -126,7 +129,11 @@ const Collections = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {collections.map((collection) => (
-                  <Card key={collection.id} className="hover:shadow-lg transition-shadow cursor-pointer group">
+                  <Card 
+                    key={collection.id} 
+                    className="hover:shadow-lg transition-shadow cursor-pointer group"
+                    onClick={() => handleCollectionClick(collection.id)}
+                  >
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-dlsl-green transition-colors">

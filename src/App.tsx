@@ -18,6 +18,7 @@ import Library from "./pages/Library";
 import Settings from "./pages/Settings";
 import Explore from "./pages/Explore";
 import Collections from "./pages/Collections";
+import CollectionView from "./pages/CollectionView";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import About from "./pages/About";
@@ -91,6 +92,11 @@ const App = () => (
             <Route path="/collections" element={
               <ProtectedRoute>
                 <Collections />
+              </ProtectedRoute>
+            } />
+            <Route path="/collection/:id" element={
+              <ProtectedRoute>
+                <CollectionView />
               </ProtectedRoute>
             } />
             <Route path="/college/:id" element={
