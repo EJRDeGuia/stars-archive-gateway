@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -21,17 +22,6 @@ const AdminDashboard = () => {
 
   // Use custom hook to fetch admin dashboard data
   const { colleges, collegesLoading, theses, thesesLoading } = useAdminDashboardData();
-
-  // Example stats, could be expanded/refined when more api is available
-  const stats = {
-    totalUsers: 0,
-    totalTheses: theses.length,
-    totalColleges: colleges.length,
-    monthlyUploads: 0,
-    weeklyViews: 0,
-    securityAlerts: 0,
-    networkSessions: 0
-  };
 
   const handleCollegeClick = (collegeId: string) => {
     navigate(`/college/${collegeId}`);
@@ -106,13 +96,13 @@ const AdminDashboard = () => {
             />
           </div>
 
-          <AdminStatsGrid stats={stats} />
+          <AdminStatsGrid />
           <div className="mb-12">
             <AdminQuickActions onActionClick={handleQuickAction} />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
             <AdminRecentActivity />
-            <AdminSystemStatus networkSessions={stats.networkSessions} />
+            <AdminSystemStatus />
           </div>
           <AdminCollegesOverview
             colleges={colleges}
