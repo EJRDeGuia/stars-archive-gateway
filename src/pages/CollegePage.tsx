@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -24,6 +25,26 @@ const collegeImages: Record<string, string> = {
   'CIHTM': '/lovable-uploads/468c9af5-ab3b-4867-95f9-8dd1c72176c5.png',
   'NURSING': '/lovable-uploads/cc51f057-9aa5-4894-8fef-9cd1eb9df743.png',
   'CON': '/lovable-uploads/cc51f057-9aa5-4894-8fef-9cd1eb9df743.png'
+};
+
+// College gradient mapping
+const collegeGradients: Record<string, string> = {
+  'CITE': 'from-red-50 to-red-100',
+  'CBEAM': 'from-yellow-50 to-yellow-100',
+  'CEAS': 'from-blue-50 to-blue-100',
+  'CIHTM': 'from-green-50 to-green-100',
+  'NURSING': 'from-gray-50 to-gray-100',
+  'CON': 'from-gray-50 to-gray-100'
+};
+
+// College accent colors
+const collegeAccents: Record<string, string> = {
+  'CITE': 'text-red-600',
+  'CBEAM': 'text-yellow-600',
+  'CEAS': 'text-blue-600',
+  'CIHTM': 'text-green-600',
+  'NURSING': 'text-gray-600',
+  'CON': 'text-gray-600'
 };
 
 const CollegePage = () => {
@@ -128,8 +149,10 @@ const CollegePage = () => {
     );
   }
 
-  // Get college image based on college name
+  // Get college image and gradient based on college name
   const collegeImage = college ? collegeImages[college.name] || collegeImages['CITE'] : collegeImages['CITE'];
+  const collegeGradient = college ? collegeGradients[college.name] || collegeGradients['CITE'] : collegeGradients['CITE'];
+  const collegeAccent = college ? collegeAccents[college.name] || collegeAccents['CITE'] : collegeAccents['CITE'];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -137,17 +160,18 @@ const CollegePage = () => {
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           {/* Enhanced Hero Section */}
-          <div className="relative py-20 mb-12 overflow-hidden">
+          <div className={`relative py-12 mb-8 overflow-hidden bg-gradient-to-br ${collegeGradient} rounded-2xl`}>
             {/* Background Pattern */}
-            <div className="absolute inset-0 bg-gradient-to-r from-white via-dlsl-green/5 to-dlsl-green/10 rounded-3xl"></div>
-            <div className="absolute top-0 right-0 w-96 h-96 bg-dlsl-green/5 rounded-full -translate-y-48 translate-x-48"></div>
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-dlsl-green/10 rounded-full translate-y-32 -translate-x-32"></div>
+            <div className="absolute inset-0">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24"></div>
+            </div>
             
             <div className="relative z-10">
               <Button 
                 variant="ghost" 
                 onClick={() => navigate('/collections')}
-                className="mb-8 text-dlsl-green hover:bg-dlsl-green/10 backdrop-blur-sm"
+                className="mb-6 text-gray-700 hover:bg-white/20 backdrop-blur-sm"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Collections
@@ -155,78 +179,70 @@ const CollegePage = () => {
               
               {loading ? (
                 <div className="animate-pulse">
-                  <div className="h-16 bg-gray-300 rounded w-80 mb-6"></div>
-                  <div className="h-8 bg-gray-200 rounded w-96 mb-4"></div>
-                  <div className="h-6 bg-gray-200 rounded w-64"></div>
+                  <div className="h-12 bg-white/20 rounded w-80 mb-4"></div>
+                  <div className="h-6 bg-white/10 rounded w-96 mb-3"></div>
+                  <div className="h-4 bg-white/10 rounded w-64"></div>
                 </div>
               ) : college ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                  {/* Left Column - Text Content */}
-                  <div className="space-y-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+                  {/* Left Column - Text Content (2/3 width) */}
+                  <div className="lg:col-span-2 space-y-6">
                     {/* College Name */}
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-12 bg-dlsl-green rounded-full"></div>
-                        <h1 className="text-6xl font-bold text-gray-900 leading-tight">
-                          {college.name}
-                        </h1>
-                      </div>
+                    <div className="space-y-3">
+                      <h1 className={`text-5xl font-bold ${collegeAccent} leading-tight`}>
+                        {college.name}
+                      </h1>
                       
                       {/* Full Name */}
-                      <div className="ml-5">
-                        <h2 className="text-2xl font-medium text-gray-700 leading-relaxed">
-                          {college.full_name || college.name}
-                        </h2>
-                      </div>
+                      <h2 className="text-xl font-medium text-gray-700 leading-relaxed">
+                        {college.full_name || college.name}
+                      </h2>
                     </div>
 
                     {/* Description */}
-                    <div className="ml-5 space-y-4">
-                      <p className="text-lg text-gray-600 leading-relaxed max-w-2xl">
-                        {college.description || 'This college is dedicated to advancing knowledge through innovative research and academic excellence, fostering an environment where students and faculty collaborate to push the boundaries of their respective fields.'}
-                      </p>
-                    </div>
+                    <p className="text-gray-600 leading-relaxed max-w-2xl">
+                      {college.description || 'This college is dedicated to advancing knowledge through innovative research and academic excellence.'}
+                    </p>
 
                     {/* Stats Badges */}
-                    <div className="ml-5 flex flex-wrap items-center gap-4">
-                      <Badge variant="secondary" className="bg-dlsl-green/15 text-dlsl-green px-6 py-3 text-base font-medium">
-                        <BookOpen className="w-5 h-5 mr-2" />
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Badge variant="secondary" className="bg-white/80 text-gray-700 px-4 py-2 text-sm font-medium">
+                        <BookOpen className="w-4 h-4 mr-2" />
                         {thesesForCollege.length} Research Papers
                       </Badge>
-                      <Badge variant="outline" className="px-6 py-3 text-base border-dlsl-green/30">
-                        <Users className="w-5 h-5 mr-2 text-dlsl-green" />
+                      <Badge variant="outline" className="px-4 py-2 text-sm border-white/30 text-gray-600 bg-white/50">
+                        <Users className="w-4 h-4 mr-2" />
                         Active Research Hub
                       </Badge>
-                      <Badge variant="outline" className="px-6 py-3 text-base border-dlsl-green/30">
-                        <TrendingUp className="w-5 h-5 mr-2 text-dlsl-green" />
+                      <Badge variant="outline" className="px-4 py-2 text-sm border-white/30 text-gray-600 bg-white/50">
+                        <TrendingUp className="w-4 h-4 mr-2" />
                         Growing Collection
                       </Badge>
                     </div>
                   </div>
 
-                  {/* Right Column - College Image */}
-                  <div className="flex justify-center lg:justify-end">
+                  {/* Right Column - College Image (1/3 width) */}
+                  <div className="flex justify-center">
                     <div className="relative">
                       {/* Image Container with Styling */}
-                      <div className="relative w-80 h-80 bg-white rounded-3xl shadow-2xl p-8 transform hover:scale-105 transition-transform duration-300">
-                        <div className="absolute inset-0 bg-gradient-to-br from-dlsl-green/5 to-dlsl-green/10 rounded-3xl"></div>
+                      <div className="relative w-48 h-48 bg-white/90 rounded-2xl shadow-lg p-6 transform hover:scale-105 transition-transform duration-300">
                         <img 
                           src={collegeImage} 
                           alt={`${college.name} Logo`}
-                          className="relative z-10 w-full h-full object-contain filter drop-shadow-lg"
+                          className="w-full h-full object-contain filter drop-shadow-md"
                         />
                       </div>
                       
                       {/* Decorative Elements */}
-                      <div className="absolute -top-4 -right-4 w-16 h-16 bg-dlsl-green/10 rounded-full"></div>
-                      <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-dlsl-green/20 rounded-full"></div>
+                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-white/20 rounded-full"></div>
+                      <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-white/30 rounded-full"></div>
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="text-center">
-                  <h1 className="text-5xl font-bold text-gray-900 mb-4">College Not Found</h1>
-                  <p className="text-xl text-gray-600">The college you're looking for doesn't exist or has been removed.</p>
+                  <h1 className="text-4xl font-bold text-gray-900 mb-3">College Not Found</h1>
+                  <p className="text-lg text-gray-600">The college you're looking for doesn't exist or has been removed.</p>
                 </div>
               )}
             </div>
