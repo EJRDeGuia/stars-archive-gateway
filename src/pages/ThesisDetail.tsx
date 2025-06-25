@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -173,10 +172,6 @@ const ThesisDetail = () => {
                       <div className="flex items-center gap-2">
                         <Eye className="h-5 w-5" />
                         <span>{thesis.view_count || 0} views</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Heart className="h-5 w-5" />
-                        <span>{thesis.download_count || 0} downloads</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <MessageCircle className="h-5 w-5" />
