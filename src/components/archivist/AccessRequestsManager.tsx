@@ -23,13 +23,11 @@ interface AccessRequest {
   status: 'pending' | 'approved' | 'rejected';
   notes: string;
   created_at: string;
-  theses?: {
+  thesis?: {
     id: string;
     title: string;
     author: string;
-    colleges?: {
-      name: string;
-    };
+    college_name?: string;
   };
 }
 
@@ -42,23 +40,45 @@ const AccessRequestsManager = () => {
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ['access-requests'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get the access requests
+      const { data: requestsData, error: requestsError } = await supabase
         .from('thesis_access_requests')
-        .select(`
-          *,
-          theses (
-            id,
-            title,
-            author,
-            colleges (
-              name
-            )
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      return data || [];
+      if (requestsError) throw requestsError;
+      if (!requestsData) return [];
+
+      // Then get thesis data for each request
+      const requestsWithTheses = await Promise.all(
+        requestsData.map(async (request) => {
+          const { data: thesisData, error: thesisError } = await supabase
+            .from('theses')
+            .select(`
+              id,
+              title,
+              author,
+              colleges (
+                name
+              )
+            `)
+            .eq('id', request.thesis_id)
+            .single();
+
+          return {
+            ...request,
+            status: request.status as 'pending' | 'approved' | 'rejected',
+            thesis: thesisError ? undefined : {
+              id: thesisData.id,
+              title: thesisData.title,
+              author: thesisData.author,
+              college_name: thesisData.colleges?.name
+            }
+          } as AccessRequest;
+        })
+      );
+
+      return requestsWithTheses;
     },
   });
 
@@ -186,8 +206,8 @@ const AccessRequestsManager = () => {
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium text-sm">{request.theses?.title}</div>
-                        <div className="text-xs text-gray-500">by {request.theses?.author}</div>
+                        <div className="font-medium text-sm">{request.thesis?.title || 'Unknown Thesis'}</div>
+                        <div className="text-xs text-gray-500">by {request.thesis?.author || 'Unknown Author'}</div>
                       </div>
                     </TableCell>
                     <TableCell>
