@@ -65,22 +65,22 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">Resources</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/user-guide" className="text-white/80 hover:text-white transition-colors hover:underline">
+                <Link to="/resources#user-guide" className="text-white/80 hover:text-white transition-colors hover:underline">
                   User Guide
                 </Link>
               </li>
               <li>
-                <Link to="/help" className="text-white/80 hover:text-white transition-colors hover:underline">
+                <Link to="/resources#help-center" className="text-white/80 hover:text-white transition-colors hover:underline">
                   Help Center
                 </Link>
               </li>
               <li>
-                <Link to="/research-format" className="text-white/80 hover:text-white transition-colors hover:underline">
+                <Link to="/resources#research-format" className="text-white/80 hover:text-white transition-colors hover:underline">
                   Research Format
                 </Link>
               </li>
               <li>
-                <Link to="/faq" className="text-white/80 hover:text-white transition-colors hover:underline">
+                <Link to="/resources#faq" className="text-white/80 hover:text-white transition-colors hover:underline">
                   FAQ
                 </Link>
               </li>
@@ -137,8 +137,8 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center text-white/60 text-sm">
           <p>© 2025 De La Salle Lipa - Learning Resource Center. All rights reserved.</p>
           <div className="flex space-x-4 mt-4 md:mt-0">
-            <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link to="/terms-of-service" className="hover:text-white transition-colors">Terms of Service</Link>
+            <Link to="/resources#privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link to="/resources#terms-of-service" className="hover:text-white transition-colors">Terms of Service</Link>
           </div>
         </div>
       </div>
