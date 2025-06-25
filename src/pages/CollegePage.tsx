@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -27,14 +26,14 @@ const collegeImages: Record<string, string> = {
   'CON': '/lovable-uploads/cc51f057-9aa5-4894-8fef-9cd1eb9df743.png'
 };
 
-// College gradient mapping
+// College gradient mapping - enhanced for background use
 const collegeGradients: Record<string, string> = {
-  'CITE': 'from-red-50 to-red-100',
-  'CBEAM': 'from-yellow-50 to-yellow-100',
-  'CEAS': 'from-blue-50 to-blue-100',
-  'CIHTM': 'from-green-50 to-green-100',
-  'NURSING': 'from-gray-50 to-gray-100',
-  'CON': 'from-gray-50 to-gray-100'
+  'CITE': 'from-red-500/20 via-red-400/10 to-red-300/5',
+  'CBEAM': 'from-yellow-500/20 via-yellow-400/10 to-yellow-300/5',
+  'CEAS': 'from-blue-500/20 via-blue-400/10 to-blue-300/5',
+  'CIHTM': 'from-green-500/20 via-green-400/10 to-green-300/5',
+  'NURSING': 'from-gray-500/20 via-gray-400/10 to-gray-300/5',
+  'CON': 'from-gray-500/20 via-gray-400/10 to-gray-300/5'
 };
 
 // College accent colors
@@ -159,92 +158,78 @@ const CollegePage = () => {
       <Header />
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          {/* Enhanced Hero Section */}
-          <div className={`relative py-12 mb-8 overflow-hidden bg-gradient-to-br ${collegeGradient} rounded-2xl`}>
-            {/* Background Pattern */}
-            <div className="absolute inset-0">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24"></div>
-            </div>
-            
-            <div className="relative z-10">
-              <Button 
-                variant="ghost" 
-                onClick={() => navigate('/collections')}
-                className="mb-6 text-gray-700 hover:bg-white/20 backdrop-blur-sm"
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Collections
-              </Button>
-              
-              {loading ? (
-                <div className="animate-pulse">
-                  <div className="h-12 bg-white/20 rounded w-80 mb-4"></div>
-                  <div className="h-6 bg-white/10 rounded w-96 mb-3"></div>
-                  <div className="h-4 bg-white/10 rounded w-64"></div>
+          {/* Revamped Hero Section */}
+          <div className="relative mb-12 overflow-hidden">
+            {/* Hero Container with Background */}
+            <div className={`relative bg-gradient-to-br ${collegeGradient} rounded-3xl shadow-2xl`}>
+              {/* Background Image */}
+              <div className="absolute inset-0 flex items-center justify-end pr-12">
+                <div className="w-64 h-64 opacity-10">
+                  <img 
+                    src={collegeImage} 
+                    alt={`${college?.name || 'College'} Background`}
+                    className="w-full h-full object-contain"
+                  />
                 </div>
-              ) : college ? (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
-                  {/* Left Column - Text Content (2/3 width) */}
-                  <div className="lg:col-span-2 space-y-6">
+              </div>
+              
+              {/* Content */}
+              <div className="relative z-10 px-12 py-16">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => navigate('/collections')}
+                  className="mb-8 text-gray-700 hover:bg-white/20 backdrop-blur-sm border border-white/20"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to Collections
+                </Button>
+                
+                {loading ? (
+                  <div className="animate-pulse space-y-4">
+                    <div className="h-12 bg-white/20 rounded w-96 mb-4"></div>
+                    <div className="h-6 bg-white/10 rounded w-80 mb-3"></div>
+                    <div className="h-4 bg-white/10 rounded w-64"></div>
+                  </div>
+                ) : college ? (
+                  <div className="max-w-4xl space-y-6">
                     {/* College Name */}
-                    <div className="space-y-3">
-                      <h1 className={`text-5xl font-bold ${collegeAccent} leading-tight`}>
+                    <div className="space-y-2">
+                      <h1 className={`text-6xl font-bold ${collegeAccent} leading-tight tracking-tight`}>
                         {college.name}
                       </h1>
-                      
-                      {/* Full Name */}
-                      <h2 className="text-xl font-medium text-gray-700 leading-relaxed">
+                      <h2 className="text-2xl font-light text-gray-700 max-w-3xl leading-relaxed">
                         {college.full_name || college.name}
                       </h2>
                     </div>
 
                     {/* Description */}
-                    <p className="text-gray-600 leading-relaxed max-w-2xl">
+                    <p className="text-lg text-gray-600 leading-relaxed max-w-2xl font-light">
                       {college.description || 'This college is dedicated to advancing knowledge through innovative research and academic excellence.'}
                     </p>
 
                     {/* Stats Badges */}
-                    <div className="flex flex-wrap items-center gap-3">
-                      <Badge variant="secondary" className="bg-white/80 text-gray-700 px-4 py-2 text-sm font-medium">
-                        <BookOpen className="w-4 h-4 mr-2" />
+                    <div className="flex flex-wrap items-center gap-4 pt-4">
+                      <Badge variant="secondary" className="bg-white/90 text-gray-700 px-6 py-3 text-base font-medium shadow-lg">
+                        <BookOpen className="w-5 h-5 mr-2" />
                         {thesesForCollege.length} Research Papers
                       </Badge>
-                      <Badge variant="outline" className="px-4 py-2 text-sm border-white/30 text-gray-600 bg-white/50">
-                        <Users className="w-4 h-4 mr-2" />
+                      <Badge variant="outline" className="px-6 py-3 text-base border-white/40 text-gray-600 bg-white/60 backdrop-blur-sm shadow-lg">
+                        <Users className="w-5 h-5 mr-2" />
                         Active Research Hub
                       </Badge>
-                      <Badge variant="outline" className="px-4 py-2 text-sm border-white/30 text-gray-600 bg-white/50">
-                        <TrendingUp className="w-4 h-4 mr-2" />
+                      <Badge variant="outline" className="px-6 py-3 text-base border-white/40 text-gray-600 bg-white/60 backdrop-blur-sm shadow-lg">
+                        <TrendingUp className="w-5 h-5 mr-2" />
                         Growing Collection
                       </Badge>
                     </div>
                   </div>
-
-                  {/* Right Column - College Image (1/3 width) */}
-                  <div className="flex justify-center">
-                    <div className="relative">
-                      {/* Image Container with Styling */}
-                      <div className="relative w-48 h-48 bg-white/90 rounded-2xl shadow-lg p-6 transform hover:scale-105 transition-transform duration-300">
-                        <img 
-                          src={collegeImage} 
-                          alt={`${college.name} Logo`}
-                          className="w-full h-full object-contain filter drop-shadow-md"
-                        />
-                      </div>
-                      
-                      {/* Decorative Elements */}
-                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-white/20 rounded-full"></div>
-                      <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-white/30 rounded-full"></div>
-                    </div>
+                ) : (
+                  <div className="space-y-4">
+                    <h1 className="text-5xl font-bold text-gray-900">College Not Found</h1>
+                    <p className="text-xl text-gray-600">The college you're looking for doesn't exist or has been removed.</p>
                   </div>
-                </div>
-              ) : (
-                <div className="text-center">
-                  <h1 className="text-4xl font-bold text-gray-900 mb-3">College Not Found</h1>
-                  <p className="text-lg text-gray-600">The college you're looking for doesn't exist or has been removed.</p>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
 
