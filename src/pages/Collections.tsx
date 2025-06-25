@@ -1,8 +1,8 @@
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CollegeCard from '@/components/CollegeCard';
+import FeaturedCollectionsCarousel from '@/components/FeaturedCollectionsCarousel';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { BookOpen, FolderOpen, Calendar, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -101,7 +101,7 @@ const Collections = () => {
             </p>
           </div>
 
-          {/* Research Collections */}
+          {/* Featured Collections Carousel */}
           <div className="mb-20">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-3xl font-bold text-gray-900">Featured Collections</h2>
@@ -111,66 +111,10 @@ const Collections = () => {
               </div>
             </div>
             
-            {collectionsLoading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-dlsl-green mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading collections...</p>
-              </div>
-            ) : collections.length === 0 ? (
-              <Card>
-                <CardContent className="p-12 text-center">
-                  <FolderOpen className="h-16 w-16 text-gray-300 mx-auto mb-6" />
-                  <h3 className="text-xl font-semibold text-gray-700 mb-2">No public collections available</h3>
-                  <p className="text-gray-500">
-                    Collections will appear here once they are created and made public by archivists.
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {collections.map((collection) => (
-                  <Card 
-                    key={collection.id} 
-                    className="hover:shadow-lg transition-shadow cursor-pointer group"
-                    onClick={() => handleCollectionClick(collection.id)}
-                  >
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-dlsl-green transition-colors">
-                          {collection.name}
-                        </h3>
-                        <Badge variant="default" className="bg-dlsl-green hover:bg-dlsl-green/90">
-                          Public
-                        </Badge>
-                      </div>
-                      
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                        {collection.description || 'A curated collection of academic research papers and theses.'}
-                      </p>
-                      
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                          <div className="flex items-center text-dlsl-green">
-                            <BookOpen className="w-4 h-4 mr-1" />
-                            <span className="font-medium">{collection._count?.collection_theses || 0} theses</span>
-                          </div>
-                          <div className="flex items-center text-gray-500">
-                            <Calendar className="w-3 h-3 mr-1" />
-                            <span>{new Date(collection.created_at).toLocaleDateString()}</span>
-                          </div>
-                        </div>
-                        
-                        {collection.updated_at && collection.updated_at !== collection.created_at && (
-                          <div className="flex items-center text-xs text-gray-400">
-                            <span>Last updated: {new Date(collection.updated_at).toLocaleDateString()}</span>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
+            <FeaturedCollectionsCarousel 
+              collections={collections} 
+              loading={collectionsLoading} 
+            />
           </div>
 
           {/* College Collections */}
