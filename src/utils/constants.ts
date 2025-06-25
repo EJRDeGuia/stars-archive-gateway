@@ -1,4 +1,5 @@
 
+
 export const API_ENDPOINTS = {
   AUTH: '/api/auth',
   THESES: '/api/theses',
@@ -19,7 +20,15 @@ export const ROUTES = {
   PROFILE: '/profile',
   COLLECTIONS: '/collections',
   LIBRARY: '/library',
-  SETTINGS: '/settings'
+  SETTINGS: '/settings',
+  ABOUT: '/about',
+  RESOURCES: '/resources',
+  USER_GUIDE: '/user-guide',
+  HELP: '/help',
+  RESEARCH_FORMAT: '/research-format',
+  FAQ: '/faq',
+  PRIVACY_POLICY: '/privacy-policy',
+  TERMS_OF_SERVICE: '/terms-of-service'
 };
 
 export const COLORS = {
@@ -40,3 +49,4 @@ export const FILE_UPLOAD = {
   MAX_SIZE: 50 * 1024 * 1024, // 50MB
   ALLOWED_TYPES: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
 };
+

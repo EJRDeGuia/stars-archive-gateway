@@ -1,3 +1,4 @@
+
 import { Star, Mail, Phone, MapPin, Globe, Facebook, Twitter, Instagram } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Separator } from '@/components/ui/separator';
@@ -20,13 +21,13 @@ const Footer = () => {
               faculty, and researchers to discover academic knowledge.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-white hover:text-dlsl-gold transition-colors">
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-white hover:text-dlsl-gold transition-colors">
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="text-white hover:text-dlsl-gold transition-colors">
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white hover:text-dlsl-gold transition-colors">
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="text-white hover:text-dlsl-gold transition-colors">
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-white hover:text-dlsl-gold transition-colors">
                 <Instagram className="h-5 w-5" />
               </a>
             </div>
@@ -42,12 +43,12 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-white/80 hover:text-white transition-colors hover:underline">
+                <Link to="/about" className="text-white/80 hover:text-white transition-colors hover:underline">
                   About STARS
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-white/80 hover:text-white transition-colors hover:underline">
+                <Link to="/resources" className="text-white/80 hover:text-white transition-colors hover:underline">
                   Resources
                 </Link>
               </li>
@@ -64,22 +65,22 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">Resources</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="#" className="text-white/80 hover:text-white transition-colors hover:underline">
+                <Link to="/user-guide" className="text-white/80 hover:text-white transition-colors hover:underline">
                   User Guide
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-white/80 hover:text-white transition-colors hover:underline">
+                <Link to="/help" className="text-white/80 hover:text-white transition-colors hover:underline">
                   Help Center
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-white/80 hover:text-white transition-colors hover:underline">
+                <Link to="/research-format" className="text-white/80 hover:text-white transition-colors hover:underline">
                   Research Format
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-white/80 hover:text-white transition-colors hover:underline">
+                <Link to="/faq" className="text-white/80 hover:text-white transition-colors hover:underline">
                   FAQ
                 </Link>
               </li>
@@ -136,8 +137,8 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center text-white/60 text-sm">
           <p>© 2025 De La Salle Lipa - Learning Resource Center. All rights reserved.</p>
           <div className="flex space-x-4 mt-4 md:mt-0">
-            <Link to="#" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link to="#" className="hover:text-white transition-colors">Terms of Service</Link>
+            <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link to="/terms-of-service" className="hover:text-white transition-colors">Terms of Service</Link>
           </div>
         </div>
       </div>

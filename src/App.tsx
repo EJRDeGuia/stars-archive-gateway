@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,6 +30,12 @@ import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 import SystemSettings from "./pages/SystemSettings";
 import SecurityMonitor from "./pages/SecurityMonitor";
 import ManageCollections from '@/pages/ManageCollections';
+import UserGuide from "./pages/UserGuide";
+import Help from "./pages/Help";
+import ResearchFormat from "./pages/ResearchFormat";
+import FAQ from "./pages/FAQ";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +51,12 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/about" element={<About />} />
             <Route path="/resources" element={<Resources />} />
+            <Route path="/user-guide" element={<UserGuide />} />
+            <Route path="/help" element={<Help />} />
+            <Route path="/research-format" element={<ResearchFormat />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
