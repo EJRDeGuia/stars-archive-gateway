@@ -2,43 +2,42 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, BookOpen, HelpCircle, FileText, Mail, Phone, MapPin, Clock } from 'lucide-react';
+import { ArrowLeft, HelpCircle, Mail, Phone, MapPin, Clock, Loader2, BookOpen, FileText, Search, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { useResourcesContent } from '@/hooks/useResourcesContent';
 
 const Resources = () => {
   const navigate = useNavigate();
+  const { data: resourcesContent, isLoading } = useResourcesContent();
 
-  const guides = [
-    {
-      title: "Getting Started Guide",
-      description: "Learn the basics of using STARS to search and access thesis documents.",
-      icon: <BookOpen className="h-6 w-6" />,
-      topics: ["Account registration", "Basic search", "Document viewing", "Download procedures"]
-    },
-    {
-      title: "Advanced Search Tips",
-      description: "Master the advanced search features to find exactly what you're looking for.",
-      icon: <FileText className="h-6 w-6" />,
-      topics: ["Boolean operators", "Field-specific search", "Date filtering", "Subject categories"]
-    },
-    {
-      title: "For Researchers",
-      description: "Special features and guidelines for academic researchers and faculty.",
-      icon: <HelpCircle className="h-6 w-6" />,
-      topics: ["Citation formats", "Research ethics", "Collaboration tools", "Data export"]
+  // Group content by category
+  const groupedContent = resourcesContent?.reduce((acc, item) => {
+    if (!acc[item.category]) {
+      acc[item.category] = [];
     }
-  ];
+    acc[item.category].push(item);
+    return acc;
+  }, {} as Record<string, typeof resourcesContent>) || {};
+
+  const getIconForCategory = (category: string) => {
+    switch (category) {
+      case 'access': return <Users className="h-6 w-6" />;
+      case 'search': return <Search className="h-6 w-6" />;
+      case 'support': return <HelpCircle className="h-6 w-6" />;
+      default: return <BookOpen className="h-6 w-6" />;
+    }
+  };
 
   const faqs = [
     {
       question: "How do I access thesis documents?",
-      answer: "You need to sign in with your De La Salle Lipa credentials to access full documents. Guest users can browse titles and abstracts."
+      answer: "You need to sign in with your De La Salle Lipa credentials to access full documents. Guest users can browse titles and abstracts. To access or download documents, please contact the LRC directly."
     },
     {
       question: "Can I download thesis documents?",
-      answer: "Yes, authenticated users can download PDF versions of thesis documents for academic and research purposes."
+      answer: "To access or download this document, please contact the LRC directly. All documents are protected and require special permission for downloads."
     },
     {
       question: "How often is the database updated?",
@@ -53,6 +52,17 @@ const Resources = () => {
       answer: "You can contact our support team through the contact information provided below or use the feedback form in the system."
     }
   ];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex items-center space-x-2">
+          <Loader2 className="h-6 w-6 animate-spin text-dlsl-green" />
+          <span className="text-gray-600">Loading resources...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -81,31 +91,29 @@ const Resources = () => {
             </div>
           </div>
 
-          {/* User Guides */}
-          <div className="mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">User Guides</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {guides.map((guide, index) => (
-                <Card key={index} className="bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-shadow">
-                  <CardContent className="p-8">
-                    <div className="w-12 h-12 bg-dlsl-green/10 rounded-xl flex items-center justify-center mb-6 text-dlsl-green">
-                      {guide.icon}
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-4">{guide.title}</h3>
-                    <p className="text-gray-600 mb-6">{guide.description}</p>
-                    <div className="space-y-2">
-                      {guide.topics.map((topic, topicIndex) => (
-                        <div key={topicIndex} className="flex items-center text-sm text-gray-500">
-                          <div className="w-2 h-2 bg-dlsl-green rounded-full mr-3"></div>
-                          {topic}
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+          {/* Dynamic User Guides */}
+          {Object.keys(groupedContent).length > 0 && (
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8">User Guides</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {Object.entries(groupedContent).map(([category, items]) => (
+                  <div key={category} className="space-y-4">
+                    {items.map((item) => (
+                      <Card key={item.id} className="bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-shadow">
+                        <CardContent className="p-6">
+                          <div className="w-12 h-12 bg-dlsl-green/10 rounded-xl flex items-center justify-center mb-4 text-dlsl-green">
+                            {getIconForCategory(category)}
+                          </div>
+                          <h3 className="text-lg font-bold text-gray-900 mb-3">{item.title}</h3>
+                          <p className="text-gray-600 text-sm leading-relaxed">{item.content}</p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* FAQ Section */}
           <div className="mb-16">

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, ExternalLink, Lock } from 'lucide-react';
+import { FileText, ExternalLink, Lock, AlertCircle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Set the workerSrc property for pdf.js
@@ -48,9 +48,17 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                 <strong>Network Access Required:</strong> Connect to De La Salle Lipa Learning Resource Center's intranet to view full content.
               </p>
             </div>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 max-w-[350px] mx-auto">
+              <div className="flex items-start space-x-2">
+                <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                <p className="text-blue-800 text-sm leading-relaxed">
+                  <strong>To access or download this document, please contact the LRC directly.</strong>
+                </p>
+              </div>
+            </div>
             <Button variant="outline" className="mr-0 w-full max-w-[210px] shadow-sm">
               <ExternalLink className="w-4 h-4 mr-2" />
-              Request Access
+              Contact LRC
             </Button>
           </div>
         </CardContent>
@@ -79,13 +87,24 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
               Please contact the LRC for preview or access.
             </div>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-7 max-w-[330px]">
-              <p className="text-blue-800 text-sm leading-relaxed">
-                <strong>Security Notice:</strong> All thesis documents are secured against downloading, copying, screenshots, and printing. Access is available for reading only.
-              </p>
+              <div className="flex items-start space-x-2">
+                <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                <p className="text-blue-800 text-sm leading-relaxed">
+                  <strong>Document Access:</strong> To access or download this document, please contact the LRC directly.
+                </p>
+              </div>
+            </div>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-7 max-w-[330px]">
+              <div className="flex items-start space-x-2">
+                <Lock className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                <p className="text-red-800 text-sm leading-relaxed">
+                  <strong>Security Notice:</strong> All thesis documents are secured against downloading, copying, screenshots, and printing. Access is available for reading only.
+                </p>
+              </div>
             </div>
             <Button className="bg-dlsl-green text-white shadow" disabled>
               <ExternalLink className="w-4 h-4 mr-2 opacity-70" />
-              Open in Secure Reader
+              Contact LRC for Access
             </Button>
           </div>
         </CardContent>
@@ -100,9 +119,12 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     <Card className={className}>
       <CardContent className="p-0">
         <div className="bg-red-50 border-b border-red-200 p-3 rounded-t-2xl">
-          <p className="text-red-800 text-sm text-center">
-            <strong>Security Notice:</strong> This document is protected: downloading, copying, printing, and screenshots are not allowed.
-          </p>
+          <div className="flex items-start space-x-2 justify-center">
+            <Lock className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+            <p className="text-red-800 text-sm text-center">
+              <strong>Security Notice:</strong> This document is protected: downloading, copying, printing, and screenshots are not allowed. To access or download this document, please contact the LRC directly.
+            </p>
+          </div>
         </div>
         {/* Improved Scrollable PDF Area */}
         <div className="relative bg-gray-50 rounded-b-2xl" style={{ minHeight: 300, maxHeight: 640 }}>
@@ -122,6 +144,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                   <div className="w-full flex flex-col items-center justify-center py-14 text-red-400">
                     <FileText className="w-12 h-12 mb-4 text-red-200" />
                     <div>Failed to load PDF preview</div>
+                    <div className="text-sm text-gray-600 mt-2">To access this document, please contact the LRC directly.</div>
                   </div>
                 }
                 className="w-full flex flex-col items-center"
@@ -153,7 +176,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
               {numPages && maxPages && numPages > maxPages && (
                 <div className="mt-4 mb-2 text-sm text-gray-600 bg-yellow-50 rounded p-3 border border-yellow-100 shadow flex items-center gap-2">
                   <Lock className="w-4 h-4 text-yellow-500 mr-1" />
-                  Only the first {maxPages} pages are visible. Request full access for the entire document.
+                  Only the first {maxPages} pages are visible. To access the full document, please contact the LRC directly.
                 </div>
               )}
             </div>
@@ -165,4 +188,3 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
 };
 
 export default PDFViewer;
-
