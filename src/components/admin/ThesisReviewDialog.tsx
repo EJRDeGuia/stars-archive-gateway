@@ -41,6 +41,9 @@ const ThesisReviewDialog: React.FC<ThesisReviewDialogProps> = ({
     return statusConfig[status as keyof typeof statusConfig] || statusConfig.pending_review;
   };
 
+  // For admin users, we always allow full PDF access
+  const canViewPDF = userRole === 'admin';
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto">
@@ -157,17 +160,17 @@ const ThesisReviewDialog: React.FC<ThesisReviewDialogProps> = ({
           {/* Right Column - PDF Viewer */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Document Preview</h3>
-            {thesis.pdf_url ? (
+            {userRole === 'admin' && (
               <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
                 <p className="text-green-800 text-sm">
                   <strong>Admin Access:</strong> You have full access to view the complete document.
                 </p>
               </div>
-            ) : null}
+            )}
             <PDFViewer
-              pdfUrl={thesis.pdf_url}
+              pdfUrl={thesis.pdf_url || thesis.file_url}
               title={thesis.title}
-              canView={true}
+              canView={canViewPDF}
               className="h-[600px]"
               thesisId={thesis.id}
             />
