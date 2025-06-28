@@ -110,7 +110,7 @@ export class ThesisManagementService {
     }
   }
 
-  // Approve a single thesis
+  // Approve a single thesis - NOW ALWAYS UPDATES DATABASE
   static async approveThesis(thesisId: string, userId: string): Promise<BulkActionResult> {
     try {
       console.log('Starting thesis approval for:', thesisId, 'by user:', userId);
@@ -139,59 +139,64 @@ export class ThesisManagementService {
         };
       }
 
-      if (isDevelopment) {
-        // In development mode, simulate the database update
-        console.log('Development mode: Simulating thesis approval');
-        
-        // Simulate a delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
+      // ALWAYS update the database directly (no more development mode simulation)
+      console.log('Updating thesis status in database...');
+      
+      // First, get the current thesis details
+      const { data: currentThesis, error: fetchError } = await supabase
+        .from('theses')
+        .select('title, status')
+        .eq('id', thesisId)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching thesis:', fetchError);
         return {
-          success: true,
-          message: `Successfully approved thesis (Development Mode)`,
-          updatedCount: 1
-        };
-      } else {
-        // Production mode - use the database function
-        const { data, error } = await supabase.rpc('update_thesis_status', {
-          thesis_uuid: thesisId,
-          new_status: 'approved',
-          user_uuid: actualUserId
-        });
-
-        console.log('Database function call result:', { data, error });
-
-        if (error) {
-          console.error('Database function error:', error);
-          return {
-            success: false,
-            message: `Database error: ${error.message}`
-          };
-        }
-
-        if (!data || data.length === 0) {
-          return {
-            success: false,
-            message: 'No response from database function'
-          };
-        }
-
-        const result = data[0];
-        console.log('Database function result:', result);
-
-        if (!result.success) {
-          return {
-            success: false,
-            message: result.message || 'Failed to approve thesis'
-          };
-        }
-
-        return {
-          success: true,
-          message: result.message || `Successfully approved "${result.thesis_title}"`,
-          updatedCount: 1
+          success: false,
+          message: `Error fetching thesis: ${fetchError.message}`
         };
       }
+
+      if (!currentThesis) {
+        return {
+          success: false,
+          message: 'Thesis not found'
+        };
+      }
+
+      // Update the thesis status directly
+      const { data, error } = await supabase
+        .from('theses')
+        .update({ 
+          status: 'approved',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', thesisId)
+        .select();
+
+      console.log('Direct database update result:', { data, error });
+
+      if (error) {
+        console.error('Database update error:', error);
+        return {
+          success: false,
+          message: `Database error: ${error.message}`
+        };
+      }
+
+      if (!data || data.length === 0) {
+        return {
+          success: false,
+          message: 'No rows were updated'
+        };
+      }
+
+      return {
+        success: true,
+        message: `Successfully approved thesis "${currentThesis.title}"`,
+        updatedCount: 1
+      };
+
     } catch (error: any) {
       console.error('Approval error:', error);
       return {
@@ -201,7 +206,7 @@ export class ThesisManagementService {
     }
   }
 
-  // Reject a single thesis
+  // Reject a single thesis - NOW ALWAYS UPDATES DATABASE
   static async rejectThesis(thesisId: string, userId: string): Promise<BulkActionResult> {
     try {
       console.log('Starting thesis rejection for:', thesisId, 'by user:', userId);
@@ -230,59 +235,64 @@ export class ThesisManagementService {
         };
       }
 
-      if (isDevelopment) {
-        // In development mode, simulate the database update
-        console.log('Development mode: Simulating thesis rejection');
-        
-        // Simulate a delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
+      // ALWAYS update the database directly (no more development mode simulation)
+      console.log('Updating thesis status in database...');
+      
+      // First, get the current thesis details
+      const { data: currentThesis, error: fetchError } = await supabase
+        .from('theses')
+        .select('title, status')
+        .eq('id', thesisId)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching thesis:', fetchError);
         return {
-          success: true,
-          message: `Successfully rejected thesis (Development Mode)`,
-          updatedCount: 1
-        };
-      } else {
-        // Production mode - use the database function
-        const { data, error } = await supabase.rpc('update_thesis_status', {
-          thesis_uuid: thesisId,
-          new_status: 'needs_revision',
-          user_uuid: actualUserId
-        });
-
-        console.log('Database function call result:', { data, error });
-
-        if (error) {
-          console.error('Database function error:', error);
-          return {
-            success: false,
-            message: `Database error: ${error.message}`
-          };
-        }
-
-        if (!data || data.length === 0) {
-          return {
-            success: false,
-            message: 'No response from database function'
-          };
-        }
-
-        const result = data[0];
-        console.log('Database function result:', result);
-
-        if (!result.success) {
-          return {
-            success: false,
-            message: result.message || 'Failed to reject thesis'
-          };
-        }
-
-        return {
-          success: true,
-          message: result.message || `Successfully rejected "${result.thesis_title}"`,
-          updatedCount: 1
+          success: false,
+          message: `Error fetching thesis: ${fetchError.message}`
         };
       }
+
+      if (!currentThesis) {
+        return {
+          success: false,
+          message: 'Thesis not found'
+        };
+      }
+
+      // Update the thesis status directly
+      const { data, error } = await supabase
+        .from('theses')
+        .update({ 
+          status: 'needs_revision',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', thesisId)
+        .select();
+
+      console.log('Direct database update result:', { data, error });
+
+      if (error) {
+        console.error('Database update error:', error);
+        return {
+          success: false,
+          message: `Database error: ${error.message}`
+        };
+      }
+
+      if (!data || data.length === 0) {
+        return {
+          success: false,
+          message: 'No rows were updated'
+        };
+      }
+
+      return {
+        success: true,
+        message: `Successfully rejected thesis "${currentThesis.title}"`,
+        updatedCount: 1
+      };
+
     } catch (error: any) {
       console.error('Rejection error:', error);
       return {
