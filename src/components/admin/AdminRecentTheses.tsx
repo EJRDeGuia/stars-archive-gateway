@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ThesisManagementService } from "@/services/thesisManagement";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface AdminRecentThesesProps {
   theses: any[];
@@ -19,18 +20,29 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
   thesesLoading,
   colleges
 }) => {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const handleQuickAction = async (thesisId: string, action: 'approve' | 'reject') => {
+    if (!user) {
+      toast.error('User not authenticated');
+      return;
+    }
+
+    if (user.role !== 'admin') {
+      toast.error('Only administrators can approve or reject theses');
+      return;
+    }
+
     setActionLoading(thesisId);
     
     try {
       let result;
       if (action === 'approve') {
-        result = await ThesisManagementService.bulkApprove([thesisId]);
+        result = await ThesisManagementService.bulkApprove([thesisId], user.id);
       } else {
-        result = await ThesisManagementService.bulkReject([thesisId]);
+        result = await ThesisManagementService.bulkReject([thesisId], user.id);
       }
 
       if (result.success) {
@@ -58,6 +70,9 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
     return statusConfig[status as keyof typeof statusConfig] || statusConfig.pending_review;
   };
 
+  // Filter to show only pending theses for approval
+  const pendingTheses = theses.filter(thesis => thesis.status === 'pending_review');
+
   return (
     <Card className="bg-white border-gray-200">
       <CardHeader>
@@ -65,17 +80,17 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
           <div className="w-8 h-8 bg-dlsl-green rounded-lg flex items-center justify-center">
             <FileText className="w-5 h-5 text-white" />
           </div>
-          Recent Thesis Submissions
+          Theses Pending Approval ({pendingTheses.length})
         </CardTitle>
       </CardHeader>
       <CardContent>
         {thesesLoading ? (
-          <div className="text-gray-400 text-center py-8">Loading recent theses...</div>
-        ) : theses.length === 0 ? (
-          <div className="text-gray-400 text-center py-8">No thesis submissions yet.</div>
+          <div className="text-gray-400 text-center py-8">Loading pending theses...</div>
+        ) : pendingTheses.length === 0 ? (
+          <div className="text-gray-400 text-center py-8">No theses pending approval.</div>
         ) : (
           <div className="space-y-4">
-            {theses.map((thesis) => (
+            {pendingTheses.map((thesis) => (
               <div key={thesis.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900 mb-1">{thesis.title}</h3>
@@ -93,7 +108,7 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2">
-                  {thesis.status === 'pending_review' && (
+                  {user?.role === 'admin' && (
                     <>
                       <Button
                         size="sm"
@@ -123,7 +138,7 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
                     className="border-gray-300"
                     onClick={() => window.open(`/thesis/${thesis.id}`, '_blank')}
                   >
-                    <Eye className="w-4 h-4 mr-1 text-dlsl-green" />
+                    <Eye className="w-4 w-4 mr-1 text-dlsl-green" />
                     Review
                   </Button>
                 </div>

@@ -18,6 +18,7 @@ import { ThesisManagementService } from '@/services/thesisManagement';
 import CollectionSelectionDialog from '@/components/CollectionSelectionDialog';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Upload {
   id: string;
@@ -35,12 +36,14 @@ interface RecentUploadsProps {
 const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads }) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [selected, setSelected] = useState<string[]>([]);
   const [showCollectionDialog, setShowCollectionDialog] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const allIds = uploads.map((t) => t.id);
   const isAllSelected = selected.length === uploads.length && uploads.length > 0;
+  const isAdmin = user?.role === 'admin';
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -64,6 +67,10 @@ const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads }) => {
 
   const handleBulkAction = async (action: string) => {
     if (selected.length === 0) return;
+    if (!user) {
+      toast.error('User not authenticated');
+      return;
+    }
 
     setLoading(true);
     let result;
@@ -71,17 +78,32 @@ const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads }) => {
     try {
       switch (action) {
         case 'approve':
-          result = await ThesisManagementService.bulkApprove(selected);
+          if (!isAdmin) {
+            toast.error('Only administrators can approve theses');
+            setLoading(false);
+            return;
+          }
+          result = await ThesisManagementService.bulkApprove(selected, user.id);
           break;
         case 'reject':
-          result = await ThesisManagementService.bulkReject(selected);
+          if (!isAdmin) {
+            toast.error('Only administrators can reject theses');
+            setLoading(false);
+            return;
+          }
+          result = await ThesisManagementService.bulkReject(selected, user.id);
           break;
         case 'move':
           setShowCollectionDialog(true);
           setLoading(false);
           return;
         case 'delete':
-          result = await ThesisManagementService.bulkDelete(selected);
+          if (!isAdmin) {
+            toast.error('Only administrators can delete theses');
+            setLoading(false);
+            return;
+          }
+          result = await ThesisManagementService.bulkDelete(selected, user.id);
           break;
         default:
           toast.error('Unknown action');
@@ -149,18 +171,24 @@ const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads }) => {
             <DropdownMenuContent align="start" className="z-50">
               <DropdownMenuLabel>Choose action</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => handleBulkAction('approve')}>
-                <Archive className="h-4 w-4 mr-2 text-green-600" /> Approve
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleBulkAction('reject')}>
-                <Archive className="h-4 w-4 mr-2 text-yellow-700" /> Reject
-              </DropdownMenuItem>
+              {isAdmin && (
+                <>
+                  <DropdownMenuItem onClick={() => handleBulkAction('approve')}>
+                    <Archive className="h-4 w-4 mr-2 text-green-600" /> Approve
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleBulkAction('reject')}>
+                    <Archive className="h-4 w-4 mr-2 text-yellow-700" /> Reject
+                  </DropdownMenuItem>
+                </>
+              )}
               <DropdownMenuItem onClick={() => handleBulkAction('move')}>
                 <Archive className="h-4 w-4 mr-2 text-blue-700" /> Move to Collection
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleBulkAction('delete')}>
-                <Trash2 className="h-4 w-4 mr-2 text-red-600" /> Delete
-              </DropdownMenuItem>
+              {isAdmin && (
+                <DropdownMenuItem onClick={() => handleBulkAction('delete')}>
+                  <Trash2 className="h-4 w-4 mr-2 text-red-600" /> Delete
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
           <Button

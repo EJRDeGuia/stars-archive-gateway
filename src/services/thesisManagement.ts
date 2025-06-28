@@ -8,9 +8,35 @@ export interface BulkActionResult {
 }
 
 export class ThesisManagementService {
-  // Bulk approve theses
-  static async bulkApprove(thesisIds: string[]): Promise<BulkActionResult> {
+  // Check if user has admin privileges
+  static async checkAdminAccess(userId: string): Promise<boolean> {
     try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+      return data?.role === 'admin';
+    } catch (error) {
+      console.error('Error checking admin access:', error);
+      return false;
+    }
+  }
+
+  // Bulk approve theses (admin only)
+  static async bulkApprove(thesisIds: string[], userId: string): Promise<BulkActionResult> {
+    try {
+      // Check admin access first
+      const isAdmin = await this.checkAdminAccess(userId);
+      if (!isAdmin) {
+        return {
+          success: false,
+          message: 'Only administrators can approve theses'
+        };
+      }
+
       const { data, error } = await supabase
         .from('theses')
         .update({ 
@@ -18,6 +44,7 @@ export class ThesisManagementService {
           updated_at: new Date().toISOString()
         })
         .in('id', thesisIds)
+        .eq('status', 'pending_review') // Only approve pending theses
         .select();
 
       if (error) throw error;
@@ -35,9 +62,18 @@ export class ThesisManagementService {
     }
   }
 
-  // Bulk reject theses
-  static async bulkReject(thesisIds: string[]): Promise<BulkActionResult> {
+  // Bulk reject theses (admin only)
+  static async bulkReject(thesisIds: string[], userId: string): Promise<BulkActionResult> {
     try {
+      // Check admin access first
+      const isAdmin = await this.checkAdminAccess(userId);
+      if (!isAdmin) {
+        return {
+          success: false,
+          message: 'Only administrators can reject theses'
+        };
+      }
+
       const { data, error } = await supabase
         .from('theses')
         .update({ 
@@ -45,6 +81,7 @@ export class ThesisManagementService {
           updated_at: new Date().toISOString()
         })
         .in('id', thesisIds)
+        .eq('status', 'pending_review') // Only reject pending theses
         .select();
 
       if (error) throw error;
@@ -62,7 +99,7 @@ export class ThesisManagementService {
     }
   }
 
-  // Move theses to collection
+  // Move theses to collection (admin and archivist)
   static async moveToCollection(thesisIds: string[], collectionId: string): Promise<BulkActionResult> {
     try {
       // First, remove existing entries for these theses in the target collection
@@ -98,9 +135,18 @@ export class ThesisManagementService {
     }
   }
 
-  // Delete theses
-  static async bulkDelete(thesisIds: string[]): Promise<BulkActionResult> {
+  // Delete theses (admin only)
+  static async bulkDelete(thesisIds: string[], userId: string): Promise<BulkActionResult> {
     try {
+      // Check admin access first
+      const isAdmin = await this.checkAdminAccess(userId);
+      if (!isAdmin) {
+        return {
+          success: false,
+          message: 'Only administrators can delete theses'
+        };
+      }
+
       const { error } = await supabase
         .from('theses')
         .delete()
@@ -137,7 +183,36 @@ export class ThesisManagementService {
     }
   }
 
-  // Get all theses for management (including non-approved ones for admins/archivists)
+  // Get pending theses for approval (admin only)
+  static async getPendingTheses(userId: string) {
+    try {
+      // Check admin access first
+      const isAdmin = await this.checkAdminAccess(userId);
+      if (!isAdmin) {
+        return { success: false, data: [], message: 'Access denied' };
+      }
+
+      const { data, error } = await supabase
+        .from('theses')
+        .select(`
+          *,
+          colleges (
+            id,
+            name,
+            description
+          )
+        `)
+        .eq('status', 'pending_review')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return { success: true, data: data || [] };
+    } catch (error: any) {
+      return { success: false, data: [], message: error.message };
+    }
+  }
+
+  // Get all theses for management (admin and archivist can view, but only admin can approve/reject)
   static async getAllTheses() {
     try {
       const { data, error } = await supabase

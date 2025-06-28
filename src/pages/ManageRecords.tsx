@@ -36,9 +36,19 @@ const ManageRecords = () => {
   });
 
   const handleDelete = async (thesisId: string) => {
+    if (!user) {
+      toast.error('User not authenticated');
+      return;
+    }
+
+    if (user.role !== 'admin') {
+      toast.error('Only administrators can delete theses');
+      return;
+    }
+
     if (window.confirm('Are you sure you want to delete this thesis?')) {
       setActionLoading(thesisId);
-      const result = await ThesisManagementService.bulkDelete([thesisId]);
+      const result = await ThesisManagementService.bulkDelete([thesisId], user.id);
       if (result.success) {
         toast.success('Thesis deleted successfully');
         queryClient.invalidateQueries({ queryKey: ['theses'] });
@@ -50,12 +60,22 @@ const ManageRecords = () => {
   };
 
   const handleStatusChange = async (thesisId: string, newStatus: string) => {
+    if (!user) {
+      toast.error('User not authenticated');
+      return;
+    }
+
+    if (user.role !== 'admin') {
+      toast.error('Only administrators can approve or reject theses');
+      return;
+    }
+
     setActionLoading(thesisId);
     let result;
     if (newStatus === 'approved') {
-      result = await ThesisManagementService.bulkApprove([thesisId]);
+      result = await ThesisManagementService.bulkApprove([thesisId], user.id);
     } else if (newStatus === 'needs_revision') {
-      result = await ThesisManagementService.bulkReject([thesisId]);
+      result = await ThesisManagementService.bulkReject([thesisId], user.id);
     }
 
     if (result?.success) {
@@ -98,6 +118,8 @@ const ManageRecords = () => {
     );
   }
 
+  const isAdmin = user.role === 'admin';
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -113,7 +135,9 @@ const ManageRecords = () => {
               <ArrowLeft className="mr-2 h-4 w-4" /> Back
             </Button>
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Manage Records</h1>
-            <p className="text-xl text-gray-600">Review, edit, and organize thesis submissions</p>
+            <p className="text-xl text-gray-600">
+              {isAdmin ? 'Review, approve, and organize thesis submissions' : 'View and organize thesis submissions'}
+            </p>
           </div>
 
           {/* Filters */}
@@ -152,6 +176,11 @@ const ManageRecords = () => {
             <CardHeader>
               <CardTitle>
                 Thesis Records ({filteredTheses.length})
+                {!isAdmin && (
+                  <div className="text-sm font-normal text-gray-600 mt-1">
+                    Note: Only administrators can approve/reject theses
+                  </div>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -185,7 +214,7 @@ const ManageRecords = () => {
                           {getStatusBadge(thesis.status).label}
                         </Badge>
                         
-                        {thesis.status === 'pending_review' && (
+                        {isAdmin && thesis.status === 'pending_review' && (
                           <div className="flex gap-1">
                             <Button
                               size="sm"
@@ -223,15 +252,17 @@ const ManageRecords = () => {
                           >
                             <Edit3 className="h-4 w-4" />
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="text-red-600 hover:text-red-700"
-                            onClick={() => handleDelete(thesis.id)}
-                            disabled={actionLoading === thesis.id}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {isAdmin && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-red-600 hover:text-red-700"
+                              onClick={() => handleDelete(thesis.id)}
+                              disabled={actionLoading === thesis.id}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </div>
