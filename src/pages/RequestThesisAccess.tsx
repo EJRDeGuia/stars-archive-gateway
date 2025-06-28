@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -60,7 +59,7 @@ const RequestThesisAccess = () => {
   const { recentTheses, isLoading: recentLoading } = useRecentTheses();
   
   const [formData, setFormData] = useState<RequestFormData>({
-    requesterName: user?.user_metadata?.name || user?.email?.split('@')[0] || '',
+    requesterName: user?.name || user?.email?.split('@')[0] || '',
     requesterEmail: user?.email || '',
     institution: '',
     purpose: ''
