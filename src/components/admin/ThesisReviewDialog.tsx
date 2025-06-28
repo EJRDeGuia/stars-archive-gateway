@@ -157,6 +157,13 @@ const ThesisReviewDialog: React.FC<ThesisReviewDialogProps> = ({
           {/* Right Column - PDF Viewer */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Document Preview</h3>
+            {thesis.pdf_url ? (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                <p className="text-green-800 text-sm">
+                  <strong>Admin Access:</strong> You have full access to view the complete document.
+                </p>
+              </div>
+            ) : null}
             <PDFViewer
               pdfUrl={thesis.pdf_url}
               title={thesis.title}
