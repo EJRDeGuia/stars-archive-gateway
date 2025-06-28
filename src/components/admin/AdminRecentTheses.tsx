@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { FileText, Eye, Check, X } from "lucide-react";
@@ -44,10 +43,14 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
       if (result.success) {
         toast.success(result.message);
         
-        // Refresh all data
-        await queryClient.invalidateQueries({ queryKey: ['theses'] });
-        await queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
-        await queryClient.refetchQueries({ queryKey: ['theses'] });
+        // Invalidate and refetch all related queries
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['theses'] }),
+          queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] }),
+          queryClient.invalidateQueries({ queryKey: ['system-stats'] }),
+          queryClient.refetchQueries({ queryKey: ['theses'] }),
+          queryClient.refetchQueries({ queryKey: ['admin-dashboard'] })
+        ]);
         
         // Close review dialog if open
         if (reviewDialogOpen && selectedThesis?.id === thesisId) {
@@ -55,12 +58,12 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
           setSelectedThesis(null);
         }
       } else {
-        toast.error(result.message);
+        toast.error(result.message || 'Failed to approve thesis');
         console.error('Approval failed:', result.message);
       }
     } catch (error) {
       console.error('Error in handleApprove:', error);
-      toast.error('An error occurred while approving the thesis');
+      toast.error('An unexpected error occurred while approving the thesis');
     } finally {
       setActionLoading(null);
     }
@@ -83,10 +86,14 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
       if (result.success) {
         toast.success(result.message);
         
-        // Refresh all data
-        await queryClient.invalidateQueries({ queryKey: ['theses'] });
-        await queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
-        await queryClient.refetchQueries({ queryKey: ['theses'] });
+        // Invalidate and refetch all related queries
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['theses'] }),
+          queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] }),
+          queryClient.invalidateQueries({ queryKey: ['system-stats'] }),
+          queryClient.refetchQueries({ queryKey: ['theses'] }),
+          queryClient.refetchQueries({ queryKey: ['admin-dashboard'] })
+        ]);
         
         // Close review dialog if open
         if (reviewDialogOpen && selectedThesis?.id === thesisId) {
@@ -94,12 +101,12 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
           setSelectedThesis(null);
         }
       } else {
-        toast.error(result.message);
+        toast.error(result.message || 'Failed to reject thesis');
         console.error('Rejection failed:', result.message);
       }
     } catch (error) {
       console.error('Error in handleReject:', error);
-      toast.error('An error occurred while rejecting the thesis');
+      toast.error('An unexpected error occurred while rejecting the thesis');
     } finally {
       setActionLoading(null);
     }

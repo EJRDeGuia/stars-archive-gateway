@@ -38,59 +38,46 @@ export class ThesisManagementService {
     }
   }
 
-  // Approve a single thesis
+  // Approve a single thesis using the database function
   static async approveThesis(thesisId: string, userId: string): Promise<BulkActionResult> {
     try {
       console.log('Starting thesis approval for:', thesisId, 'by user:', userId);
 
-      // Check admin access
-      const isAdmin = await this.checkAdminAccess(userId);
-      if (!isAdmin) {
-        console.log('User is not admin:', userId);
+      // Use the database function for safe status update
+      const { data, error } = await supabase.rpc('update_thesis_status', {
+        thesis_uuid: thesisId,
+        new_status: 'approved',
+        user_uuid: userId
+      });
+
+      if (error) {
+        console.error('Database function error:', error);
         return {
           success: false,
-          message: 'Only administrators can approve theses'
+          message: `Database error: ${error.message}`
         };
       }
 
-      // Check if thesis exists
-      const { data: thesis, error: fetchError } = await supabase
-        .from('theses')
-        .select('id, title, status')
-        .eq('id', thesisId)
-        .single();
-
-      if (fetchError || !thesis) {
-        console.error('Thesis not found:', fetchError);
+      if (!data || data.length === 0) {
         return {
           success: false,
-          message: 'Thesis not found'
+          message: 'No response from database function'
         };
       }
 
-      console.log('Found thesis:', thesis);
+      const result = data[0];
+      console.log('Database function result:', result);
 
-      // Update thesis status
-      const { data: updatedThesis, error: updateError } = await supabase
-        .from('theses')
-        .update({ status: 'approved' })
-        .eq('id', thesisId)
-        .select('id, title, status')
-        .single();
-
-      if (updateError) {
-        console.error('Update error:', updateError);
+      if (!result.success) {
         return {
           success: false,
-          message: `Failed to approve thesis: ${updateError.message}`
+          message: result.message || 'Failed to approve thesis'
         };
       }
-
-      console.log('Successfully updated thesis:', updatedThesis);
 
       return {
         success: true,
-        message: `Successfully approved "${thesis.title}"`,
+        message: result.message || `Successfully approved "${result.thesis_title}"`,
         updatedCount: 1
       };
     } catch (error: any) {
@@ -102,59 +89,46 @@ export class ThesisManagementService {
     }
   }
 
-  // Reject a single thesis
+  // Reject a single thesis using the database function
   static async rejectThesis(thesisId: string, userId: string): Promise<BulkActionResult> {
     try {
       console.log('Starting thesis rejection for:', thesisId, 'by user:', userId);
 
-      // Check admin access
-      const isAdmin = await this.checkAdminAccess(userId);
-      if (!isAdmin) {
-        console.log('User is not admin:', userId);
+      // Use the database function for safe status update
+      const { data, error } = await supabase.rpc('update_thesis_status', {
+        thesis_uuid: thesisId,
+        new_status: 'needs_revision',
+        user_uuid: userId
+      });
+
+      if (error) {
+        console.error('Database function error:', error);
         return {
           success: false,
-          message: 'Only administrators can reject theses'
+          message: `Database error: ${error.message}`
         };
       }
 
-      // Check if thesis exists
-      const { data: thesis, error: fetchError } = await supabase
-        .from('theses')
-        .select('id, title, status')
-        .eq('id', thesisId)
-        .single();
-
-      if (fetchError || !thesis) {
-        console.error('Thesis not found:', fetchError);
+      if (!data || data.length === 0) {
         return {
           success: false,
-          message: 'Thesis not found'
+          message: 'No response from database function'
         };
       }
 
-      console.log('Found thesis:', thesis);
+      const result = data[0];
+      console.log('Database function result:', result);
 
-      // Update thesis status
-      const { data: updatedThesis, error: updateError } = await supabase
-        .from('theses')
-        .update({ status: 'needs_revision' })
-        .eq('id', thesisId)
-        .select('id, title, status')
-        .single();
-
-      if (updateError) {
-        console.error('Update error:', updateError);
+      if (!result.success) {
         return {
           success: false,
-          message: `Failed to reject thesis: ${updateError.message}`
+          message: result.message || 'Failed to reject thesis'
         };
       }
-
-      console.log('Successfully updated thesis:', updatedThesis);
 
       return {
         success: true,
-        message: `Successfully rejected "${thesis.title}"`,
+        message: result.message || `Successfully rejected "${result.thesis_title}"`,
         updatedCount: 1
       };
     } catch (error: any) {

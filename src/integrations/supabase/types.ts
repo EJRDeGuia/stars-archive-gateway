@@ -641,6 +641,21 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      update_thesis_status: {
+        Args: {
+          thesis_uuid: string
+          new_status: Database["public"]["Enums"]["thesis_status"]
+          user_uuid: string
+        }
+        Returns: {
+          success: boolean
+          message: string
+          thesis_id: string
+          thesis_title: string
+          old_status: Database["public"]["Enums"]["thesis_status"]
+          updated_status: Database["public"]["Enums"]["thesis_status"]
+        }[]
+      }
       vector_avg: {
         Args: { "": number[] }
         Returns: string
