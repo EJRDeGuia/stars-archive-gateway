@@ -2,8 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import FavoriteButton from '@/components/FavoriteButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,6 +38,7 @@ import {
   FileText
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useUserFavorites } from '@/hooks/useApi';
 import type { Thesis } from '@/types/thesis';
 
 interface Collection {
@@ -51,6 +54,7 @@ interface Collection {
 
 const CollectionView = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [collection, setCollection] = useState<Collection | null>(null);
   const [theses, setTheses] = useState<Thesis[]>([]);
@@ -59,6 +63,9 @@ const CollectionView = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'title' | 'author' | 'publish_date'>('title');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  // Fetch user favorites
+  const { data: userFavorites = [] } = useUserFavorites(user?.id);
 
   useEffect(() => {
     if (id) {
@@ -184,6 +191,10 @@ const CollectionView = () => {
 
   const handleThesisClick = (thesisId: string) => {
     navigate(`/thesis/${thesisId}`);
+  };
+
+  const getFavoriteId = (thesisId: string) => {
+    return userFavorites?.find(fav => fav.thesis_id === thesisId)?.id;
   };
 
   if (!collection) {
@@ -326,6 +337,7 @@ const CollectionView = () => {
                         <TableHead>Status</TableHead>
                         <TableHead>Views</TableHead>
                         <TableHead>Downloads</TableHead>
+                        {user && <TableHead>Save</TableHead>}
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -333,11 +345,13 @@ const CollectionView = () => {
                         <TableRow 
                           key={thesis.id} 
                           className="cursor-pointer hover:bg-gray-50"
-                          onClick={() => handleThesisClick(thesis.id)}
                         >
-                          <TableCell className="font-medium max-w-xs">
+                          <TableCell 
+                            className="font-medium max-w-xs"
+                            onClick={() => handleThesisClick(thesis.id)}
+                          >
                             <div className="space-y-1">
-                              <div className="font-semibold text-dlsl-green hover:underline line-clamp-2">
+                              <div className="font-semibold text-dlsl-green hover:underline line-clamp-1">
                                 {thesis.title}
                               </div>
                               {thesis.abstract && (
@@ -347,7 +361,7 @@ const CollectionView = () => {
                               )}
                             </div>
                           </TableCell>
-                          <TableCell>
+                          <TableCell onClick={() => handleThesisClick(thesis.id)}>
                             <div className="space-y-1">
                               <div className="font-medium">{thesis.author}</div>
                               {thesis.adviser && (
@@ -357,16 +371,16 @@ const CollectionView = () => {
                               )}
                             </div>
                           </TableCell>
-                          <TableCell>
+                          <TableCell onClick={() => handleThesisClick(thesis.id)}>
                             <div className="flex items-center gap-1">
                               <Building className="w-3 h-3 text-gray-400" />
                               <span className="text-sm">{thesis.colleges?.name || 'Unknown'}</span>
                             </div>
                           </TableCell>
-                          <TableCell>
+                          <TableCell onClick={() => handleThesisClick(thesis.id)}>
                             {thesis.publish_date ? new Date(thesis.publish_date).getFullYear() : 'N/A'}
                           </TableCell>
-                          <TableCell>
+                          <TableCell onClick={() => handleThesisClick(thesis.id)}>
                             <Badge 
                               variant={thesis.status === 'approved' ? 'default' : 'secondary'}
                               className={thesis.status === 'approved' ? 'bg-green-100 text-green-800' : ''}
@@ -374,18 +388,27 @@ const CollectionView = () => {
                               {thesis.status}
                             </Badge>
                           </TableCell>
-                          <TableCell>
+                          <TableCell onClick={() => handleThesisClick(thesis.id)}>
                             <div className="flex items-center gap-1 text-sm text-gray-600">
                               <Eye className="w-3 h-3" />
                               {thesis.view_count || 0}
                             </div>
                           </TableCell>
-                          <TableCell>
+                          <TableCell onClick={() => handleThesisClick(thesis.id)}>
                             <div className="flex items-center gap-1 text-sm text-gray-600">
                               <Download className="w-3 h-3" />
                               {thesis.download_count || 0}
                             </div>
                           </TableCell>
+                          {user && (
+                            <TableCell>
+                              <FavoriteButton
+                                userId={user.id}
+                                thesisId={thesis.id}
+                                favoriteId={getFavoriteId(thesis.id)}
+                              />
+                            </TableCell>
+                          )}
                         </TableRow>
                       ))}
                     </TableBody>
