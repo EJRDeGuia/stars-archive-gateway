@@ -102,7 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .from('user_roles')
         .select('role')
         .eq('user_id', authUser.id)
-        .single();
+        .maybeSingle();
 
       console.log('Existing role check:', { existingRole, roleCheckError });
 
@@ -121,7 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             role: 'researcher'
           })
           .select('role')
-          .single();
+          .maybeSingle();
 
         if (insertError) {
           console.error('Error creating user role:', insertError);
