@@ -13,7 +13,10 @@ export class ThesisManagementService {
     try {
       const { data, error } = await supabase
         .from('theses')
-        .update({ status: 'approved' })
+        .update({ 
+          status: 'approved',
+          updated_at: new Date().toISOString()
+        })
         .in('id', thesisIds)
         .select();
 
@@ -37,7 +40,10 @@ export class ThesisManagementService {
     try {
       const { data, error } = await supabase
         .from('theses')
-        .update({ status: 'needs_revision' })
+        .update({ 
+          status: 'needs_revision',
+          updated_at: new Date().toISOString()
+        })
         .in('id', thesisIds)
         .select();
 
@@ -123,6 +129,28 @@ export class ThesisManagementService {
         .select('*')
         .eq('is_public', true)
         .order('name');
+
+      if (error) throw error;
+      return { success: true, data: data || [] };
+    } catch (error: any) {
+      return { success: false, data: [], message: error.message };
+    }
+  }
+
+  // Get all theses for management (including non-approved ones for admins/archivists)
+  static async getAllTheses() {
+    try {
+      const { data, error } = await supabase
+        .from('theses')
+        .select(`
+          *,
+          colleges (
+            id,
+            name,
+            description
+          )
+        `)
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       return { success: true, data: data || [] };

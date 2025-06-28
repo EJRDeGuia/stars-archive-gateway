@@ -37,12 +37,13 @@ export function useApiMutation<T, V>(
 }
 
 // Specific hooks for common operations
-export function useTheses(params?: { page?: number; limit?: number; search?: string }) {
+export function useTheses(params?: { page?: number; limit?: number; search?: string; includeAll?: boolean }) {
   return useQuery({
     queryKey: ['theses', JSON.stringify(params)],
     queryFn: async () => {
       console.log('[useTheses] Fetching theses with params:', params);
-      const { data, error } = await supabase
+      
+      let query = supabase
         .from('theses')
         .select(`
           *,
@@ -51,8 +52,14 @@ export function useTheses(params?: { page?: number; limit?: number; search?: str
             name,
             description
           )
-        `)
-        .order('created_at', { ascending: false });
+        `);
+
+      // Only show approved theses unless specifically requesting all
+      if (!params?.includeAll) {
+        query = query.eq('status', 'approved');
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
       
       if (error) {
         console.error('[useTheses] Error fetching theses:', error);

@@ -20,8 +20,10 @@ const ManageRecords = () => {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const { data: theses = [], isLoading } = useTheses();
+  // Fetch all theses (including non-approved ones) for management
+  const { data: theses = [], isLoading } = useTheses({ includeAll: true });
 
   const filteredTheses = theses.filter((thesis: any) => {
     const matchesSearch = 
@@ -35,6 +37,7 @@ const ManageRecords = () => {
 
   const handleDelete = async (thesisId: string) => {
     if (window.confirm('Are you sure you want to delete this thesis?')) {
+      setActionLoading(thesisId);
       const result = await ThesisManagementService.bulkDelete([thesisId]);
       if (result.success) {
         toast.success('Thesis deleted successfully');
@@ -42,10 +45,12 @@ const ManageRecords = () => {
       } else {
         toast.error(result.message);
       }
+      setActionLoading(null);
     }
   };
 
   const handleStatusChange = async (thesisId: string, newStatus: string) => {
+    setActionLoading(thesisId);
     let result;
     if (newStatus === 'approved') {
       result = await ThesisManagementService.bulkApprove([thesisId]);
@@ -54,11 +59,13 @@ const ManageRecords = () => {
     }
 
     if (result?.success) {
-      toast.success(`Thesis ${newStatus} successfully`);
+      toast.success(`Thesis ${newStatus === 'approved' ? 'approved' : 'rejected'} successfully`);
       queryClient.invalidateQueries({ queryKey: ['theses'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
     } else {
       toast.error(result?.message || 'Failed to update thesis status');
     }
+    setActionLoading(null);
   };
 
   const getStatusBadge = (status: string) => {
@@ -185,16 +192,18 @@ const ManageRecords = () => {
                               variant="outline"
                               className="text-green-600 border-green-200 hover:bg-green-50"
                               onClick={() => handleStatusChange(thesis.id, 'approved')}
+                              disabled={actionLoading === thesis.id}
                             >
-                              Approve
+                              {actionLoading === thesis.id ? 'Processing...' : 'Approve'}
                             </Button>
                             <Button
                               size="sm"
                               variant="outline"
                               className="text-red-600 border-red-200 hover:bg-red-50"
                               onClick={() => handleStatusChange(thesis.id, 'needs_revision')}
+                              disabled={actionLoading === thesis.id}
                             >
-                              Reject
+                              {actionLoading === thesis.id ? 'Processing...' : 'Reject'}
                             </Button>
                           </div>
                         )}
@@ -219,6 +228,7 @@ const ManageRecords = () => {
                             variant="ghost"
                             className="text-red-600 hover:text-red-700"
                             onClick={() => handleDelete(thesis.id)}
+                            disabled={actionLoading === thesis.id}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

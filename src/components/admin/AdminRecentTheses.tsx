@@ -35,6 +35,7 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
 
       if (result.success) {
         toast.success(result.message);
+        // Invalidate all relevant queries to refresh data
         queryClient.invalidateQueries({ queryKey: ['theses'] });
         queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
       } else {
@@ -42,6 +43,7 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
       }
     } catch (error) {
       toast.error('An error occurred while updating the thesis');
+      console.error('Error in handleQuickAction:', error);
     } finally {
       setActionLoading(null);
     }
@@ -101,7 +103,7 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
                         disabled={actionLoading === thesis.id}
                       >
                         <Check className="w-4 h-4 mr-1" />
-                        Approve
+                        {actionLoading === thesis.id ? 'Processing...' : 'Approve'}
                       </Button>
                       <Button
                         size="sm"
@@ -111,11 +113,16 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
                         disabled={actionLoading === thesis.id}
                       >
                         <X className="w-4 h-4 mr-1" />
-                        Reject
+                        {actionLoading === thesis.id ? 'Processing...' : 'Reject'}
                       </Button>
                     </>
                   )}
-                  <Button size="sm" variant="outline" className="border-gray-300">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="border-gray-300"
+                    onClick={() => window.open(`/thesis/${thesis.id}`, '_blank')}
+                  >
                     <Eye className="w-4 h-4 mr-1 text-dlsl-green" />
                     Review
                   </Button>
