@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,6 +25,16 @@ interface SelectedThesis {
   publish_date?: string;
 }
 
+interface SearchThesis {
+  id: string;
+  title: string;
+  author: string;
+  publish_date: string | null;
+  colleges: {
+    name: string;
+  } | null;
+}
+
 interface RequestFormData {
   requesterName: string;
   requesterEmail: string;
@@ -41,7 +50,7 @@ const RequestThesisAccess = () => {
   const [selectedTheses, setSelectedTheses] = useState<SelectedThesis[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<Thesis[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchThesis[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   
   const { data: initialThesis, isLoading } = useThesis(id || '') as { data: Thesis | undefined, isLoading: boolean };
@@ -90,7 +99,7 @@ const RequestThesisAccess = () => {
         .limit(10);
 
       if (error) throw error;
-      setSearchResults(data || []);
+      setSearchResults(data as SearchThesis[] || []);
     } catch (error: any) {
       toast.error('Failed to search theses');
     } finally {
@@ -98,7 +107,7 @@ const RequestThesisAccess = () => {
     }
   };
 
-  const addThesis = (thesis: Thesis) => {
+  const addThesis = (thesis: SearchThesis) => {
     const isAlreadySelected = selectedTheses.some(t => t.id === thesis.id);
     if (isAlreadySelected) {
       toast.info('This thesis is already selected');
