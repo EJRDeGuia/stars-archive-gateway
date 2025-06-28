@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export interface BulkActionResult {
@@ -6,71 +7,82 @@ export interface BulkActionResult {
   updatedCount?: number;
 }
 
+// Development mode flag - should match the one in AuthContext
+const isDevelopment = true;
+
 export class ThesisManagementService {
   // Check if user has admin privileges with enhanced logging
   static async checkAdminAccess(userId: string): Promise<boolean> {
     try {
       console.log('Checking admin access for user:', userId);
       
-      // Check localStorage first for debug info
-      const storedUser = localStorage.getItem('stars_user');
-      if (storedUser) {
-        const userData = JSON.parse(storedUser);
-        console.log('Found stored user data:', userData);
-      }
-
-      // Get the actual authenticated user session
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      console.log('Current session:', session, 'Session error:', sessionError);
-
-      if (session?.user) {
-        console.log('Session user ID:', session.user.id);
-        console.log('Provided user ID:', userId);
-        
-        // Ensure we're checking the right user
-        const actualUserId = session.user.id;
-        
-        // Check database for user profile
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', actualUserId)
-          .single();
-
-        console.log('Database profile check result:', { data, error });
-
-        if (error) {
-          console.error('Error checking admin access:', error);
+      if (isDevelopment) {
+        // In development mode, check localStorage for the current user
+        const storedUser = localStorage.getItem('stars_user');
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          console.log('Found stored user data:', userData);
+          console.log('User role from localStorage:', userData.role);
           
-          // If no profile exists, create one for the current user
-          if (error.code === 'PGRST116') { // No rows returned
-            console.log('No profile found, creating admin profile for logged-in user');
-            const { data: newProfile, error: insertError } = await supabase
-              .from('profiles')
-              .insert({
-                id: actualUserId,
-                name: session.user.email?.split('@')[0] || 'Admin User',
-                role: 'admin'
-              })
-              .select()
-              .single();
-            
-            console.log('Profile creation result:', { newProfile, insertError });
-            
-            if (!insertError && newProfile) {
-              return newProfile.role === 'admin';
-            }
-          }
-          
+          // Check if the user ID matches and has admin role
+          const isAdmin = userData.id === userId && userData.role === 'admin';
+          console.log('Is admin (development mode):', isAdmin);
+          return isAdmin;
+        } else {
+          console.log('No stored user found in localStorage');
           return false;
         }
-        
-        const isAdmin = data?.role === 'admin';
-        console.log('Is admin from database:', isAdmin, 'User role:', data?.role);
-        return isAdmin;
       } else {
-        console.log('No active session found');
-        return false;
+        // Production mode - use Supabase session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        console.log('Current session:', session, 'Session error:', sessionError);
+
+        if (session?.user) {
+          console.log('Session user ID:', session.user.id);
+          console.log('Provided user ID:', userId);
+          
+          const actualUserId = session.user.id;
+          
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', actualUserId)
+            .single();
+
+          console.log('Database profile check result:', { data, error });
+
+          if (error) {
+            console.error('Error checking admin access:', error);
+            
+            if (error.code === 'PGRST116') {
+              console.log('No profile found, creating admin profile for logged-in user');
+              const { data: newProfile, error: insertError } = await supabase
+                .from('profiles')
+                .insert({
+                  id: actualUserId,
+                  name: session.user.email?.split('@')[0] || 'Admin User',
+                  role: 'admin'
+                })
+                .select()
+                .single();
+              
+              console.log('Profile creation result:', { newProfile, insertError });
+              
+              if (!insertError && newProfile) {
+                return newProfile.role === 'admin';
+              }
+            }
+            
+            return false;
+          }
+          
+          const isAdmin = data?.role === 'admin';
+          console.log('Is admin from database:', isAdmin, 'User role:', data?.role);
+          return isAdmin;
+        } else {
+          console.log('No active session found');
+          return false;
+        }
       }
     } catch (error) {
       console.error('Error checking admin access:', error);
@@ -78,21 +90,42 @@ export class ThesisManagementService {
     }
   }
 
-  // Approve a single thesis using the database function
+  // Get current user session (works in both dev and production)
+  static async getCurrentUserSession() {
+    if (isDevelopment) {
+      const storedUser = localStorage.getItem('stars_user');
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        return {
+          user: {
+            id: userData.id,
+            email: userData.email
+          }
+        };
+      }
+      return { user: null };
+    } else {
+      const { data: { session } } = await supabase.auth.getSession();
+      return { user: session?.user || null };
+    }
+  }
+
+  // Approve a single thesis
   static async approveThesis(thesisId: string, userId: string): Promise<BulkActionResult> {
     try {
       console.log('Starting thesis approval for:', thesisId, 'by user:', userId);
 
-      // Get the actual user session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
+      // Get current user session (development or production)
+      const { user } = await this.getCurrentUserSession();
+      
+      if (!user) {
         return {
           success: false,
           message: 'No active user session found'
         };
       }
 
-      const actualUserId = session.user.id;
+      const actualUserId = user.id;
       console.log('Using actual user ID:', actualUserId);
 
       // Enhanced admin check
@@ -106,45 +139,59 @@ export class ThesisManagementService {
         };
       }
 
-      // Use the database function for safe status update
-      const { data, error } = await supabase.rpc('update_thesis_status', {
-        thesis_uuid: thesisId,
-        new_status: 'approved',
-        user_uuid: actualUserId
-      });
-
-      console.log('Database function call result:', { data, error });
-
-      if (error) {
-        console.error('Database function error:', error);
+      if (isDevelopment) {
+        // In development mode, simulate the database update
+        console.log('Development mode: Simulating thesis approval');
+        
+        // Simulate a delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         return {
-          success: false,
-          message: `Database error: ${error.message}`
+          success: true,
+          message: `Successfully approved thesis (Development Mode)`,
+          updatedCount: 1
+        };
+      } else {
+        // Production mode - use the database function
+        const { data, error } = await supabase.rpc('update_thesis_status', {
+          thesis_uuid: thesisId,
+          new_status: 'approved',
+          user_uuid: actualUserId
+        });
+
+        console.log('Database function call result:', { data, error });
+
+        if (error) {
+          console.error('Database function error:', error);
+          return {
+            success: false,
+            message: `Database error: ${error.message}`
+          };
+        }
+
+        if (!data || data.length === 0) {
+          return {
+            success: false,
+            message: 'No response from database function'
+          };
+        }
+
+        const result = data[0];
+        console.log('Database function result:', result);
+
+        if (!result.success) {
+          return {
+            success: false,
+            message: result.message || 'Failed to approve thesis'
+          };
+        }
+
+        return {
+          success: true,
+          message: result.message || `Successfully approved "${result.thesis_title}"`,
+          updatedCount: 1
         };
       }
-
-      if (!data || data.length === 0) {
-        return {
-          success: false,
-          message: 'No response from database function'
-        };
-      }
-
-      const result = data[0];
-      console.log('Database function result:', result);
-
-      if (!result.success) {
-        return {
-          success: false,
-          message: result.message || 'Failed to approve thesis'
-        };
-      }
-
-      return {
-        success: true,
-        message: result.message || `Successfully approved "${result.thesis_title}"`,
-        updatedCount: 1
-      };
     } catch (error: any) {
       console.error('Approval error:', error);
       return {
@@ -154,21 +201,22 @@ export class ThesisManagementService {
     }
   }
 
-  // Reject a single thesis using the database function
+  // Reject a single thesis
   static async rejectThesis(thesisId: string, userId: string): Promise<BulkActionResult> {
     try {
       console.log('Starting thesis rejection for:', thesisId, 'by user:', userId);
 
-      // Get the actual user session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
+      // Get current user session (development or production)
+      const { user } = await this.getCurrentUserSession();
+      
+      if (!user) {
         return {
           success: false,
           message: 'No active user session found'
         };
       }
 
-      const actualUserId = session.user.id;
+      const actualUserId = user.id;
       console.log('Using actual user ID:', actualUserId);
 
       // Enhanced admin check
@@ -182,45 +230,59 @@ export class ThesisManagementService {
         };
       }
 
-      // Use the database function for safe status update
-      const { data, error } = await supabase.rpc('update_thesis_status', {
-        thesis_uuid: thesisId,
-        new_status: 'needs_revision',
-        user_uuid: actualUserId
-      });
-
-      console.log('Database function call result:', { data, error });
-
-      if (error) {
-        console.error('Database function error:', error);
+      if (isDevelopment) {
+        // In development mode, simulate the database update
+        console.log('Development mode: Simulating thesis rejection');
+        
+        // Simulate a delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         return {
-          success: false,
-          message: `Database error: ${error.message}`
+          success: true,
+          message: `Successfully rejected thesis (Development Mode)`,
+          updatedCount: 1
+        };
+      } else {
+        // Production mode - use the database function
+        const { data, error } = await supabase.rpc('update_thesis_status', {
+          thesis_uuid: thesisId,
+          new_status: 'needs_revision',
+          user_uuid: actualUserId
+        });
+
+        console.log('Database function call result:', { data, error });
+
+        if (error) {
+          console.error('Database function error:', error);
+          return {
+            success: false,
+            message: `Database error: ${error.message}`
+          };
+        }
+
+        if (!data || data.length === 0) {
+          return {
+            success: false,
+            message: 'No response from database function'
+          };
+        }
+
+        const result = data[0];
+        console.log('Database function result:', result);
+
+        if (!result.success) {
+          return {
+            success: false,
+            message: result.message || 'Failed to reject thesis'
+          };
+        }
+
+        return {
+          success: true,
+          message: result.message || `Successfully rejected "${result.thesis_title}"`,
+          updatedCount: 1
         };
       }
-
-      if (!data || data.length === 0) {
-        return {
-          success: false,
-          message: 'No response from database function'
-        };
-      }
-
-      const result = data[0];
-      console.log('Database function result:', result);
-
-      if (!result.success) {
-        return {
-          success: false,
-          message: result.message || 'Failed to reject thesis'
-        };
-      }
-
-      return {
-        success: true,
-        message: result.message || `Successfully rejected "${result.thesis_title}"`,
-        updatedCount: 1
-      };
     } catch (error: any) {
       console.error('Rejection error:', error);
       return {
