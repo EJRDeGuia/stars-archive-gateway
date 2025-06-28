@@ -17,11 +17,16 @@ export function useRecentTheses() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      console.log('No user ID, skipping recent theses fetch');
+      return;
+    }
 
     const fetchRecentTheses = async () => {
       setIsLoading(true);
       try {
+        console.log('Fetching recent theses for user:', user.id);
+        
         const { data, error } = await supabase
           .from('thesis_views')
           .select(`
@@ -41,7 +46,12 @@ export function useRecentTheses() {
           .order('viewed_at', { ascending: false })
           .limit(3);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching recent theses:', error);
+          throw error;
+        }
+
+        console.log('Recent theses data:', data);
 
         const recent = data?.map(view => ({
           id: view.theses.id,
@@ -51,9 +61,11 @@ export function useRecentTheses() {
           publish_date: view.theses.publish_date
         })) || [];
 
+        console.log('Processed recent theses:', recent);
         setRecentTheses(recent);
       } catch (error) {
         console.error('Failed to fetch recent theses:', error);
+        setRecentTheses([]);
       } finally {
         setIsLoading(false);
       }

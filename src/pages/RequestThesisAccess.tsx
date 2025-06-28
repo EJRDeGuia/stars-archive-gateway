@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,6 +35,7 @@ interface SearchThesis {
   colleges: {
     name: string;
   } | null;
+  abstract?: string;
 }
 
 interface RequestFormData {
@@ -93,13 +95,14 @@ const RequestThesisAccess = () => {
           title,
           author,
           publish_date,
+          abstract,
           colleges (
             name
           )
         `)
-        .ilike('title', `%${query}%`)
+        .or(`title.ilike.%${query}%, author.ilike.%${query}%, abstract.ilike.%${query}%`)
         .eq('status', 'approved')
-        .limit(10);
+        .limit(20);
 
       if (error) throw error;
       setSearchResults(data as SearchThesis[] || []);
@@ -310,7 +313,7 @@ const RequestThesisAccess = () => {
               </Card>
 
               {/* Recent Theses Section */}
-              {recentTheses.length > 0 && (
+              {!recentLoading && recentTheses && recentTheses.length > 0 && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -357,12 +360,14 @@ const RequestThesisAccess = () => {
                       {userFavorites.slice(0, 6).map((favorite) => (
                         <Card key={favorite.id} className="cursor-pointer hover:shadow-md transition-shadow">
                           <CardContent className="p-4">
-                            <h4 className="font-medium text-sm line-clamp-2 mb-2">Favorite Thesis</h4>
+                            <h4 className="font-medium text-sm line-clamp-2 mb-2">
+                              {favorite.thesis_id ? 'Favorited Thesis' : 'Favorite Item'}
+                            </h4>
                             <div className="flex justify-between items-center">
                               <span className="text-xs text-gray-500">From your favorites</span>
                               <Button size="sm" variant="outline" onClick={() => {
-                                // We need to fetch the actual thesis data for favorites
-                                toast.info('Feature coming soon - add from favorites');
+                                toast.info('Loading thesis details...');
+                                // You can implement fetching the actual thesis data here
                               }}>
                                 <Plus className="h-4 w-4" />
                               </Button>
@@ -392,7 +397,7 @@ const RequestThesisAccess = () => {
                           setSearchQuery(e.target.value);
                           searchTheses(e.target.value);
                         }}
-                        placeholder="Search by title..."
+                        placeholder="Search by title, author, or abstract..."
                         className="pr-10"
                       />
                       {isSearching && (
@@ -414,6 +419,9 @@ const RequestThesisAccess = () => {
                               <div className="flex-1">
                                 <h4 className="font-medium text-sm line-clamp-1">{thesis.title}</h4>
                                 <p className="text-sm text-gray-600">by {thesis.author}</p>
+                                {thesis.abstract && (
+                                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">{thesis.abstract}</p>
+                                )}
                                 <div className="flex items-center gap-2 mt-1">
                                   {thesis.colleges?.name && (
                                     <Badge variant="outline" className="text-xs">{thesis.colleges.name}</Badge>
@@ -431,6 +439,12 @@ const RequestThesisAccess = () => {
                             </div>
                           </div>
                         ))}
+                      </div>
+                    )}
+
+                    {searchQuery && !isSearching && searchResults.length === 0 && (
+                      <div className="text-center py-4 text-gray-500">
+                        <p>No theses found matching "{searchQuery}"</p>
                       </div>
                     )}
                   </div>
