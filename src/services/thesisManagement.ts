@@ -7,28 +7,26 @@ export interface BulkActionResult {
 }
 
 export class ThesisManagementService {
-  // Check if user has admin privileges - updated to work with both development and production
+  // Check if user has admin privileges
   static async checkAdminAccess(userId: string): Promise<boolean> {
     try {
-      // In development mode, we can also check localStorage for immediate access
-      const isDevelopment = true; // This should match your auth context setting
-      
-      if (isDevelopment) {
-        const storedUser = localStorage.getItem('stars_user');
-        if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          return userData.role === 'admin';
+      // Check localStorage first for development
+      const storedUser = localStorage.getItem('stars_user');
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        if (userData.role === 'admin') {
+          return true;
         }
       }
 
-      // Always try to check the database as well
+      // Check database
       const { data, error } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', userId)
         .single();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+      if (error) {
         console.error('Error checking admin access:', error);
         return false;
       }
@@ -40,136 +38,187 @@ export class ThesisManagementService {
     }
   }
 
-  // Bulk approve theses (admin only) - Fixed to properly update and return results
-  static async bulkApprove(thesisIds: string[], userId: string): Promise<BulkActionResult> {
+  // Approve a single thesis
+  static async approveThesis(thesisId: string, userId: string): Promise<BulkActionResult> {
     try {
-      // Check admin access first
+      console.log('Starting thesis approval for:', thesisId, 'by user:', userId);
+
+      // Check admin access
       const isAdmin = await this.checkAdminAccess(userId);
       if (!isAdmin) {
+        console.log('User is not admin:', userId);
         return {
           success: false,
           message: 'Only administrators can approve theses'
         };
       }
 
-      console.log('Attempting to approve theses:', thesisIds);
-
-      // First, let's check if the theses exist and their current status
-      const { data: existingTheses, error: checkError } = await supabase
+      // Check if thesis exists
+      const { data: thesis, error: fetchError } = await supabase
         .from('theses')
-        .select('id, status, title')
-        .in('id', thesisIds);
+        .select('id, title, status')
+        .eq('id', thesisId)
+        .single();
 
-      if (checkError) {
-        console.error('Error checking existing theses:', checkError);
-        throw checkError;
-      }
-
-      console.log('Found theses to approve:', existingTheses);
-
-      if (!existingTheses || existingTheses.length === 0) {
+      if (fetchError || !thesis) {
+        console.error('Thesis not found:', fetchError);
         return {
           success: false,
-          message: 'No theses found with the provided IDs'
+          message: 'Thesis not found'
         };
       }
 
-      // Update the theses status to approved - Fixed the update query
-      const { data: updatedTheses, error: updateError } = await supabase
+      console.log('Found thesis:', thesis);
+
+      // Update thesis status
+      const { data: updatedThesis, error: updateError } = await supabase
         .from('theses')
-        .update({ 
-          status: 'approved'
-        })
-        .in('id', thesisIds)
-        .select('id, title, status');
+        .update({ status: 'approved' })
+        .eq('id', thesisId)
+        .select('id, title, status')
+        .single();
 
       if (updateError) {
-        console.error('Error approving theses:', updateError);
-        throw updateError;
+        console.error('Update error:', updateError);
+        return {
+          success: false,
+          message: `Failed to approve thesis: ${updateError.message}`
+        };
       }
 
-      console.log('Successfully approved theses:', updatedTheses);
-
-      const approvedCount = updatedTheses?.length || 0;
+      console.log('Successfully updated thesis:', updatedThesis);
 
       return {
         success: true,
-        message: `Successfully approved ${approvedCount} ${approvedCount === 1 ? 'thesis' : 'theses'}`,
-        updatedCount: approvedCount
+        message: `Successfully approved "${thesis.title}"`,
+        updatedCount: 1
       };
     } catch (error: any) {
-      console.error('Bulk approve error:', error);
+      console.error('Approval error:', error);
       return {
         success: false,
-        message: error.message || 'Failed to approve theses'
+        message: error.message || 'Failed to approve thesis'
       };
     }
   }
 
-  // Bulk reject theses (admin only) - Fixed to properly update and return results
-  static async bulkReject(thesisIds: string[], userId: string): Promise<BulkActionResult> {
+  // Reject a single thesis
+  static async rejectThesis(thesisId: string, userId: string): Promise<BulkActionResult> {
     try {
-      // Check admin access first
+      console.log('Starting thesis rejection for:', thesisId, 'by user:', userId);
+
+      // Check admin access
       const isAdmin = await this.checkAdminAccess(userId);
       if (!isAdmin) {
+        console.log('User is not admin:', userId);
         return {
           success: false,
           message: 'Only administrators can reject theses'
         };
       }
 
-      console.log('Attempting to reject theses:', thesisIds);
-
-      // First, let's check if the theses exist and their current status
-      const { data: existingTheses, error: checkError } = await supabase
+      // Check if thesis exists
+      const { data: thesis, error: fetchError } = await supabase
         .from('theses')
-        .select('id, status, title')
-        .in('id', thesisIds);
+        .select('id, title, status')
+        .eq('id', thesisId)
+        .single();
 
-      if (checkError) {
-        console.error('Error checking existing theses:', checkError);
-        throw checkError;
-      }
-
-      console.log('Found theses to reject:', existingTheses);
-
-      if (!existingTheses || existingTheses.length === 0) {
+      if (fetchError || !thesis) {
+        console.error('Thesis not found:', fetchError);
         return {
           success: false,
-          message: 'No theses found with the provided IDs'
+          message: 'Thesis not found'
         };
       }
 
-      // Update the theses status to needs_revision - Fixed the update query
-      const { data: updatedTheses, error: updateError } = await supabase
+      console.log('Found thesis:', thesis);
+
+      // Update thesis status
+      const { data: updatedThesis, error: updateError } = await supabase
         .from('theses')
-        .update({ 
-          status: 'needs_revision'
-        })
-        .in('id', thesisIds)
-        .select('id, title, status');
+        .update({ status: 'needs_revision' })
+        .eq('id', thesisId)
+        .select('id, title, status')
+        .single();
 
       if (updateError) {
-        console.error('Error rejecting theses:', updateError);
-        throw updateError;
+        console.error('Update error:', updateError);
+        return {
+          success: false,
+          message: `Failed to reject thesis: ${updateError.message}`
+        };
       }
 
-      console.log('Successfully rejected theses:', updatedTheses);
-
-      const rejectedCount = updatedTheses?.length || 0;
+      console.log('Successfully updated thesis:', updatedThesis);
 
       return {
         success: true,
-        message: `Successfully rejected ${rejectedCount} ${rejectedCount === 1 ? 'thesis' : 'theses'}`,
-        updatedCount: rejectedCount
+        message: `Successfully rejected "${thesis.title}"`,
+        updatedCount: 1
       };
     } catch (error: any) {
-      console.error('Bulk reject error:', error);
+      console.error('Rejection error:', error);
       return {
         success: false,
-        message: error.message || 'Failed to reject theses'
+        message: error.message || 'Failed to reject thesis'
       };
     }
+  }
+
+  // Legacy bulk methods for backward compatibility
+  static async bulkApprove(thesisIds: string[], userId: string): Promise<BulkActionResult> {
+    if (thesisIds.length === 1) {
+      return this.approveThesis(thesisIds[0], userId);
+    }
+    
+    // Handle multiple theses
+    let successCount = 0;
+    let lastError = '';
+
+    for (const thesisId of thesisIds) {
+      const result = await this.approveThesis(thesisId, userId);
+      if (result.success) {
+        successCount++;
+      } else {
+        lastError = result.message;
+      }
+    }
+
+    return {
+      success: successCount > 0,
+      message: successCount > 0 
+        ? `Successfully approved ${successCount} ${successCount === 1 ? 'thesis' : 'theses'}`
+        : lastError || 'Failed to approve theses',
+      updatedCount: successCount
+    };
+  }
+
+  static async bulkReject(thesisIds: string[], userId: string): Promise<BulkActionResult> {
+    if (thesisIds.length === 1) {
+      return this.rejectThesis(thesisIds[0], userId);
+    }
+    
+    // Handle multiple theses
+    let successCount = 0;
+    let lastError = '';
+
+    for (const thesisId of thesisIds) {
+      const result = await this.rejectThesis(thesisId, userId);
+      if (result.success) {
+        successCount++;
+      } else {
+        lastError = result.message;
+      }
+    }
+
+    return {
+      success: successCount > 0,
+      message: successCount > 0 
+        ? `Successfully rejected ${successCount} ${successCount === 1 ? 'thesis' : 'theses'}`
+        : lastError || 'Failed to reject theses',
+      updatedCount: successCount
+    };
   }
 
   // Move theses to collection (admin and archivist)

@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Search, Filter, Eye, Edit3, Trash2 } from 'lucide-react';
+import { ArrowLeft, Search, Eye, Edit3, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTheses } from '@/hooks/useApi';
 import { ThesisManagementService } from '@/services/thesisManagement';
@@ -59,31 +59,48 @@ const ManageRecords = () => {
     }
   };
 
-  const handleStatusChange = async (thesisId: string, newStatus: string) => {
+  const handleApprove = async (thesisId: string) => {
     if (!user) {
       toast.error('User not authenticated');
       return;
     }
 
     if (user.role !== 'admin') {
-      toast.error('Only administrators can approve or reject theses');
+      toast.error('Only administrators can approve theses');
       return;
     }
 
     setActionLoading(thesisId);
-    let result;
-    if (newStatus === 'approved') {
-      result = await ThesisManagementService.bulkApprove([thesisId], user.id);
-    } else if (newStatus === 'needs_revision') {
-      result = await ThesisManagementService.bulkReject([thesisId], user.id);
-    }
-
-    if (result?.success) {
-      toast.success(`Thesis ${newStatus === 'approved' ? 'approved' : 'rejected'} successfully`);
+    const result = await ThesisManagementService.approveThesis(thesisId, user.id);
+    if (result.success) {
+      toast.success(result.message);
       queryClient.invalidateQueries({ queryKey: ['theses'] });
       queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
     } else {
-      toast.error(result?.message || 'Failed to update thesis status');
+      toast.error(result.message);
+    }
+    setActionLoading(null);
+  };
+
+  const handleReject = async (thesisId: string) => {
+    if (!user) {
+      toast.error('User not authenticated');
+      return;
+    }
+
+    if (user.role !== 'admin') {
+      toast.error('Only administrators can reject theses');
+      return;
+    }
+
+    setActionLoading(thesisId);
+    const result = await ThesisManagementService.rejectThesis(thesisId, user.id);
+    if (result.success) {
+      toast.success(result.message);
+      queryClient.invalidateQueries({ queryKey: ['theses'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
+    } else {
+      toast.error(result.message);
     }
     setActionLoading(null);
   };
@@ -220,7 +237,7 @@ const ManageRecords = () => {
                               size="sm"
                               variant="outline"
                               className="text-green-600 border-green-200 hover:bg-green-50"
-                              onClick={() => handleStatusChange(thesis.id, 'approved')}
+                              onClick={() => handleApprove(thesis.id)}
                               disabled={actionLoading === thesis.id}
                             >
                               {actionLoading === thesis.id ? 'Processing...' : 'Approve'}
@@ -229,7 +246,7 @@ const ManageRecords = () => {
                               size="sm"
                               variant="outline"
                               className="text-red-600 border-red-200 hover:bg-red-50"
-                              onClick={() => handleStatusChange(thesis.id, 'needs_revision')}
+                              onClick={() => handleReject(thesis.id)}
                               disabled={actionLoading === thesis.id}
                             >
                               {actionLoading === thesis.id ? 'Processing...' : 'Reject'}

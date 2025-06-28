@@ -27,41 +27,27 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
   const [selectedThesis, setSelectedThesis] = useState<any>(null);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
 
-  const handleQuickAction = async (thesisId: string, action: 'approve' | 'reject') => {
+  const handleApprove = async (thesisId: string) => {
     if (!user) {
       toast.error('User not authenticated');
       return;
     }
 
-    if (user.role !== 'admin') {
-      toast.error('Only administrators can approve or reject theses');
-      return;
-    }
+    console.log('User attempting to approve thesis:', { userId: user.id, userRole: user.role, thesisId });
 
-    console.log(`Starting ${action} action for thesis:`, thesisId);
     setActionLoading(thesisId);
     
     try {
-      let result;
-      if (action === 'approve') {
-        result = await ThesisManagementService.bulkApprove([thesisId], user.id);
-      } else {
-        result = await ThesisManagementService.bulkReject([thesisId], user.id);
-      }
-
-      console.log('Action result:', result);
+      const result = await ThesisManagementService.approveThesis(thesisId, user.id);
+      console.log('Approval result:', result);
 
       if (result.success) {
         toast.success(result.message);
         
-        // Force refresh the data by invalidating ALL related queries
+        // Refresh all data
         await queryClient.invalidateQueries({ queryKey: ['theses'] });
         await queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
-        await queryClient.invalidateQueries({ queryKey: ['admin-theses'] });
-        
-        // Also refetch the data to ensure immediate UI update
         await queryClient.refetchQueries({ queryKey: ['theses'] });
-        await queryClient.refetchQueries({ queryKey: ['admin-dashboard'] });
         
         // Close review dialog if open
         if (reviewDialogOpen && selectedThesis?.id === thesisId) {
@@ -69,20 +55,57 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
           setSelectedThesis(null);
         }
       } else {
-        toast.error(result.message || 'Failed to update thesis');
-        console.error('Action failed:', result.message);
+        toast.error(result.message);
+        console.error('Approval failed:', result.message);
       }
     } catch (error) {
-      const errorMessage = 'An error occurred while updating the thesis';
-      toast.error(errorMessage);
-      console.error('Error in handleQuickAction:', error);
+      console.error('Error in handleApprove:', error);
+      toast.error('An error occurred while approving the thesis');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleReject = async (thesisId: string) => {
+    if (!user) {
+      toast.error('User not authenticated');
+      return;
+    }
+
+    console.log('User attempting to reject thesis:', { userId: user.id, userRole: user.role, thesisId });
+
+    setActionLoading(thesisId);
+    
+    try {
+      const result = await ThesisManagementService.rejectThesis(thesisId, user.id);
+      console.log('Rejection result:', result);
+
+      if (result.success) {
+        toast.success(result.message);
+        
+        // Refresh all data
+        await queryClient.invalidateQueries({ queryKey: ['theses'] });
+        await queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
+        await queryClient.refetchQueries({ queryKey: ['theses'] });
+        
+        // Close review dialog if open
+        if (reviewDialogOpen && selectedThesis?.id === thesisId) {
+          setReviewDialogOpen(false);
+          setSelectedThesis(null);
+        }
+      } else {
+        toast.error(result.message);
+        console.error('Rejection failed:', result.message);
+      }
+    } catch (error) {
+      console.error('Error in handleReject:', error);
+      toast.error('An error occurred while rejecting the thesis');
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleReviewClick = (thesis: any) => {
-    // Add college information to thesis object
     const thesisWithCollege = {
       ...thesis,
       colleges: colleges.find(c => c.id === thesis.college_id)
@@ -146,7 +169,7 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
                           size="sm"
                           variant="outline"
                           className="text-green-600 border-green-200 hover:bg-green-50"
-                          onClick={() => handleQuickAction(thesis.id, 'approve')}
+                          onClick={() => handleApprove(thesis.id)}
                           disabled={actionLoading === thesis.id}
                         >
                           <Check className="w-4 h-4 mr-1" />
@@ -156,7 +179,7 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
                           size="sm"
                           variant="outline"
                           className="text-red-600 border-red-200 hover:bg-red-50"
-                          onClick={() => handleQuickAction(thesis.id, 'reject')}
+                          onClick={() => handleReject(thesis.id)}
                           disabled={actionLoading === thesis.id}
                         >
                           <X className="w-4 h-4 mr-1" />
@@ -188,8 +211,8 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
           setReviewDialogOpen(false);
           setSelectedThesis(null);
         }}
-        onApprove={() => selectedThesis && handleQuickAction(selectedThesis.id, 'approve')}
-        onReject={() => selectedThesis && handleQuickAction(selectedThesis.id, 'reject')}
+        onApprove={() => selectedThesis && handleApprove(selectedThesis.id)}
+        onReject={() => selectedThesis && handleReject(selectedThesis.id)}
         isLoading={actionLoading === selectedThesis?.id}
         userRole={user?.role || ''}
       />
