@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export interface BulkActionResult {
@@ -109,6 +110,47 @@ export class ThesisManagementService {
     }
   }
 
+  // Ensure user profile exists in database for development mode
+  static async ensureUserProfileExists(userId: string, userEmail: string) {
+    if (isDevelopment) {
+      // Check if profile exists
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (!existingProfile) {
+        console.log('Creating profile for development user:', userId);
+        
+        // Get user data from localStorage to determine role
+        const storedUser = localStorage.getItem('stars_user');
+        let role = 'researcher'; // default role
+        
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          role = userData.role || 'researcher';
+        }
+
+        const { data: newProfile, error } = await supabase
+          .from('profiles')
+          .insert({
+            id: userId,
+            name: userEmail?.split('@')[0] || 'User',
+            role: role
+          })
+          .select()
+          .single();
+
+        console.log('Profile creation result:', { newProfile, error });
+        return newProfile;
+      }
+      
+      return existingProfile;
+    }
+    return null;
+  }
+
   // Approve a single thesis using the database function
   static async approveThesis(thesisId: string, userId: string): Promise<BulkActionResult> {
     try {
@@ -126,6 +168,11 @@ export class ThesisManagementService {
 
       const actualUserId = user.id;
       console.log('Using actual user ID:', actualUserId);
+
+      // In development mode, ensure the user profile exists in the database
+      if (isDevelopment) {
+        await this.ensureUserProfileExists(actualUserId, user.email || '');
+      }
 
       // Enhanced admin check
       const isAdmin = await this.checkAdminAccess(actualUserId);
@@ -205,6 +252,11 @@ export class ThesisManagementService {
 
       const actualUserId = user.id;
       console.log('Using actual user ID:', actualUserId);
+
+      // In development mode, ensure the user profile exists in the database
+      if (isDevelopment) {
+        await this.ensureUserProfileExists(actualUserId, user.email || '');
+      }
 
       // Enhanced admin check
       const isAdmin = await this.checkAdminAccess(actualUserId);
