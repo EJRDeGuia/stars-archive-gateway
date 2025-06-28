@@ -41,7 +41,7 @@ export class ThesisManagementService {
     }
   }
 
-  // Bulk approve theses (admin only)
+  // Bulk approve theses (admin only) - Fixed filtering logic
   static async bulkApprove(thesisIds: string[], userId: string): Promise<BulkActionResult> {
     try {
       // Check admin access first
@@ -53,6 +53,9 @@ export class ThesisManagementService {
         };
       }
 
+      console.log('Attempting to approve theses:', thesisIds);
+
+      // Remove the status filter to allow approving from any status
       const { data, error } = await supabase
         .from('theses')
         .update({ 
@@ -60,17 +63,22 @@ export class ThesisManagementService {
           updated_at: new Date().toISOString()
         })
         .in('id', thesisIds)
-        .eq('status', 'pending_review') // Only approve pending theses
         .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error approving theses:', error);
+        throw error;
+      }
+
+      console.log('Approved theses result:', data);
 
       return {
         success: true,
-        message: `Successfully approved ${data?.length || 0} theses`,
+        message: `Successfully approved ${data?.length || 0} ${data?.length === 1 ? 'thesis' : 'theses'}`,
         updatedCount: data?.length || 0
       };
     } catch (error: any) {
+      console.error('Bulk approve error:', error);
       return {
         success: false,
         message: error.message || 'Failed to approve theses'
@@ -78,7 +86,7 @@ export class ThesisManagementService {
     }
   }
 
-  // Bulk reject theses (admin only)
+  // Bulk reject theses (admin only) - Fixed filtering logic
   static async bulkReject(thesisIds: string[], userId: string): Promise<BulkActionResult> {
     try {
       // Check admin access first
@@ -90,6 +98,9 @@ export class ThesisManagementService {
         };
       }
 
+      console.log('Attempting to reject theses:', thesisIds);
+
+      // Remove the status filter to allow rejecting from any status
       const { data, error } = await supabase
         .from('theses')
         .update({ 
@@ -97,17 +108,22 @@ export class ThesisManagementService {
           updated_at: new Date().toISOString()
         })
         .in('id', thesisIds)
-        .eq('status', 'pending_review') // Only reject pending theses
         .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error rejecting theses:', error);
+        throw error;
+      }
+
+      console.log('Rejected theses result:', data);
 
       return {
         success: true,
-        message: `Successfully rejected ${data?.length || 0} theses`,
+        message: `Successfully rejected ${data?.length || 0} ${data?.length === 1 ? 'thesis' : 'theses'}`,
         updatedCount: data?.length || 0
       };
     } catch (error: any) {
+      console.error('Bulk reject error:', error);
       return {
         success: false,
         message: error.message || 'Failed to reject theses'
