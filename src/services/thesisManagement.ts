@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface BulkActionResult {
@@ -110,7 +109,7 @@ export class ThesisManagementService {
     }
   }
 
-  // Approve a single thesis - NOW ALWAYS UPDATES DATABASE
+  // Approve a single thesis using the database function
   static async approveThesis(thesisId: string, userId: string): Promise<BulkActionResult> {
     try {
       console.log('Starting thesis approval for:', thesisId, 'by user:', userId);
@@ -139,45 +138,19 @@ export class ThesisManagementService {
         };
       }
 
-      // ALWAYS update the database directly (no more development mode simulation)
-      console.log('Updating thesis status in database...');
+      // Use the database function for secure status update
+      console.log('Calling database function to update thesis status...');
       
-      // First, get the current thesis details
-      const { data: currentThesis, error: fetchError } = await supabase
-        .from('theses')
-        .select('title, status')
-        .eq('id', thesisId)
-        .single();
+      const { data, error } = await supabase.rpc('update_thesis_status', {
+        thesis_uuid: thesisId,
+        new_status: 'approved',
+        user_uuid: actualUserId
+      });
 
-      if (fetchError) {
-        console.error('Error fetching thesis:', fetchError);
-        return {
-          success: false,
-          message: `Error fetching thesis: ${fetchError.message}`
-        };
-      }
-
-      if (!currentThesis) {
-        return {
-          success: false,
-          message: 'Thesis not found'
-        };
-      }
-
-      // Update the thesis status directly
-      const { data, error } = await supabase
-        .from('theses')
-        .update({ 
-          status: 'approved',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', thesisId)
-        .select();
-
-      console.log('Direct database update result:', { data, error });
+      console.log('Database function result:', { data, error });
 
       if (error) {
-        console.error('Database update error:', error);
+        console.error('Database function error:', error);
         return {
           success: false,
           message: `Database error: ${error.message}`
@@ -187,15 +160,24 @@ export class ThesisManagementService {
       if (!data || data.length === 0) {
         return {
           success: false,
-          message: 'No rows were updated'
+          message: 'No thesis was updated. Please check if the thesis exists.'
         };
       }
 
-      return {
-        success: true,
-        message: `Successfully approved thesis "${currentThesis.title}"`,
-        updatedCount: 1
-      };
+      const result = data[0];
+      
+      if (result.success) {
+        return {
+          success: true,
+          message: `Successfully approved thesis "${result.thesis_title}"`,
+          updatedCount: 1
+        };
+      } else {
+        return {
+          success: false,
+          message: result.message
+        };
+      }
 
     } catch (error: any) {
       console.error('Approval error:', error);
@@ -206,7 +188,7 @@ export class ThesisManagementService {
     }
   }
 
-  // Reject a single thesis - NOW ALWAYS UPDATES DATABASE
+  // Reject a single thesis using the database function
   static async rejectThesis(thesisId: string, userId: string): Promise<BulkActionResult> {
     try {
       console.log('Starting thesis rejection for:', thesisId, 'by user:', userId);
@@ -235,45 +217,19 @@ export class ThesisManagementService {
         };
       }
 
-      // ALWAYS update the database directly (no more development mode simulation)
-      console.log('Updating thesis status in database...');
+      // Use the database function for secure status update
+      console.log('Calling database function to update thesis status...');
       
-      // First, get the current thesis details
-      const { data: currentThesis, error: fetchError } = await supabase
-        .from('theses')
-        .select('title, status')
-        .eq('id', thesisId)
-        .single();
+      const { data, error } = await supabase.rpc('update_thesis_status', {
+        thesis_uuid: thesisId,
+        new_status: 'needs_revision',
+        user_uuid: actualUserId
+      });
 
-      if (fetchError) {
-        console.error('Error fetching thesis:', fetchError);
-        return {
-          success: false,
-          message: `Error fetching thesis: ${fetchError.message}`
-        };
-      }
-
-      if (!currentThesis) {
-        return {
-          success: false,
-          message: 'Thesis not found'
-        };
-      }
-
-      // Update the thesis status directly
-      const { data, error } = await supabase
-        .from('theses')
-        .update({ 
-          status: 'needs_revision',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', thesisId)
-        .select();
-
-      console.log('Direct database update result:', { data, error });
+      console.log('Database function result:', { data, error });
 
       if (error) {
-        console.error('Database update error:', error);
+        console.error('Database function error:', error);
         return {
           success: false,
           message: `Database error: ${error.message}`
@@ -283,15 +239,24 @@ export class ThesisManagementService {
       if (!data || data.length === 0) {
         return {
           success: false,
-          message: 'No rows were updated'
+          message: 'No thesis was updated. Please check if the thesis exists.'
         };
       }
 
-      return {
-        success: true,
-        message: `Successfully rejected thesis "${currentThesis.title}"`,
-        updatedCount: 1
-      };
+      const result = data[0];
+      
+      if (result.success) {
+        return {
+          success: true,
+          message: `Successfully rejected thesis "${result.thesis_title}"`,
+          updatedCount: 1
+        };
+      } else {
+        return {
+          success: false,
+          message: result.message
+        };
+      }
 
     } catch (error: any) {
       console.error('Rejection error:', error);
