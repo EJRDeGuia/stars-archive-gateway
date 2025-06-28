@@ -31,11 +31,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { useUserFavorites } from '@/hooks/useApi';
 import type { Thesis } from '@/types/thesis';
 
+interface RecentThesis extends Thesis {
+  viewed_at?: string;
+}
+
 const RequestThesisAccess = () => {
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Thesis[]>([]);
-  const [recentTheses, setRecentTheses] = useState<Thesis[]>([]);
+  const [recentTheses, setRecentTheses] = useState<RecentThesis[]>([]);
   const [favoriteTheses, setFavoriteTheses] = useState<Thesis[]>([]);
   const [loading, setLoading] = useState(false);
   const [collegeFilter, setCollegeFilter] = useState<string>('all');
@@ -105,11 +109,11 @@ const RequestThesisAccess = () => {
 
       if (error) throw error;
 
-      // Transform the data to match Thesis type
+      // Transform the data to match RecentThesis type
       const transformedData = (data || []).map(view => ({
         ...view.theses,
         viewed_at: view.viewed_at
-      })) as Thesis[];
+      })) as RecentThesis[];
 
       setRecentTheses(transformedData);
     } catch (error) {
