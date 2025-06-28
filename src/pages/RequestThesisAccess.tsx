@@ -60,7 +60,7 @@ const RequestThesisAccess = () => {
   const { recentTheses, isLoading: recentLoading } = useRecentTheses();
   
   const [formData, setFormData] = useState<RequestFormData>({
-    requesterName: user?.name || '',
+    requesterName: user?.user_metadata?.name || user?.email?.split('@')[0] || '',
     requesterEmail: user?.email || '',
     institution: '',
     purpose: ''
@@ -98,7 +98,7 @@ const RequestThesisAccess = () => {
             name
           )
         `)
-        .or(`title.ilike.%${query}%, author.ilike.%${query}%, abstract.ilike.%${query}%`)
+        .ilike('title', `%${query}%`)
         .eq('status', 'approved')
         .limit(10);
 
@@ -155,14 +155,12 @@ const RequestThesisAccess = () => {
     }
 
     setIsSubmitting(true);
-    const failedRequests: string[] = [];
-    const successfulRequests: string[] = [];
+    let successCount = 0;
+    let failureCount = 0;
 
     try {
       for (const thesis of selectedTheses) {
         try {
-          console.log('Submitting request for thesis:', thesis.id);
-          
           const { data, error } = await supabase
             .from('thesis_access_requests')
             .insert([
@@ -179,22 +177,16 @@ const RequestThesisAccess = () => {
             .select()
             .single();
 
-          if (error) {
-            console.error('Error submitting request:', error);
-            throw error;
-          }
-
-          console.log('Request submitted successfully:', data);
-          successfulRequests.push(thesis.title);
+          if (error) throw error;
+          successCount++;
         } catch (error: any) {
           console.error('Failed to submit request for thesis:', thesis.title, error);
-          failedRequests.push(thesis.title);
+          failureCount++;
         }
       }
 
-      if (failedRequests.length === 0) {
-        toast.success(`Successfully submitted requests for ${selectedTheses.length} thesis(es)!`);
-        // Navigate back after successful submission
+      if (successCount > 0) {
+        toast.success(`Successfully submitted ${successCount} thesis access request(s)!`);
         setTimeout(() => {
           if (id) {
             navigate(`/thesis/${id}`);
@@ -202,11 +194,10 @@ const RequestThesisAccess = () => {
             navigate('/explore');
           }
         }, 2000);
-      } else if (successfulRequests.length > 0) {
-        toast.success(`Successfully submitted ${successfulRequests.length} request(s)`);
-        toast.error(`Failed to submit requests for: ${failedRequests.join(', ')}`);
-      } else {
-        toast.error('Failed to submit all requests. Please try again.');
+      }
+
+      if (failureCount > 0) {
+        toast.error(`Failed to submit ${failureCount} request(s). Please try again.`);
       }
     } catch (error: any) {
       console.error('Submission error:', error);
@@ -367,10 +358,13 @@ const RequestThesisAccess = () => {
                       {userFavorites.slice(0, 6).map((favorite) => (
                         <Card key={favorite.id} className="cursor-pointer hover:shadow-md transition-shadow">
                           <CardContent className="p-4">
-                            <h4 className="font-medium text-sm line-clamp-2 mb-2">Saved Thesis #{favorite.id.slice(0, 8)}</h4>
+                            <h4 className="font-medium text-sm line-clamp-2 mb-2">Favorite Thesis</h4>
                             <div className="flex justify-between items-center">
-                              <span className="text-xs text-gray-500">Favorited</span>
-                              <Button size="sm" variant="outline" onClick={() => addThesis({ id: favorite.thesis_id, title: `Favorite #${favorite.id.slice(0, 8)}`, author: 'Unknown' })}>
+                              <span className="text-xs text-gray-500">From your favorites</span>
+                              <Button size="sm" variant="outline" onClick={() => {
+                                // We need to fetch the actual thesis data for favorites
+                                toast.info('Feature coming soon - add from favorites');
+                              }}>
                                 <Plus className="h-4 w-4" />
                               </Button>
                             </div>
@@ -399,7 +393,7 @@ const RequestThesisAccess = () => {
                           setSearchQuery(e.target.value);
                           searchTheses(e.target.value);
                         }}
-                        placeholder="Search by title, author, or abstract..."
+                        placeholder="Search by title..."
                         className="pr-10"
                       />
                       {isSearching && (
