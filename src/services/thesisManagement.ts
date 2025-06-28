@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface BulkActionResult {
@@ -13,34 +12,66 @@ export class ThesisManagementService {
     try {
       console.log('Checking admin access for user:', userId);
       
-      // Check localStorage first for development
+      // Check localStorage first for debug info
       const storedUser = localStorage.getItem('stars_user');
       if (storedUser) {
         const userData = JSON.parse(storedUser);
         console.log('Found stored user data:', userData);
-        if (userData.role === 'admin') {
-          console.log('User is admin according to localStorage');
-          return true;
-        }
       }
 
-      // Check database
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userId)
-        .single();
+      // Get the actual authenticated user session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      console.log('Current session:', session, 'Session error:', sessionError);
 
-      console.log('Database profile check result:', { data, error });
+      if (session?.user) {
+        console.log('Session user ID:', session.user.id);
+        console.log('Provided user ID:', userId);
+        
+        // Ensure we're checking the right user
+        const actualUserId = session.user.id;
+        
+        // Check database for user profile
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', actualUserId)
+          .single();
 
-      if (error) {
-        console.error('Error checking admin access:', error);
+        console.log('Database profile check result:', { data, error });
+
+        if (error) {
+          console.error('Error checking admin access:', error);
+          
+          // If no profile exists, create one for the current user
+          if (error.code === 'PGRST116') { // No rows returned
+            console.log('No profile found, creating admin profile for logged-in user');
+            const { data: newProfile, error: insertError } = await supabase
+              .from('profiles')
+              .insert({
+                id: actualUserId,
+                name: session.user.email?.split('@')[0] || 'Admin User',
+                role: 'admin'
+              })
+              .select()
+              .single();
+            
+            console.log('Profile creation result:', { newProfile, insertError });
+            
+            if (!insertError && newProfile) {
+              return newProfile.role === 'admin';
+            }
+          }
+          
+          return false;
+        }
+        
+        const isAdmin = data?.role === 'admin';
+        console.log('Is admin from database:', isAdmin, 'User role:', data?.role);
+        return isAdmin;
+      } else {
+        console.log('No active session found');
         return false;
       }
-      
-      const isAdmin = data?.role === 'admin';
-      console.log('Is admin from database:', isAdmin);
-      return isAdmin;
     } catch (error) {
       console.error('Error checking admin access:', error);
       return false;
@@ -52,44 +83,23 @@ export class ThesisManagementService {
     try {
       console.log('Starting thesis approval for:', thesisId, 'by user:', userId);
 
-      // Enhanced admin check first
-      const isAdmin = await this.checkAdminAccess(userId);
+      // Get the actual user session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        return {
+          success: false,
+          message: 'No active user session found'
+        };
+      }
+
+      const actualUserId = session.user.id;
+      console.log('Using actual user ID:', actualUserId);
+
+      // Enhanced admin check
+      const isAdmin = await this.checkAdminAccess(actualUserId);
       console.log('Admin access check result:', isAdmin);
       
       if (!isAdmin) {
-        // Try alternative approach - check if user is in development mode
-        const storedUser = localStorage.getItem('stars_user');
-        if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          console.log('Attempting development mode approval with user:', userData);
-          
-          if (userData.role === 'admin') {
-            // For development, try direct database update
-            console.log('Using development mode direct update');
-            const { error } = await supabase
-              .from('theses')
-              .update({ 
-                status: 'approved',
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', thesisId);
-
-            if (error) {
-              console.error('Direct update error:', error);
-              return {
-                success: false,
-                message: `Database error: ${error.message}`
-              };
-            }
-
-            return {
-              success: true,
-              message: 'Successfully approved thesis (development mode)',
-              updatedCount: 1
-            };
-          }
-        }
-        
         return {
           success: false,
           message: 'Admin access denied. Please check your user role.'
@@ -100,7 +110,7 @@ export class ThesisManagementService {
       const { data, error } = await supabase.rpc('update_thesis_status', {
         thesis_uuid: thesisId,
         new_status: 'approved',
-        user_uuid: userId
+        user_uuid: actualUserId
       });
 
       console.log('Database function call result:', { data, error });
@@ -149,44 +159,23 @@ export class ThesisManagementService {
     try {
       console.log('Starting thesis rejection for:', thesisId, 'by user:', userId);
 
-      // Enhanced admin check first
-      const isAdmin = await this.checkAdminAccess(userId);
+      // Get the actual user session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        return {
+          success: false,
+          message: 'No active user session found'
+        };
+      }
+
+      const actualUserId = session.user.id;
+      console.log('Using actual user ID:', actualUserId);
+
+      // Enhanced admin check
+      const isAdmin = await this.checkAdminAccess(actualUserId);
       console.log('Admin access check result:', isAdmin);
       
       if (!isAdmin) {
-        // Try alternative approach - check if user is in development mode
-        const storedUser = localStorage.getItem('stars_user');
-        if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          console.log('Attempting development mode rejection with user:', userData);
-          
-          if (userData.role === 'admin') {
-            // For development, try direct database update
-            console.log('Using development mode direct update');
-            const { error } = await supabase
-              .from('theses')
-              .update({ 
-                status: 'needs_revision',
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', thesisId);
-
-            if (error) {
-              console.error('Direct update error:', error);
-              return {
-                success: false,
-                message: `Database error: ${error.message}`
-              };
-            }
-
-            return {
-              success: true,
-              message: 'Successfully rejected thesis (development mode)',
-              updatedCount: 1
-            };
-          }
-        }
-        
         return {
           success: false,
           message: 'Admin access denied. Please check your user role.'
@@ -197,7 +186,7 @@ export class ThesisManagementService {
       const { data, error } = await supabase.rpc('update_thesis_status', {
         thesis_uuid: thesisId,
         new_status: 'needs_revision',
-        user_uuid: userId
+        user_uuid: actualUserId
       });
 
       console.log('Database function call result:', { data, error });
