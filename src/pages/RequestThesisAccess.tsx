@@ -15,8 +15,9 @@ import Footer from '@/components/Footer';
 import { ArrowLeft, FileText, Send, Plus, X, CheckCircle, Clock, User, Building2, Search, BookOpen, Heart, History } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useThesis, useUserFavorites } from '@/hooks/useApi';
+import { useThesis } from '@/hooks/useApi';
 import { useRecentTheses } from '@/hooks/useRecentTheses';
+import { useQuery } from '@tanstack/react-query';
 import type { Thesis } from '@/types/thesis';
 
 interface SelectedThesis {
@@ -45,6 +46,20 @@ interface RequestFormData {
   purpose: string;
 }
 
+interface FavoriteThesis {
+  id: string;
+  thesis_id: string;
+  theses: {
+    id: string;
+    title: string;
+    author: string;
+    publish_date: string | null;
+    colleges: {
+      name: string;
+    } | null;
+  };
+}
+
 const RequestThesisAccess = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
@@ -57,8 +72,39 @@ const RequestThesisAccess = () => {
   const [isSearching, setIsSearching] = useState(false);
   
   const { data: initialThesis, isLoading } = useThesis(id || '') as { data: Thesis | undefined, isLoading: boolean };
-  const { data: userFavorites } = useUserFavorites(user?.id);
   const { recentTheses, isLoading: recentLoading } = useRecentTheses();
+  
+  // Fetch user's favorites with thesis details
+  const { data: userFavorites } = useQuery({
+    queryKey: ["user_favorites_with_theses", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from("user_favorites")
+        .select(`
+          id,
+          thesis_id,
+          theses (
+            id,
+            title,
+            author,
+            publish_date,
+            colleges (
+              name
+            )
+          )
+        `)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching user favorites:', error);
+        return [];
+      }
+      return data as FavoriteThesis[] || [];
+    },
+    enabled: !!user?.id,
+  });
   
   const [formData, setFormData] = useState<RequestFormData>({
     requesterName: user?.name || user?.email?.split('@')[0] || '',
@@ -100,7 +146,7 @@ const RequestThesisAccess = () => {
             name
           )
         `)
-        .or(`title.ilike.%${query}%, author.ilike.%${query}%, abstract.ilike.%${query}%`)
+        .ilike('title', `%${query}%`)
         .eq('status', 'approved')
         .limit(20);
 
@@ -361,14 +407,22 @@ const RequestThesisAccess = () => {
                         <Card key={favorite.id} className="cursor-pointer hover:shadow-md transition-shadow">
                           <CardContent className="p-4">
                             <h4 className="font-medium text-sm line-clamp-2 mb-2">
-                              {favorite.thesis_id ? 'Favorited Thesis' : 'Favorite Item'}
+                              {favorite.theses.title}
                             </h4>
+                            <p className="text-sm text-gray-600 mb-2">by {favorite.theses.author}</p>
                             <div className="flex justify-between items-center">
-                              <span className="text-xs text-gray-500">From your favorites</span>
-                              <Button size="sm" variant="outline" onClick={() => {
-                                toast.info('Loading thesis details...');
-                                // You can implement fetching the actual thesis data here
-                              }}>
+                              <div className="flex items-center gap-2 text-xs text-gray-500">
+                                {favorite.theses.colleges?.name && (
+                                  <Badge variant="outline" className="text-xs">{favorite.theses.colleges.name}</Badge>
+                                )}
+                              </div>
+                              <Button size="sm" variant="outline" onClick={() => addThesis({
+                                id: favorite.theses.id,
+                                title: favorite.theses.title,
+                                author: favorite.theses.author,
+                                publish_date: favorite.theses.publish_date,
+                                colleges: favorite.theses.colleges
+                              })}>
                                 <Plus className="h-4 w-4" />
                               </Button>
                             </div>

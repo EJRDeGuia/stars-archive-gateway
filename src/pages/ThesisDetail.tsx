@@ -1,10 +1,10 @@
-
 import React from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import PDFViewer from '@/components/PDFViewer';
+import FavoriteButton from '@/components/FavoriteButton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,9 +20,10 @@ import {
   Share2
 } from 'lucide-react';
 import ThesisPDFPreviewDialog from '@/components/ThesisPDFPreviewDialog';
-import { useThesis } from '@/hooks/useApi';
+import { useThesis, useUserFavorites } from '@/hooks/useApi';
 import type { Thesis } from '@/types/thesis';
 import { semanticSearchService } from '@/services/semanticSearch';
+import { toast } from 'sonner';
 
 const ThesisDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -30,9 +31,13 @@ const ThesisDetail = () => {
   const navigate = useNavigate();
 
   const { data: thesis, isLoading, error } = useThesis(id || "") as { data: Thesis | undefined, isLoading: boolean, error: any };
+  const { data: userFavorites } = useUserFavorites(user?.id);
   const [showPreview, setShowPreview] = React.useState(false);
   const [relatedTheses, setRelatedTheses] = React.useState<Thesis[]>([]);
   const [loadingRelated, setLoadingRelated] = React.useState(false);
+
+  // Find if this thesis is favorited by the user
+  const favoriteEntry = userFavorites?.find(fav => fav.thesis_id === thesis?.id);
 
   // Load related theses when thesis data is available
   React.useEffect(() => {
@@ -111,20 +116,16 @@ const ThesisDetail = () => {
 
   const canViewPDF = user?.role && ['researcher', 'archivist', 'admin'].includes(user.role);
 
-  const handleSaveToLibrary = () => {
-    console.log('Saving to library:', thesis.id);
-  };
-
   const handleCite = () => {
     const citation = `${thesis.author}. (${thesisYearString}). ${thesis.title}. De La Salle Lipa University.`;
     navigator.clipboard.writeText(citation);
-    console.log('Citation copied:', citation);
+    toast.success('Citation copied to clipboard!');
   };
 
   const handleShare = () => {
     const shareUrl = window.location.href;
     navigator.clipboard.writeText(shareUrl);
-    console.log('Share URL copied:', shareUrl);
+    toast.success('Share URL copied to clipboard!');
   };
 
   return (
@@ -151,9 +152,20 @@ const ThesisDetail = () => {
               <div className="bg-white border border-gray-200 rounded-2xl shadow-sm">
                 <div className="p-8">
                   <div className="mb-8">
-                    <h1 className="text-4xl font-bold text-gray-900 mb-6 leading-tight">
-                      {thesis.title}
-                    </h1>
+                    <div className="flex items-start justify-between mb-6">
+                      <h1 className="text-4xl font-bold text-gray-900 mb-6 leading-tight flex-1">
+                        {thesis.title}
+                      </h1>
+                      {user && (
+                        <div className="ml-4 flex-shrink-0">
+                          <FavoriteButton
+                            userId={user.id}
+                            thesisId={thesis.id}
+                            favoriteId={favoriteEntry?.id}
+                          />
+                        </div>
+                      )}
+                    </div>
                     
                     <div className="flex items-center gap-6 text-gray-600 mb-6">
                       <div className="flex items-center gap-2">
@@ -256,14 +268,6 @@ const ThesisDetail = () => {
                 <div className="p-6">
                   <h3 className="text-xl font-bold text-gray-900 mb-6">Actions</h3>
                   <div className="space-y-4">
-                    <Button 
-                      variant="outline" 
-                      className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl py-3"
-                      onClick={handleSaveToLibrary}
-                    >
-                      <Bookmark className="mr-2 h-5 w-5" />
-                      Save to Library
-                    </Button>
                     <Button 
                       variant="outline" 
                       className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl py-3"

@@ -1,13 +1,21 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { useUserFavorites, useSavedSearches } from "@/hooks/useApi";
-import { BookOpen, Search } from "lucide-react";
+import { BookOpen, Search, Heart } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 type Favorite = {
   id: string;
   thesis_id: string;
+  created_at: string;
+  theses?: {
+    id: string;
+    title: string;
+    author: string;
+  };
 }
 
 type SavedSearch = {
@@ -20,9 +28,35 @@ type SavedSearch = {
 export default function MyCollectionsSection() {
   const { user } = useAuth();
   const userId = user?.id;
-  const { data: favorites = [] } = useUserFavorites(userId) as { data: Favorite[] | undefined };
-  const { data: savedSearches = [] } = useSavedSearches(userId) as { data: SavedSearch[] | undefined };
   const navigate = useNavigate();
+
+  // Fetch favorites with thesis details
+  const { data: favorites = [] } = useQuery({
+    queryKey: ["user_favorites_with_theses", userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      const { data, error } = await supabase
+        .from("user_favorites")
+        .select(`
+          id,
+          thesis_id,
+          created_at,
+          theses (
+            id,
+            title,
+            author
+          )
+        `)
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+      
+      if (error) throw error;
+      return data as Favorite[] || [];
+    },
+    enabled: !!userId,
+  });
+
+  const { data: savedSearches = [] } = useSavedSearches(userId) as { data: SavedSearch[] | undefined };
 
   return (
     <div className="mb-12">
@@ -31,19 +65,26 @@ export default function MyCollectionsSection() {
         {/* Favorites */}
         <Card className="p-6 bg-white/95 border border-dlsl-green/15">
           <div className="flex items-center gap-3 mb-2 font-semibold">
-            <BookOpen className="text-dlsl-green" /> Favorites
+            <Heart className="text-dlsl-green" /> My Library ({favorites.length})
           </div>
           {favorites.length === 0 ? (
             <div className="text-gray-400 text-sm">None yet. Add favorites from thesis pages!</div>
           ) : (
             <ul className="text-dlsl-green font-medium space-y-1">
-              {favorites.slice(0, 5).map((f) => (
+              {favorites.slice(0, 5).map((favorite) => (
                 <li
-                  className="hover:underline cursor-pointer"
-                  key={f.id}
-                  onClick={() => navigate(`/thesis/${f.thesis_id}`)}
+                  className="hover:underline cursor-pointer text-sm"
+                  key={favorite.id}
+                  onClick={() => navigate(`/thesis/${favorite.thesis_id}`)}
                 >
-                  Thesis #{f.thesis_id?.slice(0, 6) || ""}
+                  {favorite.theses?.title ? (
+                    <div>
+                      <div className="font-medium line-clamp-1">{favorite.theses.title}</div>
+                      <div className="text-xs text-gray-500">by {favorite.theses.author}</div>
+                    </div>
+                  ) : (
+                    `Thesis #${favorite.thesis_id?.slice(0, 6) || ""}`
+                  )}
                 </li>
               ))}
               {favorites.length > 5 && (
@@ -52,6 +93,7 @@ export default function MyCollectionsSection() {
             </ul>
           )}
         </Card>
+        
         {/* Saved Searches */}
         <Card className="p-6 bg-white/95 border border-dlsl-green/15">
           <div className="flex items-center gap-3 mb-2 font-semibold">
