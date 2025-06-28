@@ -8,16 +8,32 @@ export interface BulkActionResult {
 }
 
 export class ThesisManagementService {
-  // Check if user has admin privileges
+  // Check if user has admin privileges - updated to work with both development and production
   static async checkAdminAccess(userId: string): Promise<boolean> {
     try {
+      // In development mode, we can also check localStorage for immediate access
+      const isDevelopment = true; // This should match your auth context setting
+      
+      if (isDevelopment) {
+        const storedUser = localStorage.getItem('stars_user');
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          return userData.role === 'admin';
+        }
+      }
+
+      // Always try to check the database as well
       const { data, error } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', userId)
         .single();
 
-      if (error) throw error;
+      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+        console.error('Error checking admin access:', error);
+        return false;
+      }
+      
       return data?.role === 'admin';
     } catch (error) {
       console.error('Error checking admin access:', error);

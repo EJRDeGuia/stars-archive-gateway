@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AdminQuickActions from '@/components/AdminQuickActions';
+import DebugUserInfo from '@/components/DebugUserInfo';
 import { Shield } from 'lucide-react';
 import React from 'react';
 import { useAdminDashboardData } from '@/hooks/useAdminDashboardData';
@@ -67,6 +68,9 @@ const AdminDashboard = () => {
       <Header />
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+          {/* Debug component - only shows in development */}
+          <DebugUserInfo />
+          
           {/* Admin Header */}
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-6">

@@ -1,9 +1,11 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 type UserRole = 'researcher' | 'archivist' | 'admin' | 'guest_researcher';
 
-interface User {
+interface AppUser {
   id: string;
   name: string;
   email: string;
@@ -11,7 +13,7 @@ interface User {
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: AppUser | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
@@ -19,8 +21,11 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock users with proper UUID format IDs that match database expectations
-const mockUsers: (User & { password: string })[] = [
+// Development mode flag - set to false for production
+const isDevelopment = true;
+
+// Mock users for development (same as before but used differently)
+const mockUsers: (AppUser & { password: string })[] = [
   {
     id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
     name: 'Researcher User',
@@ -52,41 +57,117 @@ const mockUsers: (User & { password: string })[] = [
 ];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored session on app load
-    const storedUser = localStorage.getItem('stars_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    // Check for existing session
+    const checkUser = async () => {
+      if (isDevelopment) {
+        // In development, check localStorage for mock session
+        const storedUser = localStorage.getItem('stars_user');
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          // Simulate getting user profile from database
+          setUser(userData);
+        }
+        setIsLoading(false);
+      } else {
+        // In production, use real Supabase auth
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          await loadUserProfile(session.user);
+        }
+        setIsLoading(false);
+
+        // Listen for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+          if (session?.user) {
+            await loadUserProfile(session.user);
+          } else {
+            setUser(null);
+          }
+        });
+
+        return () => subscription.unsubscribe();
+      }
+    };
+
+    checkUser();
   }, []);
+
+  const loadUserProfile = async (authUser: User) => {
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', authUser.id)
+        .single();
+
+      if (profile) {
+        setUser({
+          id: profile.id,
+          name: profile.name,
+          email: authUser.email || '',
+          role: profile.role
+        });
+      }
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+    }
+  };
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const foundUser = mockUsers.find(u => u.email === email && u.password === password);
-    
-    if (foundUser) {
-      const { password: _, ...userWithoutPassword } = foundUser;
-      setUser(userWithoutPassword);
-      localStorage.setItem('stars_user', JSON.stringify(userWithoutPassword));
+    if (isDevelopment) {
+      // Development mock login
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const foundUser = mockUsers.find(u => u.email === email && u.password === password);
+      
+      if (foundUser) {
+        const { password: _, ...userWithoutPassword } = foundUser;
+        setUser(userWithoutPassword);
+        localStorage.setItem('stars_user', JSON.stringify(userWithoutPassword));
+        setIsLoading(false);
+        return true;
+      }
+      
       setIsLoading(false);
-      return true;
+      return false;
+    } else {
+      // Production Supabase auth
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+
+        if (data.user) {
+          await loadUserProfile(data.user);
+          setIsLoading(false);
+          return true;
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+      }
+      
+      setIsLoading(false);
+      return false;
     }
-    
-    setIsLoading(false);
-    return false;
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('stars_user');
+  const logout = async () => {
+    if (isDevelopment) {
+      setUser(null);
+      localStorage.removeItem('stars_user');
+    } else {
+      await supabase.auth.signOut();
+      setUser(null);
+    }
   };
 
   return (
