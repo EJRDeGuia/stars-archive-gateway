@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { UserRole } from '@/types/auth';
 
@@ -33,7 +34,7 @@ export class ThesisManagementService {
           return false;
         }
       } else {
-        // Production mode - use Supabase session
+        // Production mode - use Supabase session and user_roles table
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         console.log('Current session:', session, 'Session error:', sessionError);
 
@@ -43,42 +44,21 @@ export class ThesisManagementService {
           
           const actualUserId = session.user.id;
           
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', actualUserId)
-            .single();
+          // Check user role using the has_role function
+          const { data, error } = await supabase.rpc('has_role', {
+            _user_id: actualUserId,
+            _role: 'admin'
+          });
 
-          console.log('Database profile check result:', { data, error });
+          console.log('has_role function result:', { data, error });
 
           if (error) {
             console.error('Error checking admin access:', error);
-            
-            if (error.code === 'PGRST116') {
-              console.log('No profile found, creating admin profile for logged-in user');
-              const { data: newProfile, error: insertError } = await supabase
-                .from('profiles')
-                .insert({
-                  id: actualUserId,
-                  name: session.user.email?.split('@')[0] || 'Admin User',
-                  role: 'admin'
-                })
-                .select()
-                .single();
-              
-              console.log('Profile creation result:', { newProfile, insertError });
-              
-              if (!insertError && newProfile) {
-                return newProfile.role === 'admin';
-              }
-            }
-            
             return false;
           }
           
-          const isAdmin = data?.role === 'admin';
-          console.log('Is admin from database:', isAdmin, 'User role:', data?.role);
-          return isAdmin;
+          console.log('Is admin from database:', data);
+          return data === true;
         } else {
           console.log('No active session found');
           return false;
@@ -110,18 +90,18 @@ export class ThesisManagementService {
     }
   }
 
-  // Ensure user profile exists in database for development mode
-  static async ensureUserProfileExists(userId: string, userEmail: string) {
+  // Ensure user role exists in database for development mode
+  static async ensureUserRoleExists(userId: string, userEmail: string) {
     if (isDevelopment) {
-      // Check if profile exists
-      const { data: existingProfile } = await supabase
-        .from('profiles')
+      // Check if user role exists
+      const { data: existingRole } = await supabase
+        .from('user_roles')
         .select('*')
-        .eq('id', userId)
+        .eq('user_id', userId)
         .single();
 
-      if (!existingProfile) {
-        console.log('Creating profile for development user:', userId);
+      if (!existingRole) {
+        console.log('Creating user role for development user:', userId);
         
         // Get user data from localStorage to determine role
         const storedUser = localStorage.getItem('stars_user');
@@ -132,21 +112,20 @@ export class ThesisManagementService {
           role = (userData.role as UserRole) || 'researcher';
         }
 
-        const { data: newProfile, error } = await supabase
-          .from('profiles')
+        const { data: newRole, error } = await supabase
+          .from('user_roles')
           .insert({
-            id: userId,
-            name: userEmail?.split('@')[0] || 'User',
+            user_id: userId,
             role: role
           })
           .select()
           .single();
 
-        console.log('Profile creation result:', { newProfile, error });
-        return newProfile;
+        console.log('User role creation result:', { newRole, error });
+        return newRole;
       }
       
-      return existingProfile;
+      return existingRole;
     }
     return null;
   }
@@ -169,9 +148,9 @@ export class ThesisManagementService {
       const actualUserId = user.id;
       console.log('Using actual user ID:', actualUserId);
 
-      // In development mode, ensure the user profile exists in the database
+      // In development mode, ensure the user role exists in the database
       if (isDevelopment) {
-        await this.ensureUserProfileExists(actualUserId, user.email || '');
+        await this.ensureUserRoleExists(actualUserId, user.email || '');
       }
 
       // Enhanced admin check
@@ -253,9 +232,9 @@ export class ThesisManagementService {
       const actualUserId = user.id;
       console.log('Using actual user ID:', actualUserId);
 
-      // In development mode, ensure the user profile exists in the database
+      // In development mode, ensure the user role exists in the database
       if (isDevelopment) {
-        await this.ensureUserProfileExists(actualUserId, user.email || '');
+        await this.ensureUserRoleExists(actualUserId, user.email || '');
       }
 
       // Enhanced admin check

@@ -24,7 +24,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 // Development mode flag - set to false for production
 const isDevelopment = true;
 
-// Mock users for development (same as before but used differently)
+// Mock users for development
 const mockUsers: (AppUser & { password: string })[] = [
   {
     id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
@@ -98,22 +98,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadUserProfile = async (authUser: User) => {
     try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', authUser.id)
-        .single();
+      // Use has_role function to get user role
+      const { data: isAdmin } = await supabase.rpc('has_role', {
+        _user_id: authUser.id,
+        _role: 'admin'
+      });
+      
+      const { data: isArchivist } = await supabase.rpc('has_role', {
+        _user_id: authUser.id,
+        _role: 'archivist'
+      });
+      
+      const { data: isGuestResearcher } = await supabase.rpc('has_role', {
+        _user_id: authUser.id,
+        _role: 'guest_researcher'
+      });
 
-      if (profile) {
-        setUser({
-          id: profile.id,
-          name: profile.name,
-          email: authUser.email || '',
-          role: profile.role
-        });
-      }
+      let userRole: UserRole = 'researcher'; // default
+      if (isAdmin) userRole = 'admin';
+      else if (isArchivist) userRole = 'archivist';
+      else if (isGuestResearcher) userRole = 'guest_researcher';
+
+      setUser({
+        id: authUser.id,
+        name: authUser.email?.split('@')[0] || 'User',
+        email: authUser.email || '',
+        role: userRole
+      });
     } catch (error) {
       console.error('Error loading user profile:', error);
+      // Set default user data if role lookup fails
+      setUser({
+        id: authUser.id,
+        name: authUser.email?.split('@')[0] || 'User',
+        email: authUser.email || '',
+        role: 'researcher'
+      });
     }
   };
 

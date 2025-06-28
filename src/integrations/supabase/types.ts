@@ -138,41 +138,6 @@ export type Database = {
         }
         Relationships: []
       }
-      profiles: {
-        Row: {
-          college_id: string | null
-          created_at: string | null
-          id: string
-          name: string
-          role: Database["public"]["Enums"]["user_role"]
-          updated_at: string | null
-        }
-        Insert: {
-          college_id?: string | null
-          created_at?: string | null
-          id: string
-          name: string
-          role?: Database["public"]["Enums"]["user_role"]
-          updated_at?: string | null
-        }
-        Update: {
-          college_id?: string | null
-          created_at?: string | null
-          id?: string
-          name?: string
-          role?: Database["public"]["Enums"]["user_role"]
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_profiles_college"
-            columns: ["college_id"]
-            isOneToOne: false
-            referencedRelation: "colleges"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       programs: {
         Row: {
           college_id: string
@@ -556,6 +521,27 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -583,6 +569,13 @@ export type Database = {
       }
       has_elevated_access: {
         Args: { _user_id: string }
+        Returns: boolean
+      }
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
         Returns: boolean
       }
       hnsw_bit_support: {
@@ -682,6 +675,7 @@ export type Database = {
       }
     }
     Enums: {
+      app_role: "admin" | "archivist" | "researcher" | "guest_researcher"
       thesis_status:
         | "pending_review"
         | "approved"
@@ -803,6 +797,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "archivist", "researcher", "guest_researcher"],
       thesis_status: [
         "pending_review",
         "approved",
