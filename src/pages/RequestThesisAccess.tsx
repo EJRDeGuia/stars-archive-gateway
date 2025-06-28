@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,10 +12,11 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { ArrowLeft, FileText, Send, Plus, X, CheckCircle, Clock, User, Building2, Search, BookOpen } from 'lucide-react';
+import { ArrowLeft, FileText, Send, Plus, X, CheckCircle, Clock, User, Building2, Search, BookOpen, Heart, History } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useThesis } from '@/hooks/useApi';
+import { useThesis, useUserFavorites } from '@/hooks/useApi';
+import { useRecentTheses } from '@/hooks/useRecentTheses';
 import type { Thesis } from '@/types/thesis';
 
 interface SelectedThesis {
@@ -54,6 +56,8 @@ const RequestThesisAccess = () => {
   const [isSearching, setIsSearching] = useState(false);
   
   const { data: initialThesis, isLoading } = useThesis(id || '') as { data: Thesis | undefined, isLoading: boolean };
+  const { data: userFavorites } = useUserFavorites(user?.id);
+  const { recentTheses, isLoading: recentLoading } = useRecentTheses();
   
   const [formData, setFormData] = useState<RequestFormData>({
     requesterName: user?.name || '',
@@ -94,20 +98,21 @@ const RequestThesisAccess = () => {
             name
           )
         `)
-        .or(`title.ilike.%${query}%, author.ilike.%${query}%`)
+        .or(`title.ilike.%${query}%, author.ilike.%${query}%, abstract.ilike.%${query}%`)
         .eq('status', 'approved')
         .limit(10);
 
       if (error) throw error;
       setSearchResults(data as SearchThesis[] || []);
     } catch (error: any) {
+      console.error('Search error:', error);
       toast.error('Failed to search theses');
     } finally {
       setIsSearching(false);
     }
   };
 
-  const addThesis = (thesis: SearchThesis) => {
+  const addThesis = (thesis: SearchThesis | any) => {
     const isAlreadySelected = selectedTheses.some(t => t.id === thesis.id);
     if (isAlreadySelected) {
       toast.info('This thesis is already selected');
@@ -118,7 +123,7 @@ const RequestThesisAccess = () => {
       id: thesis.id,
       title: thesis.title,
       author: thesis.author,
-      college_name: thesis.colleges?.name,
+      college_name: thesis.colleges?.name || thesis.college_name,
       publish_date: thesis.publish_date
     };
 
@@ -138,44 +143,74 @@ const RequestThesisAccess = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || selectedTheses.length === 0) return;
+    if (!user || selectedTheses.length === 0) {
+      toast.error('Please ensure you are logged in and have selected at least one thesis');
+      return;
+    }
+
+    // Validate required fields
+    if (!formData.requesterName.trim() || !formData.requesterEmail.trim() || !formData.purpose.trim()) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
 
     setIsSubmitting(true);
     const failedRequests: string[] = [];
+    const successfulRequests: string[] = [];
 
     try {
       for (const thesis of selectedTheses) {
         try {
-          const { error } = await supabase
+          console.log('Submitting request for thesis:', thesis.id);
+          
+          const { data, error } = await supabase
             .from('thesis_access_requests')
             .insert([
               {
                 thesis_id: thesis.id,
                 user_id: user.id,
-                requester_name: formData.requesterName,
-                requester_email: formData.requesterEmail,
-                institution: formData.institution,
-                purpose: formData.purpose
+                requester_name: formData.requesterName.trim(),
+                requester_email: formData.requesterEmail.trim(),
+                institution: formData.institution.trim() || null,
+                purpose: formData.purpose.trim(),
+                status: 'pending'
               }
-            ]);
+            ])
+            .select()
+            .single();
 
-          if (error) throw error;
-        } catch (error) {
+          if (error) {
+            console.error('Error submitting request:', error);
+            throw error;
+          }
+
+          console.log('Request submitted successfully:', data);
+          successfulRequests.push(thesis.title);
+        } catch (error: any) {
+          console.error('Failed to submit request for thesis:', thesis.title, error);
           failedRequests.push(thesis.title);
         }
       }
 
       if (failedRequests.length === 0) {
         toast.success(`Successfully submitted requests for ${selectedTheses.length} thesis(es)!`);
-        // Navigate to the first thesis if we started from a single thesis page
-        if (id) {
-          navigate(`/thesis/${id}`);
-        } else {
-          navigate('/explore');
-        }
-      } else {
+        // Navigate back after successful submission
+        setTimeout(() => {
+          if (id) {
+            navigate(`/thesis/${id}`);
+          } else {
+            navigate('/explore');
+          }
+        }, 2000);
+      } else if (successfulRequests.length > 0) {
+        toast.success(`Successfully submitted ${successfulRequests.length} request(s)`);
         toast.error(`Failed to submit requests for: ${failedRequests.join(', ')}`);
+      } else {
+        toast.error('Failed to submit all requests. Please try again.');
       }
+    } catch (error: any) {
+      console.error('Submission error:', error);
+      toast.error('An unexpected error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -284,6 +319,69 @@ const RequestThesisAccess = () => {
                 </CardContent>
               </Card>
 
+              {/* Recent Theses Section */}
+              {recentTheses.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <History className="h-5 w-5 text-dlsl-green" />
+                      Recently Viewed Theses
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {recentTheses.map((thesis) => (
+                        <Card key={thesis.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                          <CardContent className="p-4">
+                            <h4 className="font-medium text-sm line-clamp-2 mb-2">{thesis.title}</h4>
+                            <p className="text-sm text-gray-600 mb-2">by {thesis.author}</p>
+                            <div className="flex justify-between items-center">
+                              <div className="flex items-center gap-2 text-xs text-gray-500">
+                                {thesis.college_name && (
+                                  <Badge variant="outline" className="text-xs">{thesis.college_name}</Badge>
+                                )}
+                              </div>
+                              <Button size="sm" variant="outline" onClick={() => addThesis(thesis)}>
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Your Library Section */}
+              {userFavorites && userFavorites.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Heart className="h-5 w-5 text-dlsl-green" />
+                      Your Library (Favorites)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-60 overflow-y-auto">
+                      {userFavorites.slice(0, 6).map((favorite) => (
+                        <Card key={favorite.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                          <CardContent className="p-4">
+                            <h4 className="font-medium text-sm line-clamp-2 mb-2">Saved Thesis #{favorite.id.slice(0, 8)}</h4>
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs text-gray-500">Favorited</span>
+                              <Button size="sm" variant="outline" onClick={() => addThesis({ id: favorite.thesis_id, title: `Favorite #${favorite.id.slice(0, 8)}`, author: 'Unknown' })}>
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Search and Add Theses */}
               <Card>
                 <CardHeader>
@@ -301,7 +399,7 @@ const RequestThesisAccess = () => {
                           setSearchQuery(e.target.value);
                           searchTheses(e.target.value);
                         }}
-                        placeholder="Search by title or author..."
+                        placeholder="Search by title, author, or abstract..."
                         className="pr-10"
                       />
                       {isSearching && (
