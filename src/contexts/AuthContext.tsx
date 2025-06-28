@@ -68,7 +68,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const storedUser = localStorage.getItem('stars_user');
         if (storedUser) {
           const userData = JSON.parse(storedUser);
-          // Simulate getting user profile from database
           setUser(userData);
         }
         setIsLoading(false);
@@ -98,26 +97,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadUserProfile = async (authUser: User) => {
     try {
-      // Use has_role function to get user role
-      const { data: isAdmin } = await supabase.rpc('has_role', {
-        _user_id: authUser.id,
-        _role: 'admin'
-      });
-      
-      const { data: isArchivist } = await supabase.rpc('has_role', {
-        _user_id: authUser.id,
-        _role: 'archivist'
-      });
-      
-      const { data: isGuestResearcher } = await supabase.rpc('has_role', {
-        _user_id: authUser.id,
-        _role: 'guest_researcher'
-      });
+      // First, ensure the user has a role entry in user_roles table
+      const { data: existingRole, error: roleCheckError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', authUser.id)
+        .single();
+
+      console.log('Existing role check:', { existingRole, roleCheckError });
 
       let userRole: UserRole = 'researcher'; // default
-      if (isAdmin) userRole = 'admin';
-      else if (isArchivist) userRole = 'archivist';
-      else if (isGuestResearcher) userRole = 'guest_researcher';
+
+      if (existingRole) {
+        // User has a role, use it
+        userRole = existingRole.role as UserRole;
+      } else {
+        // User doesn't have a role, create one with default 'researcher'
+        console.log('Creating default role for user:', authUser.id);
+        const { data: newRole, error: insertError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: authUser.id,
+            role: 'researcher'
+          })
+          .select('role')
+          .single();
+
+        if (insertError) {
+          console.error('Error creating user role:', insertError);
+        } else {
+          console.log('Created new role:', newRole);
+          userRole = newRole?.role as UserRole || 'researcher';
+        }
+      }
 
       setUser({
         id: authUser.id,
