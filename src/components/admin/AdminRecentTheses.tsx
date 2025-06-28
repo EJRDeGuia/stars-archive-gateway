@@ -38,6 +38,7 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
       return;
     }
 
+    console.log(`Starting ${action} action for thesis:`, thesisId);
     setActionLoading(thesisId);
     
     try {
@@ -48,22 +49,26 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
         result = await ThesisManagementService.bulkReject([thesisId], user.id);
       }
 
+      console.log('Action result:', result);
+
       if (result.success) {
         toast.success(result.message);
         // Invalidate all relevant queries to refresh data
-        queryClient.invalidateQueries({ queryKey: ['theses'] });
-        queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
+        await queryClient.invalidateQueries({ queryKey: ['theses'] });
+        await queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
         
         // Close review dialog if open
-        if (reviewDialogOpen) {
+        if (reviewDialogOpen && selectedThesis?.id === thesisId) {
           setReviewDialogOpen(false);
           setSelectedThesis(null);
         }
       } else {
         toast.error(result.message);
+        console.error('Action failed:', result.message);
       }
     } catch (error) {
-      toast.error('An error occurred while updating the thesis');
+      const errorMessage = 'An error occurred while updating the thesis';
+      toast.error(errorMessage);
       console.error('Error in handleQuickAction:', error);
     } finally {
       setActionLoading(null);
@@ -76,6 +81,7 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
       ...thesis,
       colleges: colleges.find(c => c.id === thesis.college_id)
     };
+    console.log('Opening review dialog for thesis:', thesisWithCollege);
     setSelectedThesis(thesisWithCollege);
     setReviewDialogOpen(true);
   };
