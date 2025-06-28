@@ -30,6 +30,7 @@ import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 import SystemSettings from "./pages/SystemSettings";
 import SecurityMonitor from "./pages/SecurityMonitor";
 import ManageCollections from '@/pages/ManageCollections';
+import ManageRecords from '@/pages/ManageRecords';
 import RequestThesisAccess from './pages/RequestThesisAccess';
 
 const queryClient = new QueryClient();
@@ -79,6 +80,11 @@ const App = () => (
             <Route path="/security-monitor" element={
               <ProtectedRoute requiredRole="admin">
                 <SecurityMonitor />
+              </ProtectedRoute>
+            } />
+            <Route path="/manage-records" element={
+              <ProtectedRoute requiredRole="archivist">
+                <ManageRecords />
               </ProtectedRoute>
             } />
             <Route path="/archivist" element={

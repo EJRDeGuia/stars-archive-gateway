@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -59,7 +60,7 @@ const Dashboard = () => {
         console.log('Database backup started');
         break;
       case "manage":
-        toast.info('Manage Records feature coming soon!');
+        navigate("/manage-records");
         break;
       case "reports":
         toast.info('Reports feature coming soon!');

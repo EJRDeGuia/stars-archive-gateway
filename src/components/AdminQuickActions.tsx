@@ -9,7 +9,8 @@ import {
   BarChart,
   Settings,
   Shield,
-  Database
+  Database,
+  FileText
 } from 'lucide-react';
 
 interface AdminQuickActionsProps {
@@ -33,6 +34,13 @@ const AdminQuickActions: React.FC<AdminQuickActionsProps> = ({ onActionClick }) 
       color: 'bg-dlsl-green'
     },
     {
+      id: 'manage',
+      title: 'Manage Records',
+      description: 'Review and approve theses',
+      icon: FileText,
+      color: 'bg-dlsl-green'
+    },
+    {
       id: 'backup',
       title: 'Backup Database',
       description: 'Create system backup',
@@ -51,13 +59,6 @@ const AdminQuickActions: React.FC<AdminQuickActionsProps> = ({ onActionClick }) 
       title: 'System Settings',
       description: 'Configure system preferences',
       icon: Settings,
-      color: 'bg-dlsl-green'
-    },
-    {
-      id: 'security',
-      title: 'Security Monitor',
-      description: 'Monitor access and security',
-      icon: Shield,
       color: 'bg-dlsl-green'
     }
   ];

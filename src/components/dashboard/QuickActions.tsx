@@ -7,7 +7,8 @@ import {
   Star, 
   Library, 
   TrendingUp,
-  Database
+  Database,
+  FileText
 } from 'lucide-react';
 
 interface QuickActionsProps {
@@ -17,6 +18,7 @@ interface QuickActionsProps {
 
 const QuickActions: React.FC<QuickActionsProps> = ({ userRole, onActionClick }) => {
   const isAdmin = userRole === 'admin';
+  const isArchivist = userRole === 'archivist';
   const canUpload = userRole === 'archivist' || userRole === 'admin';
 
   const actions = [
@@ -31,6 +33,12 @@ const QuickActions: React.FC<QuickActionsProps> = ({ userRole, onActionClick }) 
       title: 'Upload Thesis',
       description: 'Submit new research work',
       icon: Upload
+    }] : []),
+    ...(isArchivist || isAdmin ? [{
+      id: 'manage',
+      title: 'Manage Records',
+      description: 'Review and organize theses',
+      icon: FileText
     }] : []),
     ...(isAdmin ? [{
       id: 'backup',

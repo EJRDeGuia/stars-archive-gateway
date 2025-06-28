@@ -53,6 +53,9 @@ const AdminDashboard = () => {
       case 'backup':
         handleBackupDatabase();
         break;
+      case 'manage':
+        navigate('/manage-records');
+        break;
       // Fix: handle dashboard navigation for unspecified actions gracefully
       default:
         toast.info('Feature coming soon!');
