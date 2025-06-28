@@ -160,8 +160,7 @@ const ThesisReviewDialog: React.FC<ThesisReviewDialogProps> = ({
             <PDFViewer
               pdfUrl={thesis.pdf_url}
               title={thesis.title}
-              canView={true} // Admin can always view
-              maxPages={5} // Show first 5 pages for review
+              canView={true}
               className="h-[600px]"
               thesisId={thesis.id}
             />
