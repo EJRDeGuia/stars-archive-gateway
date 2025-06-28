@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface BulkActionResult {
@@ -55,7 +54,7 @@ export class ThesisManagementService {
 
       console.log('Attempting to approve theses:', thesisIds);
 
-      // First, let's check if the theses exist
+      // First, let's check if the theses exist and their current status
       const { data: existingTheses, error: checkError } = await supabase
         .from('theses')
         .select('id, status, title')
@@ -75,12 +74,11 @@ export class ThesisManagementService {
         };
       }
 
-      // Update the theses status to approved
+      // Update the theses status to approved - Fixed the update query
       const { data: updatedTheses, error: updateError } = await supabase
         .from('theses')
         .update({ 
-          status: 'approved',
-          updated_at: new Date().toISOString()
+          status: 'approved'
         })
         .in('id', thesisIds)
         .select('id, title, status');
@@ -122,7 +120,7 @@ export class ThesisManagementService {
 
       console.log('Attempting to reject theses:', thesisIds);
 
-      // First, let's check if the theses exist
+      // First, let's check if the theses exist and their current status
       const { data: existingTheses, error: checkError } = await supabase
         .from('theses')
         .select('id, status, title')
@@ -142,12 +140,11 @@ export class ThesisManagementService {
         };
       }
 
-      // Update the theses status to needs_revision
+      // Update the theses status to needs_revision - Fixed the update query
       const { data: updatedTheses, error: updateError } = await supabase
         .from('theses')
         .update({ 
-          status: 'needs_revision',
-          updated_at: new Date().toISOString()
+          status: 'needs_revision'
         })
         .in('id', thesisIds)
         .select('id, title, status');

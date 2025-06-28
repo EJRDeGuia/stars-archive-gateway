@@ -53,9 +53,15 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
 
       if (result.success) {
         toast.success(result.message);
-        // Invalidate all relevant queries to refresh data
+        
+        // Force refresh the data by invalidating ALL related queries
         await queryClient.invalidateQueries({ queryKey: ['theses'] });
         await queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
+        await queryClient.invalidateQueries({ queryKey: ['admin-theses'] });
+        
+        // Also refetch the data to ensure immediate UI update
+        await queryClient.refetchQueries({ queryKey: ['theses'] });
+        await queryClient.refetchQueries({ queryKey: ['admin-dashboard'] });
         
         // Close review dialog if open
         if (reviewDialogOpen && selectedThesis?.id === thesisId) {
@@ -63,7 +69,7 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
           setSelectedThesis(null);
         }
       } else {
-        toast.error(result.message);
+        toast.error(result.message || 'Failed to update thesis');
         console.error('Action failed:', result.message);
       }
     } catch (error) {
