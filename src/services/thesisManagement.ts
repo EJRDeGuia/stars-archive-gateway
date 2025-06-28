@@ -1,5 +1,5 @@
-
 import { supabase } from '@/integrations/supabase/client';
+import { UserRole } from '@/types/auth';
 
 export interface BulkActionResult {
   success: boolean;
@@ -125,11 +125,11 @@ export class ThesisManagementService {
         
         // Get user data from localStorage to determine role
         const storedUser = localStorage.getItem('stars_user');
-        let role = 'researcher'; // default role
+        let role: UserRole = 'researcher'; // default role with proper typing
         
         if (storedUser) {
           const userData = JSON.parse(storedUser);
-          role = userData.role || 'researcher';
+          role = (userData.role as UserRole) || 'researcher';
         }
 
         const { data: newProfile, error } = await supabase
