@@ -7,9 +7,9 @@ import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import ThesisUploadForm from "@/components/ThesisUploadForm";
 import PDFUploadCard from "@/components/PDFUploadCard";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
+import { UploadService } from '@/services/uploadService';
 
 // Type for uploaded files UI state
 interface UploadFile {
@@ -73,27 +73,9 @@ const Upload = () => {
 
   const fetchColleges = async () => {
     try {
-      const { data, error } = await supabase
-        .from('colleges')
-        .select('id, name');
-        
-      if (error) {
-        console.error('Error fetching colleges:', error);
-        toast.error(`Could not fetch colleges: ${error.message}`);
-        return;
-      }
-      
-      // Build a map from code to UUID
-      const codeToUuid: Record<string, string> = {};
-      colleges.forEach(c => {
-        const found = data?.find((d: any) => d.name === c.name);
-        if (found) codeToUuid[c.id] = found.id;
-      });
-      
-      setCollegeMap(codeToUuid);
+      const mapping = await UploadService.getCollegeMapping();
+      setCollegeMap(mapping);
       setCollegesLoaded(true);
-      console.log('College mapping loaded:', codeToUuid);
-      
     } catch (error) {
       console.error('Failed to fetch colleges:', error);
       toast.error("Error loading colleges. Please refresh the page to try again.");
@@ -130,23 +112,6 @@ const Upload = () => {
     return errors;
   };
 
-  const getFileUrl = (storagePath: string): string => {
-    try {
-      // Get the public URL for the uploaded file
-      const { data } = supabase.storage
-        .from("thesis-pdfs")
-        .getPublicUrl(storagePath);
-        
-      if (!data.publicUrl) {
-        throw new Error("Failed to get file URL");
-      }
-      
-      return data.publicUrl;
-    } catch (error) {
-      console.error('Error getting file URL:', error);
-      throw new Error("Failed to get file URL");
-    }
-  };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -177,51 +142,29 @@ const Upload = () => {
       }
 
       // Get the file URL from storage
-      const fileUrl = getFileUrl(completedFile.storagePath);
+      const fileUrl = UploadService.getFileUrl(completedFile.storagePath);
 
-      console.log('[Upload] Inserting thesis with data:', {
-        title: formData.title.trim(),
-        author: formData.author.trim(),
-        college_id: collegeMap[formData.college],
-        file_url: fileUrl,
-        user_id: user.id
+      // Use the upload service for optimized thesis insertion
+      const result = await UploadService.uploadThesis({
+        title: formData.title,
+        author: formData.author,
+        coAdviser: formData.coAuthor,
+        adviser: formData.advisor,
+        collegeId: collegeMap[formData.college],
+        abstract: formData.abstract,
+        keywords: formData.keywords
+          ? formData.keywords.split(",").map((k) => k.trim()).filter(k => k.length > 0)
+          : [],
+        publishYear: formData.year,
+        fileUrl,
+        uploadedBy: user.id,
       });
 
-      // Insert thesis into database with timeout
-      const insertPromise = supabase
-        .from("theses")
-        .insert([{
-          title: formData.title.trim(),
-          author: formData.author.trim(),
-          co_adviser: formData.coAuthor.trim() || null,
-          adviser: formData.advisor.trim(),
-          college_id: collegeMap[formData.college],
-          program_id: null,
-          abstract: formData.abstract.trim(),
-          keywords: formData.keywords
-            ? formData.keywords.split(",").map((k) => k.trim()).filter(k => k.length > 0)
-            : [],
-          publish_date: `${formData.year}-01-01`,
-          file_url: fileUrl,
-          status: "pending_review",
-          uploaded_by: user.id,
-        }])
-        .select()
-        .single();
-
-      // Add timeout to prevent hanging
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Database insertion timeout after 60 seconds')), 60000);
-      });
-
-      const { data: insertedThesis, error: insertError } = await Promise.race([insertPromise, timeoutPromise]) as any;
-
-      if (insertError) {
-        console.error('Database insertion error:', insertError);
-        throw new Error(`Failed to save thesis: ${insertError.message}`);
+      if (!result.success) {
+        throw new Error(result.error || "Upload failed");
       }
 
-      console.log('[Upload] Thesis inserted successfully:', insertedThesis);
+      console.log('[Upload] Thesis uploaded successfully:', result.thesis?.id);
 
       // Invalidate queries to refresh the thesis list and dashboards
       queryClient.invalidateQueries({ queryKey: ['theses'] });
