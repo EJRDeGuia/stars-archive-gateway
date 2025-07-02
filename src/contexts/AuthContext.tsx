@@ -97,54 +97,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadUserProfile = async (authUser: User) => {
     try {
-      // First, check if the user already has a role
-      const { data: existingRole, error: roleCheckError } = await supabase
+      // Get user role - only one query needed
+      const { data: userRole, error } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', authUser.id)
         .maybeSingle();
 
-      console.log('Existing role check:', { existingRole, roleCheckError });
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching user role:', error);
+      }
 
-      let userRole: UserRole = 'researcher'; // default
+      // Use existing role or default to researcher
+      const role = userRole?.role as UserRole || 'researcher';
 
-      if (existingRole) {
-        // User already has a role, use it
-        userRole = existingRole.role as UserRole;
-        console.log('Using existing role:', userRole);
-      } else {
-        // User doesn't have a role, create one with default 'researcher'
+      // If no role exists, create one
+      if (!userRole) {
         console.log('Creating default role for new user:', authUser.id);
-        const { data: newRole, error: insertError } = await supabase
+        await supabase
           .from('user_roles')
           .insert({
             user_id: authUser.id,
             role: 'researcher'
-          })
-          .select('role')
-          .maybeSingle();
-
-        if (insertError) {
-          console.error('Error creating user role:', insertError);
-          // If insert fails (e.g., due to race condition), try to fetch again
-          const { data: retryRole } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', authUser.id)
-            .maybeSingle();
-          
-          userRole = retryRole?.role as UserRole || 'researcher';
-        } else {
-          console.log('Created new role:', newRole);
-          userRole = newRole?.role as UserRole || 'researcher';
-        }
+          });
       }
 
       setUser({
         id: authUser.id,
         name: authUser.email?.split('@')[0] || 'User',
         email: authUser.email || '',
-        role: userRole
+        role: role
       });
     } catch (error) {
       console.error('Error loading user profile:', error);
@@ -188,7 +170,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (error) throw error;
 
         if (data.user) {
-          await loadUserProfile(data.user);
+          // The auth state change listener will handle loading the user profile
           setIsLoading(false);
           return true;
         }
