@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiService } from '@/services/api';
@@ -21,7 +20,7 @@ export function useApiQuery<T>(
       return failureCount < 3;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (renamed from cacheTime)
     ...options,
   });
 }
@@ -65,7 +64,7 @@ export function useTheses(params?: {
   search?: string; 
   includeAll?: boolean;
   college_id?: string;
-  status?: string;
+  status?: 'pending_review' | 'approved' | 'needs_revision' | 'rejected';
 }) {
   return useQuery({
     queryKey: ['theses', JSON.stringify(params)],
@@ -83,9 +82,10 @@ export function useTheses(params?: {
           )
         `);
 
-      // Apply status filter
+      // Apply status filter with proper typing
       if (!params?.includeAll) {
-        query = query.eq('status', params?.status || 'approved');
+        const statusValue = params?.status || 'approved';
+        query = query.eq('status', statusValue);
       }
 
       // Apply college filter
@@ -192,7 +192,7 @@ export function useColleges() {
       return data || [];
     },
     staleTime: 15 * 60 * 1000, // 15 minutes - colleges don't change often
-    cacheTime: 30 * 60 * 1000, // 30 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes (renamed from cacheTime)
   });
 }
 

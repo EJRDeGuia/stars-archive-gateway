@@ -1,4 +1,3 @@
-
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CollegeCard from '@/components/CollegeCard';
@@ -387,6 +386,7 @@ const Collections = () => {
                         key={college.id}
                         college={{
                           ...college,
+                          fullName: college.full_name, // Fix: properly map full_name to fullName
                           thesesCount: college.thesesCount || 0,
                           icon: null,
                           bgColor: college.color || 'bg-gray-200',
@@ -406,6 +406,7 @@ const Collections = () => {
                           key={college.id}
                           college={{
                             ...college,
+                            fullName: college.full_name, // Fix: properly map full_name to fullName
                             thesesCount: college.thesesCount || 0,
                             icon: null,
                             bgColor: college.color || 'bg-gray-200',

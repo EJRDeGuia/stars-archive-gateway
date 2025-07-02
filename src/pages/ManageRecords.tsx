@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
@@ -23,7 +22,10 @@ const ManageRecords = () => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // Fetch all theses (including non-approved ones) for management
-  const { data: theses = [], isLoading } = useTheses({ includeAll: true });
+  const { data: thesesResult, isLoading } = useTheses({ includeAll: true });
+
+  // Fix: properly handle the data structure returned from useTheses
+  const theses = thesesResult?.data || [];
 
   const filteredTheses = theses.filter((thesis: any) => {
     const matchesSearch = 
