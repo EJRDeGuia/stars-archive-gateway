@@ -97,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadUserProfile = async (authUser: User) => {
     try {
-      // First, ensure the user has a role entry in user_roles table
+      // First, check if the user already has a role
       const { data: existingRole, error: roleCheckError } = await supabase
         .from('user_roles')
         .select('role')
@@ -109,11 +109,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       let userRole: UserRole = 'researcher'; // default
 
       if (existingRole) {
-        // User has a role, use it
+        // User already has a role, use it
         userRole = existingRole.role as UserRole;
+        console.log('Using existing role:', userRole);
       } else {
         // User doesn't have a role, create one with default 'researcher'
-        console.log('Creating default role for user:', authUser.id);
+        console.log('Creating default role for new user:', authUser.id);
         const { data: newRole, error: insertError } = await supabase
           .from('user_roles')
           .insert({
@@ -125,6 +126,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (insertError) {
           console.error('Error creating user role:', insertError);
+          // If insert fails (e.g., due to race condition), try to fetch again
+          const { data: retryRole } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', authUser.id)
+            .maybeSingle();
+          
+          userRole = retryRole?.role as UserRole || 'researcher';
         } else {
           console.log('Created new role:', newRole);
           userRole = newRole?.role as UserRole || 'researcher';
