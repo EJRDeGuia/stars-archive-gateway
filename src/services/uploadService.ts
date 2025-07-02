@@ -54,8 +54,13 @@ export class UploadService {
 
   public static async uploadThesis(data: ThesisUploadData): Promise<{ success: boolean; thesis?: any; error?: string }> {
     try {
+      console.log('[UploadService] 1. Starting upload thesis...');
+      
       // Check permissions first
+      console.log('[UploadService] 2. Checking permissions for user:', data.uploadedBy);
       const hasPermission = await this.validateUploadPermissions(data.uploadedBy);
+      console.log('[UploadService] 3. Permission check result:', hasPermission);
+      
       if (!hasPermission) {
         return {
           success: false,
@@ -63,7 +68,7 @@ export class UploadService {
         };
       }
 
-      console.log('[UploadService] Starting thesis upload with data:', {
+      console.log('[UploadService] 4. Starting thesis upload with data:', {
         title: data.title,
         author: data.author,
         college_id: data.collegeId,
@@ -71,14 +76,21 @@ export class UploadService {
       });
 
       // Create optimized payload
+      console.log('[UploadService] 5. Creating payload...');
       const payload = this.createThesisPayload(data);
+      console.log('[UploadService] 6. Payload created:', payload);
 
       // Perform the database insertion
+      console.log('[UploadService] 7. Starting database insertion...');
       const { data: insertedThesis, error: insertError } = await supabase
         .from("theses")
         .insert(payload)
         .select()
         .single();
+
+      console.log('[UploadService] 8. Database insertion completed.');
+      console.log('[UploadService] 9. Insert error:', insertError);
+      console.log('[UploadService] 10. Insert result:', insertedThesis);
 
       if (insertError) {
         console.error('[UploadService] Database insertion error:', insertError);

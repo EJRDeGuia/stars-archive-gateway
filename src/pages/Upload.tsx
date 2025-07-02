@@ -136,14 +136,19 @@ const Upload = () => {
     setIsSubmitting(true);
 
     try {
+      console.log('[Upload] Starting upload process...');
+      
       const completedFile = uploadedFiles.find(f => f.status === 'completed');
       if (!completedFile || !completedFile.storagePath) {
         throw new Error("No completed file upload found");
       }
 
+      console.log('[Upload] File found, getting URL...');
       // Get the file URL from storage
       const fileUrl = UploadService.getFileUrl(completedFile.storagePath);
+      console.log('[Upload] File URL obtained:', fileUrl);
 
+      console.log('[Upload] Calling upload service...');
       // Use the upload service for optimized thesis insertion
       const result = await UploadService.uploadThesis({
         title: formData.title,
@@ -159,6 +164,8 @@ const Upload = () => {
         fileUrl,
         uploadedBy: user.id,
       });
+
+      console.log('[Upload] Upload service result:', result);
 
       if (!result.success) {
         throw new Error(result.error || "Upload failed");
