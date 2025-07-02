@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useCollegesWithCounts } from '@/hooks/useCollegesWithCounts';
 
 type Collection = {
   id: string;
@@ -35,61 +36,22 @@ type College = {
 
 const Collections = () => {
   const navigate = useNavigate();
-  const [colleges, setColleges] = useState<College[]>([]);
+  const { data: colleges = [], isLoading: loading } = useCollegesWithCounts();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [filteredCollections, setFilteredCollections] = useState<Collection[]>([]);
-  const [loading, setLoading] = useState(true);
   const [collectionsLoading, setCollectionsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'created_at' | 'thesis_count'>('created_at');
   const [totalTheses, setTotalTheses] = useState(0);
 
   useEffect(() => {
-    Promise.all([fetchColleges(), fetchCollections(), fetchTotalTheses()]);
+    Promise.all([fetchCollections(), fetchTotalTheses()]);
   }, []);
 
   useEffect(() => {
     filterAndSortCollections();
   }, [collections, searchQuery, sortBy]);
 
-  const fetchColleges = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('colleges')
-        .select('*')
-        .order('name', { ascending: true });
-
-      if (error) throw error;
-
-      // Fetch thesis count for each college
-      const collegesWithCounts = await Promise.all(
-        (data || []).map(async (college) => {
-          const { count } = await supabase
-            .from('theses')
-            .select('*', { count: 'exact', head: true })
-            .eq('college_id', college.id)
-            .eq('status', 'approved');
-
-          return {
-            ...college,
-            thesesCount: count || 0
-          };
-        })
-      );
-
-      setColleges(collegesWithCounts);
-    } catch (error: any) {
-      console.error('Error fetching colleges:', error);
-      toast({
-        title: "Error loading colleges",
-        description: error.message,
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchCollections = async () => {
     setCollectionsLoading(true);
@@ -178,7 +140,7 @@ const Collections = () => {
   };
 
   const handleRefresh = async () => {
-    await Promise.all([fetchColleges(), fetchCollections(), fetchTotalTheses()]);
+    await Promise.all([fetchCollections(), fetchTotalTheses()]);
     toast({
       title: "Data refreshed",
       description: "All collections and statistics have been updated."
@@ -382,42 +344,22 @@ const Collections = () => {
                 <div className="max-w-5xl mx-auto">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     {colleges.slice(0, 3).map(college => (
-                      <CollegeCard
-                        key={college.id}
-                        college={{
-                          ...college,
-                          fullName: college.full_name, // Fix: properly map full_name to fullName
-                          thesesCount: college.thesesCount || 0,
-                          icon: null,
-                          bgColor: college.color || 'bg-gray-200',
-                          bgColorLight: 'bg-gray-50',
-                          textColor: 'text-gray-700',
-                          borderColor: 'border-gray-200',
-                          description: college.description || `Explore research from ${college.name}`,
-                        }}
-                        onClick={() => navigate(`/college/${college.id}`)}
-                      />
+                       <CollegeCard
+                         key={college.id}
+                         college={college}
+                         onClick={() => navigate(`/college/${college.id}`)}
+                       />
                     ))}
                   </div>
                   {colleges.length > 3 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-                      {colleges.slice(3, 5).map(college => (
-                        <CollegeCard
-                          key={college.id}
-                          college={{
-                            ...college,
-                            fullName: college.full_name, // Fix: properly map full_name to fullName
-                            thesesCount: college.thesesCount || 0,
-                            icon: null,
-                            bgColor: college.color || 'bg-gray-200',
-                            bgColorLight: 'bg-gray-50',
-                            textColor: 'text-gray-700',
-                            borderColor: 'border-gray-200',
-                            description: college.description || `Explore research from ${college.name}`,
-                          }}
-                          onClick={() => navigate(`/college/${college.id}`)}
-                        />
-                      ))}
+                       {colleges.slice(3, 5).map(college => (
+                         <CollegeCard
+                           key={college.id}
+                           college={college}
+                           onClick={() => navigate(`/college/${college.id}`)}
+                         />
+                       ))}
                     </div>
                   )}
                 </div>
