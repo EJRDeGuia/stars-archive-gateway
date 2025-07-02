@@ -1,5 +1,5 @@
 
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { useSavedSearches } from "@/hooks/useApi";
 import { BookOpen, Search, Heart } from "lucide-react";
 import { Card } from "@/components/ui/card";

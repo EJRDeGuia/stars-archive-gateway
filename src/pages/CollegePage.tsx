@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -13,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import ChatSearch from "@/components/ChatSearch";
 import FavoriteButton from "@/components/FavoriteButton";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { useUserFavorites } from "@/hooks/useApi";
 
 // College image mapping

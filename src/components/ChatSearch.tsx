@@ -1,10 +1,11 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Send, Sparkles, Loader, User, Bot, Lightbulb } from 'lucide-react';
 import { semanticSearchService } from '@/services/semanticSearch';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { useSaveSearch } from "@/hooks/useApi";
 import SaveSearchModal from "./SaveSearchModal";
 
