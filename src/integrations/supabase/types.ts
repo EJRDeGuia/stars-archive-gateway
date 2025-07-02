@@ -604,6 +604,14 @@ export type Database = {
         Args: { "": string } | { "": unknown }
         Returns: unknown
       }
+      get_college_thesis_counts: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          college_id: string
+          college_name: string
+          thesis_count: number
+        }[]
+      }
       get_dashboard_stats: {
         Args: Record<PropertyKey, never>
         Returns: {

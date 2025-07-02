@@ -1,45 +1,14 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CollegeCard from '@/components/CollegeCard';
-import { supabase } from '@/integrations/supabase/client';
-import { collegeData } from '@/data/collegeData';
+import { useCollegesWithCounts } from '@/hooks/useCollegesWithCounts';
 
 const CollegeGrid: React.FC = () => {
   const navigate = useNavigate();
-  const [colleges, setColleges] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setLoading(true);
-    supabase
-      .from('colleges')
-      .select('*')
-      .order('name', { ascending: true })
-      .then(({ data }) => {
-        // Map database colleges with design data
-        const mappedColleges = (data || []).map(dbCollege => {
-          const designData = collegeData.find(design => 
-            design.id === dbCollege.id || design.name === dbCollege.name
-          );
-          
-          return {
-            ...dbCollege,
-            ...designData,
-            // Ensure database values take precedence for content
-            id: dbCollege.id,
-            name: dbCollege.name,
-            fullName: dbCollege.full_name || designData?.fullName,
-            description: dbCollege.description || designData?.description || 'Advancing knowledge through innovative research and academic excellence'
-          };
-        });
-        
-        setColleges(mappedColleges);
-        setLoading(false);
-      });
-  }, []);
+  const { data: colleges = [], isLoading: loading } = useCollegesWithCounts();
 
   return (
     <div className="mb-12">
