@@ -9,7 +9,7 @@ export interface BulkActionResult {
 }
 
 // Development mode flag - should match the one in AuthContext
-const isDevelopment = true;
+const isDevelopment = false;
 
 export class ThesisManagementService {
   // Check if user has admin privileges with enhanced logging
