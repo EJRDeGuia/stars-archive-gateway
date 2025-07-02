@@ -85,15 +85,15 @@ const CollegePage = () => {
     fetchCollege();
   }, [id]);
 
-  // Get theses for this college by college_id (UUID) - Fixed to pass college_id parameter
+  // Get only approved theses for this college
   const { data: thesesData, isLoading: thesesLoading, error: thesesError } = useTheses({ 
     college_id: id,
-    includeAll: true // Include all statuses for archivists
+    status: 'approved' // Only show approved theses to public
   });
   
   const thesesArray: Thesis[] = Array.isArray(thesesData?.data) ? thesesData.data : [];
   
-  // Since we're already filtering in the query, we don't need additional filtering
+  // Since we're already filtering for approved theses in the query, we don't need additional filtering
   const thesesForCollege = thesesArray;
 
   // Filter theses based on search term - now uses the correctly declared thesesForCollege
