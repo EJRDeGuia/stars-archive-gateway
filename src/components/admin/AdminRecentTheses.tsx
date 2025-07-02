@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { FileText, Eye, Check, X } from "lucide-react";
@@ -131,8 +132,10 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
     return statusConfig[status as keyof typeof statusConfig] || statusConfig.pending_review;
   };
 
-  // Filter to show only pending theses for approval
-  const pendingTheses = theses.filter(thesis => thesis.status === 'pending_review');
+  // Filter to show only theses that are actually pending review (not approved)
+  const pendingTheses = theses.filter(thesis => 
+    thesis.status === 'pending_review' || thesis.status === 'needs_revision'
+  );
 
   return (
     <>
