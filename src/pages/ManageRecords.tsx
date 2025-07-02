@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
@@ -6,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Search, Eye, Edit3, Trash2 } from 'lucide-react';
+import { ArrowLeft, Search, Eye, Edit3, Trash2, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTheses } from '@/hooks/useApi';
 import { ThesisManagementService } from '@/services/thesisManagement';
@@ -22,13 +23,19 @@ const ManageRecords = () => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // Fetch all theses (including non-approved ones) for management
-  const { data: thesesResult, isLoading } = useTheses({ includeAll: true });
+  const { data: thesesResult, isLoading, error, refetch } = useTheses({ 
+    includeAll: true,
+    search: searchTerm || undefined,
+    status: statusFilter !== 'all' ? statusFilter as any : undefined
+  });
 
   // Fix: properly handle the data structure returned from useTheses
   const theses = thesesResult?.data || [];
 
+  console.log('[ManageRecords] Theses data:', { thesesResult, theses, isLoading, error });
+
   const filteredTheses = theses.filter((thesis: any) => {
-    const matchesSearch = 
+    const matchesSearch = !searchTerm || 
       thesis.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       thesis.author?.toLowerCase().includes(searchTerm.toLowerCase());
     
@@ -50,14 +57,20 @@ const ManageRecords = () => {
 
     if (window.confirm('Are you sure you want to delete this thesis?')) {
       setActionLoading(thesisId);
-      const result = await ThesisManagementService.bulkDelete([thesisId], user.id);
-      if (result.success) {
-        toast.success('Thesis deleted successfully');
-        queryClient.invalidateQueries({ queryKey: ['theses'] });
-      } else {
-        toast.error(result.message);
+      try {
+        const result = await ThesisManagementService.bulkDelete([thesisId], user.id);
+        if (result.success) {
+          toast.success('Thesis deleted successfully');
+          queryClient.invalidateQueries({ queryKey: ['theses'] });
+          refetch();
+        } else {
+          toast.error(result.message);
+        }
+      } catch (error) {
+        toast.error('Failed to delete thesis');
+      } finally {
+        setActionLoading(null);
       }
-      setActionLoading(null);
     }
   };
 
@@ -73,15 +86,21 @@ const ManageRecords = () => {
     }
 
     setActionLoading(thesisId);
-    const result = await ThesisManagementService.approveThesis(thesisId, user.id);
-    if (result.success) {
-      toast.success(result.message);
-      queryClient.invalidateQueries({ queryKey: ['theses'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
-    } else {
-      toast.error(result.message);
+    try {
+      const result = await ThesisManagementService.approveThesis(thesisId, user.id);
+      if (result.success) {
+        toast.success(result.message);
+        queryClient.invalidateQueries({ queryKey: ['theses'] });
+        queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
+        refetch();
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      toast.error('Failed to approve thesis');
+    } finally {
+      setActionLoading(null);
     }
-    setActionLoading(null);
   };
 
   const handleReject = async (thesisId: string) => {
@@ -96,22 +115,29 @@ const ManageRecords = () => {
     }
 
     setActionLoading(thesisId);
-    const result = await ThesisManagementService.rejectThesis(thesisId, user.id);
-    if (result.success) {
-      toast.success(result.message);
-      queryClient.invalidateQueries({ queryKey: ['theses'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
-    } else {
-      toast.error(result.message);
+    try {
+      const result = await ThesisManagementService.rejectThesis(thesisId, user.id);
+      if (result.success) {
+        toast.success(result.message);
+        queryClient.invalidateQueries({ queryKey: ['theses'] });
+        queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
+        refetch();
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      toast.error('Failed to reject thesis');
+    } finally {
+      setActionLoading(null);
     }
-    setActionLoading(null);
   };
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       pending_review: { label: 'Pending Review', variant: 'secondary' as const },
       approved: { label: 'Approved', variant: 'default' as const },
-      needs_revision: { label: 'Needs Revision', variant: 'destructive' as const }
+      needs_revision: { label: 'Needs Revision', variant: 'destructive' as const },
+      rejected: { label: 'Rejected', variant: 'destructive' as const }
     };
     return statusConfig[status as keyof typeof statusConfig] || statusConfig.pending_review;
   };
@@ -153,10 +179,23 @@ const ManageRecords = () => {
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> Back
             </Button>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Manage Records</h1>
-            <p className="text-xl text-gray-600">
-              {isAdmin ? 'Review, approve, and organize thesis submissions' : 'View and organize thesis submissions'}
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-4xl font-bold text-gray-900 mb-2">Manage Records</h1>
+                <p className="text-xl text-gray-600">
+                  {isAdmin ? 'Review, approve, and organize thesis submissions' : 'View and organize thesis submissions'}
+                </p>
+              </div>
+              <Button 
+                onClick={() => refetch()} 
+                variant="outline"
+                disabled={isLoading}
+                className="gap-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+            </div>
           </div>
 
           {/* Filters */}
@@ -184,11 +223,26 @@ const ManageRecords = () => {
                     <option value="pending_review">Pending Review</option>
                     <option value="approved">Approved</option>
                     <option value="needs_revision">Needs Revision</option>
+                    <option value="rejected">Rejected</option>
                   </select>
                 </div>
               </div>
             </CardContent>
           </Card>
+
+          {/* Error State */}
+          {error && (
+            <Card className="mb-8">
+              <CardContent className="p-6">
+                <div className="text-center text-red-600">
+                  <p>Error loading theses: {error.message}</p>
+                  <Button onClick={() => refetch()} className="mt-2">
+                    Try Again
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Results */}
           <Card>
@@ -210,7 +264,10 @@ const ManageRecords = () => {
                 </div>
               ) : filteredTheses.length === 0 ? (
                 <div className="text-center py-8 text-gray-400">
-                  No theses found matching your criteria.
+                  {theses.length === 0 
+                    ? "No theses found. Upload some theses to get started."
+                    : "No theses found matching your criteria."
+                  }
                 </div>
               ) : (
                 <div className="space-y-4">

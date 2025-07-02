@@ -4,11 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import ThesisUploadForm from "@/components/ThesisUploadForm";
 import PDFUploadCard from "@/components/PDFUploadCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from '@/contexts/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
 
 // Type for uploaded files UI state
 interface UploadFile {
@@ -16,6 +17,7 @@ interface UploadFile {
   progress: number;
   status: 'uploading' | 'completed' | 'error';
   error?: string;
+  storagePath?: string;
 }
 
 // College and Department options for the form
@@ -38,6 +40,7 @@ const departments = {
 const Upload = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [uploadedFiles, setUploadedFiles] = useState<UploadFile[]>([]);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -60,11 +63,7 @@ const Upload = () => {
   useEffect(() => {
     // Check if user is authenticated
     if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in to upload theses.",
-        variant: "destructive",
-      });
+      toast.error("Please log in to upload theses.");
       navigate('/login');
       return;
     }
@@ -80,11 +79,7 @@ const Upload = () => {
         
       if (error) {
         console.error('Error fetching colleges:', error);
-        toast({
-          title: "Could not fetch colleges",
-          description: error.message,
-          variant: "destructive",
-        });
+        toast.error(`Could not fetch colleges: ${error.message}`);
         return;
       }
       
@@ -101,11 +96,7 @@ const Upload = () => {
       
     } catch (error) {
       console.error('Failed to fetch colleges:', error);
-      toast({
-        title: "Error loading colleges",
-        description: "Please refresh the page to try again.",
-        variant: "destructive",
-      });
+      toast.error("Error loading colleges. Please refresh the page to try again.");
     }
   };
 
@@ -139,12 +130,12 @@ const Upload = () => {
     return errors;
   };
 
-  const getFileUrl = async (fileName: string): Promise<string> => {
+  const getFileUrl = (storagePath: string): string => {
     try {
       // Get the public URL for the uploaded file
       const { data } = supabase.storage
         .from("thesis-pdfs")
-        .getPublicUrl(fileName);
+        .getPublicUrl(storagePath);
         
       if (!data.publicUrl) {
         throw new Error("Failed to get file URL");
@@ -161,31 +152,19 @@ const Upload = () => {
     e.preventDefault();
 
     if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in to upload theses.",
-        variant: "destructive",
-      });
+      toast.error("Please log in to upload theses.");
       return;
     }
 
     // Validate form
     const errors = validateForm();
     if (errors.length > 0) {
-      toast({
-        title: "Validation failed",
-        description: errors.join(". "),
-        variant: "destructive"
-      });
+      toast.error(errors.join(". "));
       return;
     }
 
     if (!collegesLoaded || !collegeMap[formData.college]) {
-      toast({
-        title: "College not found",
-        description: "Please refresh the page and try again.",
-        variant: "destructive"
-      });
+      toast.error("College not found. Please refresh the page and try again.");
       return;
     }
 
@@ -193,40 +172,23 @@ const Upload = () => {
 
     try {
       const completedFile = uploadedFiles.find(f => f.status === 'completed');
-      if (!completedFile) {
+      if (!completedFile || !completedFile.storagePath) {
         throw new Error("No completed file upload found");
       }
 
       // Get the file URL from storage
-      const timestamp = Date.now();
-      const sanitizedName = completedFile.file.name
-        .replace(/[^a-zA-Z0-9.-]/g, "_")
-        .replace(/_{2,}/g, "_");
-      const storagePath = `${timestamp}-${sanitizedName}`;
-      
-      // Find the actual uploaded file path
-      const { data: fileList, error: listError } = await supabase.storage
-        .from("thesis-pdfs")
-        .list("", {
-          limit: 100,
-          sortBy: { column: "created_at", order: "desc" },
-        });
+      const fileUrl = getFileUrl(completedFile.storagePath);
 
-      if (listError) throw listError;
+      console.log('[Upload] Inserting thesis with data:', {
+        title: formData.title.trim(),
+        author: formData.author.trim(),
+        college_id: collegeMap[formData.college],
+        file_url: fileUrl,
+        user_id: user.id
+      });
 
-      const uploadedFile = fileList?.find(item => 
-        item.name.includes(sanitizedName) || 
-        item.name.includes(completedFile.file.name.replace(/[^a-zA-Z0-9.-]/g, "_"))
-      );
-
-      if (!uploadedFile) {
-        throw new Error("Could not find the uploaded file in storage");
-      }
-
-      const fileUrl = await getFileUrl(uploadedFile.name);
-
-      // Insert thesis into database
-      const { error: insertError } = await supabase
+      // Insert thesis into database with timeout
+      const insertPromise = supabase
         .from("theses")
         .insert([{
           title: formData.title.trim(),
@@ -243,17 +205,29 @@ const Upload = () => {
           file_url: fileUrl,
           status: "pending_review",
           uploaded_by: user.id,
-        }]);
+        }])
+        .select()
+        .single();
+
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Database insertion timeout after 30 seconds')), 30000);
+      });
+
+      const { data: insertedThesis, error: insertError } = await Promise.race([insertPromise, timeoutPromise]) as any;
 
       if (insertError) {
         console.error('Database insertion error:', insertError);
-        throw new Error(insertError.message);
+        throw new Error(`Failed to save thesis: ${insertError.message}`);
       }
 
-      toast({
-        title: "Thesis uploaded successfully!",
-        description: "Your thesis has been submitted for review and will be available once approved.",
-      });
+      console.log('[Upload] Thesis inserted successfully:', insertedThesis);
+
+      // Invalidate queries to refresh the thesis list
+      queryClient.invalidateQueries({ queryKey: ['theses'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
+
+      toast.success("Thesis uploaded successfully! Your thesis has been submitted for review and will be available once approved.");
 
       // Reset form
       setFormData({
@@ -276,11 +250,7 @@ const Upload = () => {
 
     } catch (err: any) {
       console.error('Form submission error:', err);
-      toast({
-        title: "Upload failed",
-        description: err?.message || "There was a problem saving your thesis. Please try again.",
-        variant: "destructive"
-      });
+      toast.error(`Upload failed: ${err?.message || "There was a problem saving your thesis. Please try again."}`);
     } finally {
       setIsSubmitting(false);
     }

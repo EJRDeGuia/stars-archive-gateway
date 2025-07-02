@@ -1,13 +1,14 @@
 
 import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface UploadFile {
   file: File;
   progress: number;
   status: 'uploading' | 'completed' | 'error';
   error?: string;
+  storagePath?: string; // Add storage path to track uploaded files
 }
 
 interface UsePDFUploadProps {
@@ -45,11 +46,7 @@ export function usePDFUpload({ setUploadedFiles, setIsExtracting }: UsePDFUpload
       // Validate file before processing
       const validationError = validateFile(file);
       if (validationError) {
-        toast({
-          title: "File validation failed",
-          description: `${file.name}: ${validationError}`,
-          variant: "destructive",
-        });
+        toast.error(`${file.name}: ${validationError}`);
         continue;
       }
 
@@ -65,10 +62,13 @@ export function usePDFUpload({ setUploadedFiles, setIsExtracting }: UsePDFUpload
       try {
         // Create a sanitized file path
         const timestamp = Date.now();
+        const randomId = Math.random().toString(36).substring(2, 15);
         const sanitizedName = file.name
           .replace(/[^a-zA-Z0-9.-]/g, "_")
-          .replace(/_{2,}/g, "_");
-        const storagePath = `${timestamp}-${sanitizedName}`;
+          .replace(/_{2,}/g, "_")
+          .replace(/^_+|_+$/g, ""); // Remove leading/trailing underscores
+        
+        const storagePath = `${timestamp}_${randomId}_${sanitizedName}`;
         
         console.log('[usePDFUpload] Uploading to path:', storagePath);
 
@@ -87,20 +87,27 @@ export function usePDFUpload({ setUploadedFiles, setIsExtracting }: UsePDFUpload
           }
         }, 200);
 
-        // Upload to Supabase Storage
-        const { data, error } = await supabase.storage
+        // Upload to Supabase Storage with timeout
+        const uploadPromise = supabase.storage
           .from("thesis-pdfs")
           .upload(storagePath, file, {
             cacheControl: "3600",
-            upsert: false, // Don't overwrite existing files
+            upsert: false,
             contentType: file.type,
           });
+
+        // Add timeout to prevent hanging
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Upload timeout after 5 minutes')), 5 * 60 * 1000);
+        });
+
+        const { data, error } = await Promise.race([uploadPromise, timeoutPromise]) as any;
 
         clearInterval(progressInterval);
 
         if (error) {
           console.error('[usePDFUpload] Upload error:', error);
-          throw new Error(error.message);
+          throw new Error(`Upload failed: ${error.message}`);
         }
 
         if (!data) {
@@ -109,19 +116,16 @@ export function usePDFUpload({ setUploadedFiles, setIsExtracting }: UsePDFUpload
 
         console.log('[usePDFUpload] Upload successful:', data);
 
-        // Complete progress and mark as successful
+        // Update the file with storage path and complete status
         setUploadedFiles((prev) =>
           prev.map((uf) =>
             uf.file === file 
-              ? { ...uf, progress: 100, status: "completed" } 
+              ? { ...uf, progress: 100, status: "completed", storagePath } 
               : uf
           )
         );
 
-        toast({
-          title: "PDF uploaded successfully!",
-          description: `${file.name} has been uploaded and is ready for processing.`,
-        });
+        toast.success(`${file.name} uploaded successfully!`);
 
       } catch (err: any) {
         console.error('[usePDFUpload] Upload failed:', err);
@@ -136,11 +140,7 @@ export function usePDFUpload({ setUploadedFiles, setIsExtracting }: UsePDFUpload
           )
         );
 
-        toast({
-          title: "Upload failed",
-          description: `Failed to upload ${file.name}: ${errorMessage}`,
-          variant: "destructive",
-        });
+        toast.error(`Failed to upload ${file.name}: ${errorMessage}`);
       } finally {
         setIsExtracting(false);
       }
