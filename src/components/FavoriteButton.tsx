@@ -15,26 +15,55 @@ type FavoriteButtonProps = {
 export default function FavoriteButton({ userId, thesisId, favoriteId, onToggle }: FavoriteButtonProps) {
   const toggleFavorite = useToggleFavorite();
   const [isLoading, setIsLoading] = useState(false);
+  const [optimisticFavorited, setOptimisticFavorited] = useState<boolean | null>(null);
 
-  const isFavorited = !!favoriteId;
+  // Use optimistic state if available, otherwise use actual favorite state
+  const isFavorited = optimisticFavorited !== null ? optimisticFavorited : !!favoriteId;
 
   const handleClick = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent event bubbling
+    
+    const wasAlreadyFavorited = !!favoriteId;
+    
+    // Optimistic update - immediately update UI
+    setOptimisticFavorited(!wasAlreadyFavorited);
     setIsLoading(true);
     
     try {
+      console.log('[FavoriteButton] Starting toggle favorite:', { userId, thesisId, favoriteId, wasAlreadyFavorited });
+      
       const result = await toggleFavorite.mutateAsync({ userId, thesisId, favoriteId });
       
-      if (result.removed) {
+      console.log('[FavoriteButton] Toggle favorite result:', result);
+      
+      // Check if operation was successful
+      if ('removed' in result && result.removed) {
         toast.success("Removed from library");
         onToggle?.(false);
-      } else {
+        setOptimisticFavorited(false);
+      } else if ('added' in result && result.added) {
         toast.success("Saved to library");
         onToggle?.(true);
+        setOptimisticFavorited(true);
+      } else {
+        // If we get here, something unexpected happened
+        console.warn('[FavoriteButton] Unexpected result format:', result);
+        // Revert optimistic update
+        setOptimisticFavorited(null);
+        toast.error("Something went wrong. Please try again.");
       }
     } catch (error) {
-      console.error("Error toggling favorite:", error);
-      toast.error("Failed to update library");
+      console.error('[FavoriteButton] Error toggling favorite:', error);
+      
+      // Revert optimistic update on error
+      setOptimisticFavorited(null);
+      
+      // Show more specific error message
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Failed to update library. Please check your connection and try again.";
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

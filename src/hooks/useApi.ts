@@ -159,37 +159,52 @@ export function useToggleFavorite() {
     }: { userId: string; thesisId: string; favoriteId?: string | null }) => {
       console.log('[useToggleFavorite] Toggle favorite called with:', { userId, thesisId, favoriteId });
       
-      if (favoriteId) {
-        // Remove favorite
-        console.log('[useToggleFavorite] Removing favorite:', favoriteId);
-        const { error } = await supabase
-          .from("user_favorites")
-          .delete()
-          .eq("id", favoriteId);
-        
-        if (error) {
-          console.error('[useToggleFavorite] Error removing favorite:', error);
-          throw error;
+      try {
+        if (favoriteId) {
+          // Remove favorite
+          console.log('[useToggleFavorite] Removing favorite:', favoriteId);
+          const { error } = await supabase
+            .from("user_favorites")
+            .delete()
+            .eq("id", favoriteId);
+          
+          if (error) {
+            console.error('[useToggleFavorite] Error removing favorite:', error);
+            throw new Error(`Failed to remove from library: ${error.message}`);
+          }
+          
+          console.log('[useToggleFavorite] Successfully removed favorite');
+          return { removed: true, favoriteId };
+        } else {
+          // Add favorite
+          console.log('[useToggleFavorite] Adding favorite for thesis:', thesisId);
+          const { error, data } = await supabase
+            .from("user_favorites")
+            .insert([{ user_id: userId, thesis_id: thesisId }])
+            .select()
+            .single();
+          
+          if (error) {
+            console.error('[useToggleFavorite] Error adding favorite:', error);
+            
+            // Check for duplicate error specifically
+            if (error.code === '23505') {
+              throw new Error('This thesis is already in your library');
+            }
+            
+            throw new Error(`Failed to add to library: ${error.message}`);
+          }
+          
+          if (!data) {
+            throw new Error('Failed to add to library: No data returned');
+          }
+          
+          console.log('[useToggleFavorite] Successfully added favorite:', data);
+          return { ...data, added: true };
         }
-        
-        console.log('[useToggleFavorite] Successfully removed favorite');
-        return { removed: true, favoriteId };
-      } else {
-        // Add favorite
-        console.log('[useToggleFavorite] Adding favorite for thesis:', thesisId);
-        const { error, data } = await supabase
-          .from("user_favorites")
-          .insert([{ user_id: userId, thesis_id: thesisId }])
-          .select()
-          .single();
-        
-        if (error) {
-          console.error('[useToggleFavorite] Error adding favorite:', error);
-          throw error;
-        }
-        
-        console.log('[useToggleFavorite] Successfully added favorite:', data);
-        return { added: true, ...data };
+      } catch (error) {
+        console.error('[useToggleFavorite] Mutation function error:', error);
+        throw error;
       }
     },
     onSuccess: (result, variables) => {
@@ -215,8 +230,12 @@ export function useToggleFavorite() {
         }
       );
     },
-    onError: (error) => {
-      console.error('[useToggleFavorite] Error:', error);
+    onError: (error, variables) => {
+      console.error('[useToggleFavorite] Error callback:', error, 'Variables:', variables);
+      
+      // Invalidate queries on error to ensure consistency
+      queryClient.invalidateQueries({ queryKey: ["user_favorites", variables.userId] });
+      queryClient.invalidateQueries({ queryKey: ["user_favorites_with_theses", variables.userId] });
     }
   });
 }
