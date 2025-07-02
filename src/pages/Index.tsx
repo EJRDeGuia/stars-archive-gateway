@@ -8,113 +8,12 @@ import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMe
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CollegeCard from '@/components/CollegeCard';
+import { useCollegesWithCounts } from '@/hooks/useCollegesWithCounts';
+
 const Index = () => {
   const navigate = useNavigate();
-  const collegeData = [{
-    id: '1',
-    name: 'CITE',
-    fullName: 'College of Information Technology and Engineering',
-    color: 'red',
-    thesesCount: 120,
-    icon: Code,
-    bgColor: 'bg-red-500',
-    bgColorLight: 'bg-red-50',
-    textColor: 'text-red-600',
-    borderColor: 'border-red-200',
-    description: 'Advancing technology through innovative research'
-  }, {
-    id: '2',
-    name: 'CBEAM',
-    fullName: 'College of Business, Economics, Accountancy, and Management',
-    color: 'yellow',
-    thesesCount: 145,
-    icon: Calculator,
-    bgColor: 'bg-yellow-500',
-    bgColorLight: 'bg-yellow-50',
-    textColor: 'text-yellow-600',
-    borderColor: 'border-yellow-200',
-    description: 'Driving business excellence and economic growth'
-  }, {
-    id: '3',
-    name: 'CEAS',
-    fullName: 'College of Education, Arts, and Sciences',
-    color: 'blue',
-    thesesCount: 98,
-    icon: Microscope,
-    bgColor: 'bg-blue-500',
-    bgColorLight: 'bg-blue-50',
-    textColor: 'text-blue-600',
-    borderColor: 'border-blue-200',
-    description: 'Exploring knowledge across diverse disciplines'
-  }, {
-    id: '4',
-    name: 'CON',
-    fullName: 'College of Nursing',
-    color: 'gray',
-    thesesCount: 76,
-    icon: HeartPulse,
-    bgColor: 'bg-gray-500',
-    bgColorLight: 'bg-gray-50',
-    textColor: 'text-gray-600',
-    borderColor: 'border-gray-200',
-    description: 'Advancing healthcare through compassionate research'
-  }, {
-    id: '5',
-    name: 'CIHTM',
-    fullName: 'College of International Hospitality and Tourism Management',
-    color: 'green',
-    thesesCount: 110,
-    icon: UtensilsCrossed,
-    bgColor: 'bg-green-500',
-    bgColorLight: 'bg-green-50',
-    textColor: 'text-green-600',
-    borderColor: 'border-green-200',
-    description: 'Shaping the future of hospitality and tourism'
-  }];
-  const getCollegeColors = (color: string) => {
-    switch (color) {
-      case 'red':
-        return {
-          gradient: 'from-red-500 to-red-600',
-          bg: 'bg-red-50',
-          border: 'border-red-200',
-          text: 'text-red-600',
-          hover: 'hover:shadow-red-100'
-        };
-      case 'yellow':
-        return {
-          gradient: 'from-yellow-500 to-amber-500',
-          bg: 'bg-yellow-50',
-          border: 'border-yellow-200',
-          text: 'text-yellow-600',
-          hover: 'hover:shadow-yellow-100'
-        };
-      case 'blue':
-        return {
-          gradient: 'from-blue-500 to-blue-600',
-          bg: 'bg-blue-50',
-          border: 'border-blue-200',
-          text: 'text-blue-600',
-          hover: 'hover:shadow-blue-100'
-        };
-      case 'green':
-        return {
-          gradient: 'from-green-500 to-emerald-500',
-          bg: 'bg-green-50',
-          border: 'border-green-200',
-          text: 'text-green-600',
-          hover: 'hover:shadow-green-100'
-        };
-      default:
-        return {
-          gradient: 'from-gray-500 to-gray-600',
-          bg: 'bg-gray-50',
-          border: 'border-gray-200',
-          text: 'text-gray-600',
-          hover: 'hover:shadow-gray-100'
-        };
-    }
-  };
+  const { data: colleges = [], isLoading: collegesLoading } = useCollegesWithCounts();
+
   return <div className="min-h-screen relative overflow-hidden">
       {/* Enhanced Background with Dotted Pattern and Increased Blur */}
       <div className="fixed inset-0 z-0">
@@ -342,29 +241,33 @@ const Index = () => {
               
               <TabsContent value="colleges">
                 <div className="max-w-5xl mx-auto">
-                  {/* Top row: CITE, CBEAM, CEAS */}
+                  {/* Top row: first 3 colleges */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    {collegeData.slice(0, 3).map(college => (
-                      <CollegeCard
-                        key={college.id}
-                        college={college}
-                        onClick={() => navigate(`/college/${college.id}`)}
-                        size="large"
-                      />
-                    ))}
+                    {collegesLoading ? (
+                      <div className="col-span-3 text-center py-8 text-gray-400">Loading colleges...</div>
+                    ) : (
+                      colleges.slice(0, 3).map(college => (
+                        <CollegeCard
+                          key={college.id}
+                          college={college}
+                          onClick={() => navigate(`/college/${college.id}`)}
+                        />
+                      ))
+                    )}
                   </div>
-                  
-                  {/* Bottom row: CON and CIHTM centered */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-                    {collegeData.slice(3, 5).map(college => (
-                      <CollegeCard
-                        key={college.id}
-                        college={college}
-                        onClick={() => navigate(`/college/${college.id}`)}
-                        size="large"
-                      />
-                    ))}
-                  </div>
+
+                  {/* Bottom row: next 2 colleges centered */}
+                  {!collegesLoading && colleges.length > 3 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+                      {colleges.slice(3, 5).map(college => (
+                        <CollegeCard
+                          key={college.id}
+                          college={college}
+                          onClick={() => navigate(`/college/${college.id}`)}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               </TabsContent>
               
@@ -379,7 +282,7 @@ const Index = () => {
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <select className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-dlsl-green">
                           <option value="">All Colleges</option>
-                          {collegeData.map(college => <option key={college.id} value={college.id}>{college.name}</option>)}
+                          {colleges.map(college => <option key={college.id} value={college.id}>{college.name}</option>)}
                         </select>
                         <select className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-dlsl-green">
                           <option value="">All Years</option>
