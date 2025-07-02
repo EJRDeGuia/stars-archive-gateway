@@ -211,7 +211,7 @@ const Upload = () => {
 
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Database insertion timeout after 30 seconds')), 30000);
+        setTimeout(() => reject(new Error('Database insertion timeout after 60 seconds')), 60000);
       });
 
       const { data: insertedThesis, error: insertError } = await Promise.race([insertPromise, timeoutPromise]) as any;
@@ -223,9 +223,14 @@ const Upload = () => {
 
       console.log('[Upload] Thesis inserted successfully:', insertedThesis);
 
-      // Invalidate queries to refresh the thesis list
+      // Invalidate queries to refresh the thesis list and dashboards
       queryClient.invalidateQueries({ queryKey: ['theses'] });
       queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['archivist-dashboard'] });
+      
+      // Also invalidate any collections that might be affected
+      queryClient.invalidateQueries({ queryKey: ['colleges'] });
+      queryClient.invalidateQueries({ queryKey: ['system-stats'] });
 
       toast.success("Thesis uploaded successfully! Your thesis has been submitted for review and will be available once approved.");
 
@@ -243,9 +248,9 @@ const Upload = () => {
       });
       setUploadedFiles([]);
 
-      // Navigate back to dashboard after a short delay
+      // Navigate back to archivist dashboard after a short delay
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate('/archivist');
       }, 2000);
 
     } catch (err: any) {

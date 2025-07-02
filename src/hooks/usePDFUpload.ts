@@ -59,6 +59,8 @@ export function usePDFUpload({ setUploadedFiles, setIsExtracting }: UsePDFUpload
       setUploadedFiles((prev) => [...prev, uploadFile]);
       setIsExtracting(true);
 
+      let progressInterval: NodeJS.Timeout | null = null;
+
       try {
         // Create a sanitized file path
         const timestamp = Date.now();
@@ -74,7 +76,7 @@ export function usePDFUpload({ setUploadedFiles, setIsExtracting }: UsePDFUpload
 
         // Start progress simulation
         let currentProgress = 0;
-        const progressInterval = setInterval(() => {
+        progressInterval = setInterval(() => {
           if (currentProgress < 90) {
             currentProgress += Math.random() * 15;
             setUploadedFiles((prev) =>
@@ -103,7 +105,7 @@ export function usePDFUpload({ setUploadedFiles, setIsExtracting }: UsePDFUpload
 
         const { data, error } = await Promise.race([uploadPromise, timeoutPromise]) as any;
 
-        clearInterval(progressInterval);
+        if (progressInterval) clearInterval(progressInterval);
 
         if (error) {
           console.error('[usePDFUpload] Upload error:', error);
@@ -129,6 +131,7 @@ export function usePDFUpload({ setUploadedFiles, setIsExtracting }: UsePDFUpload
 
       } catch (err: any) {
         console.error('[usePDFUpload] Upload failed:', err);
+        if (progressInterval) clearInterval(progressInterval);
         
         const errorMessage = err?.message || "Unknown upload error occurred";
         

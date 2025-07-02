@@ -120,14 +120,15 @@ export function useTheses(params?: {
       console.log('[useTheses] Successfully fetched theses:', data?.length || 0);
       return { data: data || [], count };
     },
-    staleTime: 1 * 60 * 1000, // 1 minute for fresh data
-    gcTime: 5 * 60 * 1000, // 5 minutes cache time
+    staleTime: 30 * 1000, // 30 seconds for fresh data  
+    gcTime: 2 * 60 * 1000, // 2 minutes cache time
     retry: (failureCount, error: any) => {
       if (error?.code === 'PGRST301') return false;
       return failureCount < 2;
     },
     // Refetch when focus returns to ensure fresh data
     refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 }
 

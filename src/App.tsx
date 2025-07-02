@@ -149,6 +149,11 @@ const App = () => (
                 <ManageCollections />
               </ProtectedRoute>
             } />
+            <Route path="/archivist/manage" element={
+              <ProtectedRoute requiredRole="archivist">
+                <ManageRecords />
+              </ProtectedRoute>
+            } />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

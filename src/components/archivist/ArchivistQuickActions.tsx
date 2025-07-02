@@ -36,7 +36,7 @@ const ArchivistQuickActions: React.FC<ArchivistQuickActionsProps> = ({ onActionC
   };
 
   const handleManageClick = () => {
-    navigate('/archivist/manage-records');
+    navigate('/archivist/manage');
   };
 
   const handleCollectionsClick = () => {

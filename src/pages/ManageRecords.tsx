@@ -30,7 +30,7 @@ const ManageRecords = () => {
   });
 
   // Fix: properly handle the data structure returned from useTheses
-  const theses = thesesResult?.data || [];
+  const theses = Array.isArray(thesesResult) ? thesesResult : (thesesResult?.data || []);
 
   console.log('[ManageRecords] Theses data:', { thesesResult, theses, isLoading, error });
 
