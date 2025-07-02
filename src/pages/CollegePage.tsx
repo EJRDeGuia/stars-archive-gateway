@@ -85,18 +85,16 @@ const CollegePage = () => {
     fetchCollege();
   }, [id]);
 
-  // Get theses for this college by college_id (UUID)
-  const { data: theses = [], isLoading: thesesLoading, error: thesesError } = useTheses();
-  const thesesArray: Thesis[] = Array.isArray(theses) ? theses : [];
-  
-  // Filter theses for this college with better comparison - moved before filteredTheses
-  const thesesForCollege = thesesArray.filter((t) => {
-    const match = String(t.college_id).trim() === String(id).trim();
-    console.log(
-      `[CollegePage] thesis.id=${t.id}, t.college_id="${t.college_id}" vs id="${id}" match: ${match}`
-    );
-    return match;
+  // Get theses for this college by college_id (UUID) - Fixed to pass college_id parameter
+  const { data: thesesData, isLoading: thesesLoading, error: thesesError } = useTheses({ 
+    college_id: id,
+    includeAll: true // Include all statuses for archivists
   });
+  
+  const thesesArray: Thesis[] = Array.isArray(thesesData?.data) ? thesesData.data : [];
+  
+  // Since we're already filtering in the query, we don't need additional filtering
+  const thesesForCollege = thesesArray;
 
   // Filter theses based on search term - now uses the correctly declared thesesForCollege
   const filteredTheses = thesesForCollege.filter(thesis =>
