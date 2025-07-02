@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -7,12 +8,14 @@ import { toast } from '@/hooks/use-toast';
 import ThesisUploadForm from "@/components/ThesisUploadForm";
 import PDFUploadCard from "@/components/PDFUploadCard";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from '@/contexts/AuthContext';
 
 // Type for uploaded files UI state
 interface UploadFile {
   file: File;
   progress: number;
   status: 'uploading' | 'completed' | 'error';
+  error?: string;
 }
 
 // College and Department options for the form
@@ -32,16 +35,12 @@ const departments = {
   con: ['Nursing', 'Community Health Nursing', 'Medical-Surgical Nursing']
 };
 
-// Helper: get college_id by code for insertion
-function getCollegeIdByCode(code: string) {
-  const college = colleges.find((c) => c.id === code);
-  return college ? college.id : null;
-}
-
 const Upload = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [uploadedFiles, setUploadedFiles] = useState<UploadFile[]>([]);
   const [isExtracting, setIsExtracting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     author: '',
@@ -55,15 +54,32 @@ const Upload = () => {
   });
 
   // Store actual college UUID mapping from backend
-  const [collegeMap, setCollegeMap] = useState<Record<string, string>>({}); // code => uuid
+  const [collegeMap, setCollegeMap] = useState<Record<string, string>>({});
+  const [collegesLoaded, setCollegesLoaded] = useState(false);
 
   useEffect(() => {
-    // Fetch colleges from Supabase and build code => uuid map
-    async function fetchColleges() {
+    // Check if user is authenticated
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to upload theses.",
+        variant: "destructive",
+      });
+      navigate('/login');
+      return;
+    }
+
+    fetchColleges();
+  }, [user, navigate]);
+
+  const fetchColleges = async () => {
+    try {
       const { data, error } = await supabase
         .from('colleges')
-        .select('id,name');
+        .select('id, name');
+        
       if (error) {
+        console.error('Error fetching colleges:', error);
         toast({
           title: "Could not fetch colleges",
           description: error.message,
@@ -71,116 +87,175 @@ const Upload = () => {
         });
         return;
       }
-      // Build a map from code ("cite") to id (uuid)
-      // Use frontend `colleges` declaration to get known code mapping
+      
+      // Build a map from code to UUID
       const codeToUuid: Record<string, string> = {};
       colleges.forEach(c => {
-        // Match college by name
         const found = data?.find((d: any) => d.name === c.name);
         if (found) codeToUuid[c.id] = found.id;
       });
+      
       setCollegeMap(codeToUuid);
+      setCollegesLoaded(true);
+      console.log('College mapping loaded:', codeToUuid);
+      
+    } catch (error) {
+      console.error('Failed to fetch colleges:', error);
+      toast({
+        title: "Error loading colleges",
+        description: "Please refresh the page to try again.",
+        variant: "destructive",
+      });
     }
-    fetchColleges();
-  }, []);
+  };
 
-  // Insert a row into the theses table after PDF upload
+  const validateForm = () => {
+    const errors: string[] = [];
+
+    if (!formData.title.trim()) errors.push("Title is required");
+    if (!formData.author.trim()) errors.push("Author is required");
+    if (!formData.college) errors.push("College is required");
+    if (!formData.department) errors.push("Department is required");
+    if (!formData.abstract.trim()) errors.push("Abstract is required");
+    if (!formData.advisor.trim()) errors.push("Advisor is required");
+    
+    if (formData.year < 2000 || formData.year > new Date().getFullYear()) {
+      errors.push("Year must be between 2000 and current year");
+    }
+
+    if (uploadedFiles.length === 0) {
+      errors.push("At least one PDF file must be uploaded");
+    }
+
+    if (uploadedFiles.length > 1) {
+      errors.push("Only one PDF file per thesis is allowed");
+    }
+
+    const completedFiles = uploadedFiles.filter(f => f.status === 'completed');
+    if (completedFiles.length === 0 && uploadedFiles.length > 0) {
+      errors.push("Please wait for file upload to complete");
+    }
+
+    return errors;
+  };
+
+  const getFileUrl = async (fileName: string): Promise<string> => {
+    try {
+      // Get the public URL for the uploaded file
+      const { data } = supabase.storage
+        .from("thesis-pdfs")
+        .getPublicUrl(fileName);
+        
+      if (!data.publicUrl) {
+        throw new Error("Failed to get file URL");
+      }
+      
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error getting file URL:', error);
+      throw new Error("Failed to get file URL");
+    }
+  };
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate required fields
-    if (uploadedFiles.length === 0) {
+    if (!user) {
       toast({
-        title: "No files uploaded",
-        description: "Please upload at least one PDF file.",
-        variant: "destructive"
+        title: "Authentication required",
+        description: "Please log in to upload theses.",
+        variant: "destructive",
       });
       return;
     }
-    if (!formData.title || !formData.author || !formData.college || !formData.department) {
+
+    // Validate form
+    const errors = validateForm();
+    if (errors.length > 0) {
       toast({
-        title: "Missing required fields",
-        description: "Please fill in all required fields.",
-        variant: "destructive"
-      });
-      return;
-    }
-    if (uploadedFiles.length > 1) {
-      toast({
-        title: "Multiple files uploaded",
-        description: "Please upload only one thesis PDF per entry.",
+        title: "Validation failed",
+        description: errors.join(". "),
         variant: "destructive"
       });
       return;
     }
 
-    // Map code (e.g. "cite") to UUID for college_id
-    const collegeUuid = collegeMap[formData.college];
-    if (!collegeUuid) {
+    if (!collegesLoaded || !collegeMap[formData.college]) {
       toast({
-        title: "College not recognized",
-        description: "Could not find matching college. Please refresh the page or contact admin.",
+        title: "College not found",
+        description: "Please refresh the page and try again.",
         variant: "destructive"
       });
       return;
     }
 
-    // Get file info
-    const fileObj = uploadedFiles[0];
-    const filePath = fileObj.file.name.replace(/[^a-zA-Z0-9.-]+/g, "_");
-    let thesisFileUrl: string | null = null;
+    setIsSubmitting(true);
+
     try {
-      setIsExtracting(true);
-      const { data, error } = await supabase
-        .storage
+      const completedFile = uploadedFiles.find(f => f.status === 'completed');
+      if (!completedFile) {
+        throw new Error("No completed file upload found");
+      }
+
+      // Get the file URL from storage
+      const timestamp = Date.now();
+      const sanitizedName = completedFile.file.name
+        .replace(/[^a-zA-Z0-9.-]/g, "_")
+        .replace(/_{2,}/g, "_");
+      const storagePath = `${timestamp}-${sanitizedName}`;
+      
+      // Find the actual uploaded file path
+      const { data: fileList, error: listError } = await supabase.storage
         .from("thesis-pdfs")
         .list("", {
           limit: 100,
           sortBy: { column: "created_at", order: "desc" },
         });
 
-      if (error) throw error;
-      const match = data?.find(item => item.name.endsWith(filePath));
-      if (!match) {
-        throw new Error("Could not find the uploaded file in storage.");
-      }
-      thesisFileUrl = supabase.storage.from("thesis-pdfs").getPublicUrl(match.name).data.publicUrl;
-      if (!thesisFileUrl) throw new Error("Failed to get public URL for uploaded PDF.");
+      if (listError) throw listError;
 
-      // Insert thesis into Supabase
+      const uploadedFile = fileList?.find(item => 
+        item.name.includes(sanitizedName) || 
+        item.name.includes(completedFile.file.name.replace(/[^a-zA-Z0-9.-]/g, "_"))
+      );
+
+      if (!uploadedFile) {
+        throw new Error("Could not find the uploaded file in storage");
+      }
+
+      const fileUrl = await getFileUrl(uploadedFile.name);
+
+      // Insert thesis into database
       const { error: insertError } = await supabase
         .from("theses")
         .insert([{
-          title: formData.title,
-          author: formData.author,
-          co_adviser: formData.coAuthor || null,
-          adviser: formData.advisor,
-          college_id: collegeUuid, // use mapped uuid
+          title: formData.title.trim(),
+          author: formData.author.trim(),
+          co_adviser: formData.coAuthor.trim() || null,
+          adviser: formData.advisor.trim(),
+          college_id: collegeMap[formData.college],
           program_id: null,
-          abstract: formData.abstract,
+          abstract: formData.abstract.trim(),
           keywords: formData.keywords
-            ? formData.keywords.split(",").map((k) => k.trim())
+            ? formData.keywords.split(",").map((k) => k.trim()).filter(k => k.length > 0)
             : [],
           publish_date: `${formData.year}-01-01`,
-          file_url: thesisFileUrl,
+          file_url: fileUrl,
           status: "pending_review",
+          uploaded_by: user.id,
         }]);
 
       if (insertError) {
-        toast({
-          title: "Error uploading thesis metadata",
-          description: insertError.message,
-          variant: "destructive"
-        });
-        setIsExtracting(false);
-        return;
+        console.error('Database insertion error:', insertError);
+        throw new Error(insertError.message);
       }
 
       toast({
         title: "Thesis uploaded successfully!",
-        description: "The thesis has been added to the repository."
+        description: "Your thesis has been submitted for review and will be available once approved.",
       });
 
+      // Reset form
       setFormData({
         title: "",
         author: "",
@@ -193,16 +268,36 @@ const Upload = () => {
         advisor: "",
       });
       setUploadedFiles([]);
+
+      // Navigate back to dashboard after a short delay
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 2000);
+
     } catch (err: any) {
+      console.error('Form submission error:', err);
       toast({
         title: "Upload failed",
-        description: err?.message || "There was a problem saving your thesis.",
+        description: err?.message || "There was a problem saving your thesis. Please try again.",
         variant: "destructive"
       });
     } finally {
-      setIsExtracting(false);
+      setIsSubmitting(false);
     }
   };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">
+            <p className="text-gray-600">Please log in to upload theses.</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -213,6 +308,7 @@ const Upload = () => {
             variant="ghost"
             onClick={() => navigate('/dashboard')}
             className="mb-4 text-dlsl-green hover:text-dlsl-green-dark"
+            disabled={isSubmitting}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
@@ -222,6 +318,7 @@ const Upload = () => {
             Add a new thesis to the STARS repository
           </p>
         </div>
+        
         <div className="space-y-6">
           <PDFUploadCard
             uploadedFiles={uploadedFiles}
@@ -229,12 +326,13 @@ const Upload = () => {
             isExtracting={isExtracting}
             setIsExtracting={setIsExtracting}
           />
+          
           <ThesisUploadForm
             formData={formData}
             setFormData={setFormData}
             colleges={colleges}
             departments={departments}
-            isExtracting={isExtracting}
+            isExtracting={isExtracting || isSubmitting}
             onSubmit={handleFormSubmit}
             onCancel={() => navigate("/dashboard")}
           />

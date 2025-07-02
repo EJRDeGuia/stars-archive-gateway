@@ -3,7 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Upload as UploadIcon, FileText, X, CheckCircle } from "lucide-react";
+import { Upload as UploadIcon, FileText, X, CheckCircle, AlertCircle, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { usePDFUpload } from "@/hooks/usePDFUpload";
 
@@ -11,6 +11,7 @@ interface UploadFile {
   file: File;
   progress: number;
   status: 'uploading' | 'completed' | 'error';
+  error?: string;
 }
 
 interface PDFUploadCardProps {
@@ -27,7 +28,6 @@ const PDFUploadCard: React.FC<PDFUploadCardProps> = ({
   setIsExtracting,
 }) => {
   const { handleFileUpload } = usePDFUpload({ setUploadedFiles, setIsExtracting });
-
   const [isDragging, setIsDragging] = React.useState(false);
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -47,6 +47,7 @@ const PDFUploadCard: React.FC<PDFUploadCardProps> = ({
     const files = Array.from(e.dataTransfer.files).filter(
       (file) => file.type === "application/pdf"
     );
+    
     if (files.length === 0) {
       toast({
         title: "Invalid file type",
@@ -55,16 +56,69 @@ const PDFUploadCard: React.FC<PDFUploadCardProps> = ({
       });
       return;
     }
+    
+    if (files.length > 5) {
+      toast({
+        title: "Too many files",
+        description: "Please upload a maximum of 5 files at once.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     handleFileUpload(files);
   };
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    
+    if (files.length > 5) {
+      toast({
+        title: "Too many files",
+        description: "Please upload a maximum of 5 files at once.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     handleFileUpload(files);
+    
+    // Clear the input
+    e.target.value = '';
   };
 
   const removeFile = (fileToRemove: File) => {
     setUploadedFiles((prev) => prev.filter((uf) => uf.file !== fileToRemove));
+  };
+
+  const retryUpload = (fileToRetry: File) => {
+    // Remove the failed file and re-upload
+    setUploadedFiles((prev) => prev.filter((uf) => uf.file !== fileToRetry));
+    handleFileUpload([fileToRetry]);
+  };
+
+  const getStatusIcon = (uploadFile: UploadFile) => {
+    switch (uploadFile.status) {
+      case 'uploading':
+        return <RefreshCw className="w-5 h-5 text-blue-500 animate-spin" />;
+      case 'completed':
+        return <CheckCircle className="w-5 h-5 text-green-500" />;
+      case 'error':
+        return <AlertCircle className="w-5 h-5 text-red-500" />;
+      default:
+        return <FileText className="w-5 h-5 text-dlsl-green" />;
+    }
+  };
+
+  const getProgressColor = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-500';
+      case 'error':
+        return 'bg-red-500';
+      default:
+        return 'bg-dlsl-green';
+    }
   };
 
   return (
@@ -72,7 +126,7 @@ const PDFUploadCard: React.FC<PDFUploadCardProps> = ({
       <CardHeader>
         <CardTitle>Upload PDF Document</CardTitle>
         <CardDescription>
-          Drag and drop your PDF file here, or click to browse
+          Drag and drop your PDF files here, or click to browse. Maximum 5 files, 50MB each.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -81,7 +135,7 @@ const PDFUploadCard: React.FC<PDFUploadCardProps> = ({
             isDragging
               ? "border-dlsl-green bg-dlsl-green/5"
               : "border-gray-300 hover:border-dlsl-green hover:bg-gray-50"
-          }`}
+          } ${isExtracting ? "pointer-events-none opacity-50" : ""}`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
@@ -96,14 +150,19 @@ const PDFUploadCard: React.FC<PDFUploadCardProps> = ({
           <input
             type="file"
             multiple
-            accept=".pdf"
+            accept=".pdf,application/pdf"
             onChange={handleFileInput}
             className="hidden"
             id="file-upload"
+            disabled={isExtracting}
           />
-          <Button asChild className="bg-dlsl-green hover:bg-dlsl-green-dark">
+          <Button 
+            asChild 
+            className="bg-dlsl-green hover:bg-dlsl-green-dark"
+            disabled={isExtracting}
+          >
             <label htmlFor="file-upload" className="cursor-pointer">
-              Browse Files
+              {isExtracting ? "Uploading..." : "Browse Files"}
             </label>
           </Button>
         </div>
@@ -111,32 +170,77 @@ const PDFUploadCard: React.FC<PDFUploadCardProps> = ({
         {/* Uploaded Files */}
         {uploadedFiles.length > 0 && (
           <div className="mt-6 space-y-3">
-            <h4 className="font-medium text-gray-900">Uploaded Files</h4>
+            <div className="flex items-center justify-between">
+              <h4 className="font-medium text-gray-900">
+                Uploaded Files ({uploadedFiles.length})
+              </h4>
+              {uploadedFiles.some(f => f.status === 'completed') && (
+                <p className="text-sm text-green-600">
+                  {uploadedFiles.filter(f => f.status === 'completed').length} completed
+                </p>
+              )}
+            </div>
+            
             {uploadedFiles.map((uploadFile, index) => (
-              <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                <FileText className="w-5 h-5 text-dlsl-green flex-shrink-0" />
+              <div 
+                key={`${uploadFile.file.name}-${index}`} 
+                className={`flex items-center space-x-3 p-4 rounded-lg border ${
+                  uploadFile.status === 'error' 
+                    ? 'bg-red-50 border-red-200' 
+                    : uploadFile.status === 'completed'
+                    ? 'bg-green-50 border-green-200'
+                    : 'bg-gray-50 border-gray-200'
+                }`}
+              >
+                {getStatusIcon(uploadFile)}
+                
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">
                     {uploadFile.file.name}
                   </p>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <Progress value={uploadFile.progress} className="flex-1 h-2" />
-                    <span className="text-xs text-gray-500">
-                      {uploadFile.progress}%
-                    </span>
-                  </div>
+                  <p className="text-xs text-gray-500 mb-2">
+                    {(uploadFile.file.size / (1024 * 1024)).toFixed(2)} MB
+                  </p>
+                  
+                  {uploadFile.status === 'error' && uploadFile.error && (
+                    <p className="text-xs text-red-600 mb-2">
+                      Error: {uploadFile.error}
+                    </p>
+                  )}
+                  
+                  {uploadFile.status !== 'error' && (
+                    <div className="flex items-center space-x-2">
+                      <Progress 
+                        value={uploadFile.progress} 
+                        className="flex-1 h-2"
+                      />
+                      <span className="text-xs text-gray-500 min-w-[3rem]">
+                        {Math.round(uploadFile.progress)}%
+                      </span>
+                    </div>
+                  )}
                 </div>
-                {uploadFile.status === "completed" && (
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeFile(uploadFile.file)}
-                  className="text-gray-400 hover:text-red-500"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
+                
+                <div className="flex gap-2">
+                  {uploadFile.status === 'error' && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => retryUpload(uploadFile.file)}
+                      className="text-blue-600 hover:text-blue-700"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeFile(uploadFile.file)}
+                    className="text-gray-400 hover:text-red-500"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>

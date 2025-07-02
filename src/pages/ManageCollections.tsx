@@ -35,9 +35,11 @@ import {
   Filter,
   Eye,
   Users,
+  RefreshCw,
+  Calendar,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import CollectionThesesManager from '@/components/archivist/CollectionThesesManager';
 
 interface Collection {
@@ -57,12 +59,15 @@ const ManageCollections = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [collections, setCollections] = useState<Collection[]>([]);
+  const [filteredCollections, setFilteredCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'public' | 'private'>('all');
+  const [sortBy, setSortBy] = useState<'created_at' | 'name' | 'thesis_count'>('created_at');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -74,6 +79,10 @@ const ManageCollections = () => {
       fetchCollections();
     }
   }, [user]);
+
+  useEffect(() => {
+    filterAndSortCollections();
+  }, [collections, searchTerm, filterType, sortBy]);
 
   const fetchCollections = async () => {
     if (!user) return;
@@ -122,6 +131,41 @@ const ManageCollections = () => {
     }
   };
 
+  const filterAndSortCollections = () => {
+    let filtered = collections;
+
+    // Apply search filter
+    if (searchTerm.trim()) {
+      const query = searchTerm.toLowerCase();
+      filtered = collections.filter(collection =>
+        collection.name.toLowerCase().includes(query) ||
+        collection.description?.toLowerCase().includes(query)
+      );
+    }
+
+    // Apply visibility filter
+    if (filterType !== 'all') {
+      filtered = filtered.filter(collection =>
+        filterType === 'public' ? collection.is_public : !collection.is_public
+      );
+    }
+
+    // Apply sorting
+    filtered = [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'thesis_count':
+          return (b._count?.collection_theses || 0) - (a._count?.collection_theses || 0);
+        case 'created_at':
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
+
+    setFilteredCollections(filtered);
+  };
+
   const validateForm = () => {
     if (!formData.name.trim()) {
       toast.error('Collection name is required');
@@ -129,6 +173,10 @@ const ManageCollections = () => {
     }
     if (formData.name.trim().length < 3) {
       toast.error('Collection name must be at least 3 characters long');
+      return false;
+    }
+    if (formData.name.trim().length > 100) {
+      toast.error('Collection name must be less than 100 characters');
       return false;
     }
     return true;
@@ -142,6 +190,7 @@ const ManageCollections = () => {
       return;
     }
 
+    setIsSubmitting(true);
     try {
       console.log('Creating collection with data:', {
         name: formData.name.trim(),
@@ -174,12 +223,15 @@ const ManageCollections = () => {
     } catch (error: any) {
       console.error('Failed to create collection:', error);
       toast.error('Failed to create collection: ' + error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleUpdateCollection = async () => {
     if (!validateForm() || !editingCollection) return;
 
+    setIsSubmitting(true);
     try {
       const { data, error } = await supabase
         .from('collections')
@@ -203,6 +255,8 @@ const ManageCollections = () => {
     } catch (error: any) {
       console.error('Failed to update collection:', error);
       toast.error('Failed to update collection: ' + error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -263,16 +317,13 @@ const ManageCollections = () => {
     setSelectedCollection(null);
   };
 
-  const filteredCollections = collections.filter(collection => {
-    const matchesSearch = collection.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         collection.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesFilter = filterType === 'all' || 
-                         (filterType === 'public' && collection.is_public) ||
-                         (filterType === 'private' && !collection.is_public);
-
-    return matchesSearch && matchesFilter;
-  });
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
 
   // If viewing a specific collection's theses
   if (selectedCollection) {
@@ -339,70 +390,92 @@ const ManageCollections = () => {
                 </div>
               </div>
               
-              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-dlsl-green hover:bg-dlsl-green/90">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create Collection
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Create New Collection</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Collection Name *</label>
-                      <Input
-                        placeholder="Enter collection name (min. 3 characters)"
-                        value={formData.name}
-                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                        className="w-full"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Description</label>
-                      <Textarea
-                        placeholder="Enter collection description (optional)"
-                        value={formData.description}
-                        onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                        rows={3}
-                        className="w-full"
-                      />
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="is_public"
-                        checked={formData.is_public}
-                        onChange={(e) => setFormData(prev => ({ ...prev, is_public: e.target.checked }))}
-                        className="rounded border-gray-300"
-                      />
-                      <label htmlFor="is_public" className="text-sm font-medium">
-                        Make this collection public (visible to all users)
-                      </label>
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => {
-                      setIsCreateDialogOpen(false);
-                      resetForm();
-                    }}>
-                      Cancel
-                    </Button>
-                    <Button onClick={handleCreateCollection} className="bg-dlsl-green hover:bg-dlsl-green/90">
+              <div className="flex gap-3">
+                <Button
+                  onClick={fetchCollections}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                  disabled={loading}
+                >
+                  <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+                
+                <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-dlsl-green hover:bg-dlsl-green/90">
+                      <Plus className="mr-2 h-4 w-4" />
                       Create Collection
                     </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Create New Collection</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Collection Name *</label>
+                        <Input
+                          placeholder="Enter collection name (3-100 characters)"
+                          value={formData.name}
+                          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                          className="w-full"
+                          maxLength={100}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Description</label>
+                        <Textarea
+                          placeholder="Enter collection description (optional)"
+                          value={formData.description}
+                          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                          rows={3}
+                          className="w-full"
+                          maxLength={500}
+                        />
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="is_public"
+                          checked={formData.is_public}
+                          onChange={(e) => setFormData(prev => ({ ...prev, is_public: e.target.checked }))}
+                          className="rounded border-gray-300"
+                        />
+                        <label htmlFor="is_public" className="text-sm font-medium">
+                          Make this collection public (visible to all users)
+                        </label>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          setIsCreateDialogOpen(false);
+                          resetForm();
+                        }}
+                        disabled={isSubmitting}
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        onClick={handleCreateCollection} 
+                        className="bg-dlsl-green hover:bg-dlsl-green/90"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? 'Creating...' : 'Create Collection'}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
           </div>
 
           {/* Search and Filter */}
           <Card className="mb-8">
             <CardContent className="p-6">
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col lg:flex-row gap-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
@@ -412,18 +485,50 @@ const ManageCollections = () => {
                     className="pl-10"
                   />
                 </div>
-                <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
-                  <SelectTrigger className="w-full sm:w-48">
-                    <Filter className="mr-2 h-4 w-4" />
-                    <SelectValue placeholder="Filter by visibility" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Collections</SelectItem>
-                    <SelectItem value="public">Public Only</SelectItem>
-                    <SelectItem value="private">Private Only</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex gap-4">
+                  <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
+                    <SelectTrigger className="w-48">
+                      <Filter className="mr-2 h-4 w-4" />
+                      <SelectValue placeholder="Filter by visibility" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Collections</SelectItem>
+                      <SelectItem value="public">Public Only</SelectItem>
+                      <SelectItem value="private">Private Only</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="created_at">Newest First</SelectItem>
+                      <SelectItem value="name">Name A-Z</SelectItem>
+                      <SelectItem value="thesis_count">Most Theses</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
+              
+              {(searchTerm || filterType !== 'all') && (
+                <div className="mt-4 flex items-center justify-between">
+                  <p className="text-sm text-gray-600">
+                    Showing {filteredCollections.length} of {collections.length} collections
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSearchTerm('');
+                      setFilterType('all');
+                    }}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    Clear filters
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -438,15 +543,15 @@ const ManageCollections = () => {
               <CardContent className="p-12 text-center">
                 <FolderOpen className="h-16 w-16 text-gray-300 mx-auto mb-6" />
                 <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                  {searchTerm ? 'No matching collections found' : 'No collections yet'}
+                  {searchTerm || filterType !== 'all' ? 'No matching collections found' : 'No collections yet'}
                 </h3>
                 <p className="text-gray-500 mb-6">
-                  {searchTerm 
+                  {searchTerm || filterType !== 'all'
                     ? 'Try adjusting your search terms or filters.'
                     : 'Create your first collection to organize theses by themes or topics.'
                   }
                 </p>
-                {!searchTerm && (
+                {!searchTerm && filterType === 'all' && (
                   <Button 
                     onClick={() => setIsCreateDialogOpen(true)}
                     className="bg-dlsl-green hover:bg-dlsl-green/90"
@@ -481,7 +586,7 @@ const ManageCollections = () => {
                     <p className="text-gray-600 text-sm mb-4 line-clamp-3">
                       {collection.description || 'No description available.'}
                     </p>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 mb-4">
                       <Button
                         variant="outline"
                         size="sm"
@@ -507,12 +612,13 @@ const ManageCollections = () => {
                         <Trash2 className="w-3 h-3" />
                       </Button>
                     </div>
-                    <p className="text-xs text-gray-400 mt-2">
-                      Created {new Date(collection.created_at).toLocaleDateString()}
+                    <div className="flex items-center text-xs text-gray-400">
+                      <Calendar className="w-3 h-3 mr-1" />
+                      <span>Created {formatDate(collection.created_at)}</span>
                       {collection.updated_at && collection.updated_at !== collection.created_at && (
-                        <span> • Updated {new Date(collection.updated_at).toLocaleDateString()}</span>
+                        <span className="ml-2">• Updated {formatDate(collection.updated_at)}</span>
                       )}
-                    </p>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -534,10 +640,11 @@ const ManageCollections = () => {
                 <div>
                   <label className="text-sm font-medium mb-2 block">Collection Name *</label>
                   <Input
-                    placeholder="Enter collection name (min. 3 characters)"
+                    placeholder="Enter collection name (3-100 characters)"
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     className="w-full"
+                    maxLength={100}
                   />
                 </div>
                 <div>
@@ -548,6 +655,7 @@ const ManageCollections = () => {
                     onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                     rows={3}
                     className="w-full"
+                    maxLength={500}
                   />
                 </div>
                 <div className="flex items-center space-x-2">
@@ -564,14 +672,22 @@ const ManageCollections = () => {
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => {
-                  setEditingCollection(null);
-                  resetForm();
-                }}>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setEditingCollection(null);
+                    resetForm();
+                  }}
+                  disabled={isSubmitting}
+                >
                   Cancel
                 </Button>
-                <Button onClick={handleUpdateCollection} className="bg-dlsl-green hover:bg-dlsl-green/90">
-                  Update Collection
+                <Button 
+                  onClick={handleUpdateCollection} 
+                  className="bg-dlsl-green hover:bg-dlsl-green/90"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Updating...' : 'Update Collection'}
                 </Button>
               </DialogFooter>
             </DialogContent>

@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiService } from '@/services/api';
 import { supabase } from "@/integrations/supabase/client";
 
-// Generic hook for API queries
+// Generic hook for API queries with enhanced error handling
 export function useApiQuery<T>(
   queryKey: string[],
   queryFn: () => Promise<T>,
@@ -13,11 +13,20 @@ export function useApiQuery<T>(
   return useQuery({
     queryKey,
     queryFn,
+    retry: (failureCount, error: any) => {
+      // Don't retry on authentication errors
+      if (error?.code === 'PGRST301' || error?.message?.includes('JWT')) {
+        return false;
+      }
+      return failureCount < 3;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
     ...options,
   });
 }
 
-// Generic hook for API mutations
+// Generic hook for API mutations with enhanced error handling
 export function useApiMutation<T, V>(
   mutationFn: (variables: V) => Promise<T>,
   options?: any
@@ -26,18 +35,38 @@ export function useApiMutation<T, V>(
   
   return useMutation({
     mutationFn,
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       // Invalidate relevant queries after successful mutation
       if (options?.invalidateQueries) {
         queryClient.invalidateQueries({ queryKey: options.invalidateQueries });
+      }
+      
+      // Call custom onSuccess if provided
+      if (options?.onSuccess) {
+        options.onSuccess(data, variables);
+      }
+    },
+    onError: (error, variables) => {
+      console.error('Mutation error:', error);
+      
+      // Call custom onError if provided
+      if (options?.onError) {
+        options.onError(error, variables);
       }
     },
     ...options,
   });
 }
 
-// Specific hooks for common operations
-export function useTheses(params?: { page?: number; limit?: number; search?: string; includeAll?: boolean }) {
+// Enhanced theses hook with better filtering and performance
+export function useTheses(params?: { 
+  page?: number; 
+  limit?: number; 
+  search?: string; 
+  includeAll?: boolean;
+  college_id?: string;
+  status?: string;
+}) {
   return useQuery({
     queryKey: ['theses', JSON.stringify(params)],
     queryFn: async () => {
@@ -54,20 +83,44 @@ export function useTheses(params?: { page?: number; limit?: number; search?: str
           )
         `);
 
-      // Only show approved theses unless specifically requesting all
+      // Apply status filter
       if (!params?.includeAll) {
-        query = query.eq('status', 'approved');
+        query = query.eq('status', params?.status || 'approved');
       }
 
-      const { data, error } = await query.order('created_at', { ascending: false });
+      // Apply college filter
+      if (params?.college_id) {
+        query = query.eq('college_id', params.college_id);
+      }
+
+      // Apply search filter
+      if (params?.search && params.search.trim()) {
+        const searchTerm = params.search.trim();
+        query = query.or(`title.ilike.%${searchTerm}%,author.ilike.%${searchTerm}%,abstract.ilike.%${searchTerm}%`);
+      }
+
+      // Apply pagination
+      if (params?.page && params?.limit) {
+        const from = (params.page - 1) * params.limit;
+        const to = from + params.limit - 1;
+        query = query.range(from, to);
+      }
+
+      const { data, error, count } = await query
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error('[useTheses] Error fetching theses:', error);
         throw error;
       }
       
-      console.log('[useTheses] Successfully fetched theses:', data);
-      return data || [];
+      console.log('[useTheses] Successfully fetched theses:', data?.length || 0);
+      return { data: data || [], count };
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutes for theses data
+    retry: (failureCount, error: any) => {
+      if (error?.code === 'PGRST301') return false;
+      return failureCount < 2;
     },
   });
 }
@@ -76,28 +129,46 @@ export function useThesis(id: string) {
   return useApiQuery(
     ['thesis', id],
     () => apiService.getThesis(id),
-    { enabled: !!id }
+    { 
+      enabled: !!id,
+      staleTime: 10 * 60 * 1000, // 10 minutes for individual thesis
+    }
   );
 }
 
 export function useCreateThesis() {
   return useApiMutation(
     (thesis: FormData) => apiService.createThesis(thesis),
-    { invalidateQueries: ['theses'] }
+    { 
+      invalidateQueries: ['theses'],
+      onSuccess: () => {
+        console.log('Thesis created successfully');
+      }
+    }
   );
 }
 
 export function useUpdateThesis() {
   return useApiMutation(
     ({ id, thesis }: { id: string; thesis: any }) => apiService.updateThesis(id, thesis),
-    { invalidateQueries: ['theses'] }
+    { 
+      invalidateQueries: ['theses'],
+      onSuccess: (data, variables) => {
+        console.log('Thesis updated successfully:', variables.id);
+      }
+    }
   );
 }
 
 export function useDeleteThesis() {
   return useApiMutation(
     (id: string) => apiService.deleteThesis(id),
-    { invalidateQueries: ['theses'] }
+    { 
+      invalidateQueries: ['theses'],
+      onSuccess: (data, id) => {
+        console.log('Thesis deleted successfully:', id);
+      }
+    }
   );
 }
 
@@ -107,6 +178,7 @@ export function useSearch() {
   );
 }
 
+// Enhanced colleges hook with better caching
 export function useColleges() {
   return useQuery({
     queryKey: ['colleges'],
@@ -119,10 +191,12 @@ export function useColleges() {
       if (error) throw error;
       return data || [];
     },
+    staleTime: 15 * 60 * 1000, // 15 minutes - colleges don't change often
+    cacheTime: 30 * 60 * 1000, // 30 minutes
   });
 }
 
-// User Favorites Hooks
+// Enhanced user favorites with better error handling
 export function useUserFavorites(userId: string | undefined) {
   return useQuery({
     queryKey: ["user_favorites", userId],
@@ -133,18 +207,32 @@ export function useUserFavorites(userId: string | undefined) {
       
       const { data, error } = await supabase
         .from("user_favorites")
-        .select("*")
-        .eq("user_id", userId);
+        .select(`
+          *,
+          theses (
+            id,
+            title,
+            author,
+            abstract
+          )
+        `)
+        .eq("user_id", userId)
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error('[useUserFavorites] Error:', error);
         throw error;
       }
       
-      console.log('[useUserFavorites] Fetched data:', data);
+      console.log('[useUserFavorites] Fetched data:', data?.length || 0, 'favorites');
       return data || [];
     },
     enabled: !!userId,
+    staleTime: 1 * 60 * 1000, // 1 minute
+    retry: (failureCount, error: any) => {
+      if (error?.code === 'PGRST301') return false;
+      return failureCount < 2;
+    },
   });
 }
 
@@ -236,11 +324,12 @@ export function useToggleFavorite() {
       // Invalidate queries on error to ensure consistency
       queryClient.invalidateQueries({ queryKey: ["user_favorites", variables.userId] });
       queryClient.invalidateQueries({ queryKey: ["user_favorites_with_theses", variables.userId] });
-    }
+    },
+    retry: 1, // Only retry once for favorites
   });
 }
 
-// Saved Searches Hooks
+// Enhanced saved searches with better performance
 export function useSavedSearches(userId: string | undefined) {
   return useQuery({
     queryKey: ["saved_searches", userId],
@@ -249,11 +338,13 @@ export function useSavedSearches(userId: string | undefined) {
       const { data, error } = await supabase
         .from("saved_searches")
         .select("*")
-        .eq("user_id", userId);
+        .eq("user_id", userId)
+        .order('created_at', { ascending: false });
       if (error) throw error;
       return data || [];
     },
     enabled: !!userId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 
@@ -268,7 +359,7 @@ export function useSaveSearch() {
     }: { userId: string; name: string; query: string; filters?: any }) => {
       const { data, error } = await supabase
         .from("saved_searches")
-        .insert([{ user_id: userId, name, query, filters }])
+        .insert([{ user_id: userId, name: name.trim(), query: query.trim(), filters }])
         .select()
         .single();
       if (error) throw error;

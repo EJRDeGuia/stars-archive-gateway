@@ -7,6 +7,7 @@ interface UploadFile {
   file: File;
   progress: number;
   status: 'uploading' | 'completed' | 'error';
+  error?: string;
 }
 
 interface UsePDFUploadProps {
@@ -14,64 +15,132 @@ interface UsePDFUploadProps {
   setIsExtracting: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB limit
+const ALLOWED_TYPES = ['application/pdf'];
+
 /**
- * Handles uploading PDF files (no extraction step).
+ * Enhanced PDF upload hook with proper error handling and validation
  */
 export function usePDFUpload({ setUploadedFiles, setIsExtracting }: UsePDFUploadProps) {
+  const validateFile = (file: File): string | null => {
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return "Only PDF files are allowed";
+    }
+    
+    if (file.size > MAX_FILE_SIZE) {
+      return "File size must be less than 50MB";
+    }
+    
+    if (file.size === 0) {
+      return "File appears to be empty";
+    }
+    
+    return null;
+  };
+
   const handleFileUpload = useCallback(async (files: File[]) => {
+    console.log('[usePDFUpload] Starting upload for files:', files.map(f => f.name));
+    
     for (const file of files) {
+      // Validate file before processing
+      const validationError = validateFile(file);
+      if (validationError) {
+        toast({
+          title: "File validation failed",
+          description: `${file.name}: ${validationError}`,
+          variant: "destructive",
+        });
+        continue;
+      }
+
       const uploadFile: UploadFile = {
         file,
         progress: 0,
         status: "uploading",
       };
+      
       setUploadedFiles((prev) => [...prev, uploadFile]);
       setIsExtracting(true);
 
-      const storagePath = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]+/g, "_")}`;
       try {
+        // Create a sanitized file path
+        const timestamp = Date.now();
+        const sanitizedName = file.name
+          .replace(/[^a-zA-Z0-9.-]/g, "_")
+          .replace(/_{2,}/g, "_");
+        const storagePath = `${timestamp}-${sanitizedName}`;
+        
+        console.log('[usePDFUpload] Uploading to path:', storagePath);
+
+        // Start progress simulation
+        let currentProgress = 0;
+        const progressInterval = setInterval(() => {
+          if (currentProgress < 90) {
+            currentProgress += Math.random() * 15;
+            setUploadedFiles((prev) =>
+              prev.map((uf) =>
+                uf.file === file 
+                  ? { ...uf, progress: Math.min(currentProgress, 90) } 
+                  : uf
+              )
+            );
+          }
+        }, 200);
+
         // Upload to Supabase Storage
-        const { error } = await supabase.storage
+        const { data, error } = await supabase.storage
           .from("thesis-pdfs")
           .upload(storagePath, file, {
             cacheControl: "3600",
-            upsert: true,
+            upsert: false, // Don't overwrite existing files
             contentType: file.type,
           });
-        if (error) throw error;
+
+        clearInterval(progressInterval);
+
+        if (error) {
+          console.error('[usePDFUpload] Upload error:', error);
+          throw new Error(error.message);
+        }
+
+        if (!data) {
+          throw new Error("Upload completed but no data returned");
+        }
+
+        console.log('[usePDFUpload] Upload successful:', data);
+
+        // Complete progress and mark as successful
+        setUploadedFiles((prev) =>
+          prev.map((uf) =>
+            uf.file === file 
+              ? { ...uf, progress: 100, status: "completed" } 
+              : uf
+          )
+        );
 
         toast({
-          title: "PDF uploaded!",
-          description: "Your document was uploaded. No information was extracted automatically.",
+          title: "PDF uploaded successfully!",
+          description: `${file.name} has been uploaded and is ready for processing.`,
         });
-
-        // Simulate progress
-        let prog = 0;
-        const intv = setInterval(() => {
-          prog += 10;
-          setUploadedFiles((prev) =>
-            prev.map((uf) =>
-              uf.file === file ? { ...uf, progress: Math.min(uf.progress + 10, 100) } : uf
-            )
-          );
-        }, 120);
-
-        setTimeout(() => {
-          clearInterval(intv);
-          setUploadedFiles((prev) =>
-            prev.map((uf) =>
-              uf.file === file ? { ...uf, progress: 100, status: "completed" } : uf
-            )
-          );
-        }, 1200);
 
       } catch (err: any) {
+        console.error('[usePDFUpload] Upload failed:', err);
+        
+        const errorMessage = err?.message || "Unknown upload error occurred";
+        
+        setUploadedFiles((prev) =>
+          prev.map((uf) =>
+            uf.file === file 
+              ? { ...uf, progress: 0, status: "error", error: errorMessage } 
+              : uf
+          )
+        );
+
         toast({
           title: "Upload failed",
-          description: err?.message || "Could not upload PDF",
+          description: `Failed to upload ${file.name}: ${errorMessage}`,
           variant: "destructive",
         });
-        setUploadedFiles((prev) => prev.filter((uf) => uf.file !== file));
       } finally {
         setIsExtracting(false);
       }
