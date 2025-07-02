@@ -73,6 +73,13 @@ export type Database = {
             foreignKeyName: "collection_theses_thesis_id_fkey"
             columns: ["thesis_id"]
             isOneToOne: false
+            referencedRelation: "recent_uploads_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collection_theses_thesis_id_fkey"
+            columns: ["thesis_id"]
+            isOneToOne: false
             referencedRelation: "theses"
             referencedColumns: ["id"]
           },
@@ -170,6 +177,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "colleges"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programs_college_id_fkey"
+            columns: ["college_id"]
+            isOneToOne: false
+            referencedRelation: "recent_uploads_view"
+            referencedColumns: ["college_id"]
           },
         ]
       }
@@ -372,6 +386,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "theses_college_id_fkey"
+            columns: ["college_id"]
+            isOneToOne: false
+            referencedRelation: "recent_uploads_view"
+            referencedColumns: ["college_id"]
+          },
+          {
             foreignKeyName: "theses_program_id_fkey"
             columns: ["program_id"]
             isOneToOne: false
@@ -455,6 +476,13 @@ export type Database = {
             foreignKeyName: "thesis_downloads_thesis_id_fkey"
             columns: ["thesis_id"]
             isOneToOne: false
+            referencedRelation: "recent_uploads_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "thesis_downloads_thesis_id_fkey"
+            columns: ["thesis_id"]
+            isOneToOne: false
             referencedRelation: "theses"
             referencedColumns: ["id"]
           },
@@ -483,6 +511,13 @@ export type Database = {
           viewed_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "thesis_views_thesis_id_fkey"
+            columns: ["thesis_id"]
+            isOneToOne: false
+            referencedRelation: "recent_uploads_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "thesis_views_thesis_id_fkey"
             columns: ["thesis_id"]
@@ -516,6 +551,13 @@ export type Database = {
             foreignKeyName: "user_favorites_thesis_id_fkey"
             columns: ["thesis_id"]
             isOneToOne: false
+            referencedRelation: "recent_uploads_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_favorites_thesis_id_fkey"
+            columns: ["thesis_id"]
+            isOneToOne: false
             referencedRelation: "theses"
             referencedColumns: ["id"]
           },
@@ -544,12 +586,60 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      recent_uploads_view: {
+        Row: {
+          author: string | null
+          college_id: string | null
+          college_name: string | null
+          created_at: string | null
+          id: string | null
+          status: Database["public"]["Enums"]["thesis_status"] | null
+          title: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       binary_quantize: {
         Args: { "": string } | { "": unknown }
         Returns: unknown
+      }
+      get_dashboard_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          total_theses: number
+          approved_theses: number
+          pending_review: number
+          this_month_uploads: number
+          total_collections: number
+          total_views_7days: number
+        }[]
+      }
+      get_recent_uploads: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          title: string
+          author: string
+          status: Database["public"]["Enums"]["thesis_status"]
+          created_at: string
+          college_name: string
+          college_id: string
+        }[]
+      }
+      get_uploads_analytics: {
+        Args: { days_back?: number }
+        Returns: {
+          date: string
+          uploads: number
+        }[]
+      }
+      get_views_analytics: {
+        Args: { days_back?: number }
+        Returns: {
+          date: string
+          views: number
+        }[]
       }
       halfvec_avg: {
         Args: { "": number[] }

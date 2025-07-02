@@ -1,25 +1,25 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import StatisticsCards from '@/components/archivist/StatisticsCards';
+import OptimizedStatisticsCards from '@/components/archivist/OptimizedStatisticsCards';
 import ArchivistQuickActions from '@/components/archivist/ArchivistQuickActions';
 import CollegeGrid from '@/components/dashboard/CollegeGrid';
 import RecentUploads from '@/components/archivist/RecentUploads';
 import AccessRequestsManager from '@/components/archivist/AccessRequestsManager';
-import { useArchivistDashboardData } from '@/hooks/useArchivistDashboardData';
+import { useOptimizedArchivistData } from '@/hooks/useOptimizedArchivistData';
 import ViewsChart from "@/components/analytics/ViewsChart";
-import { useSystemAnalytics } from "@/hooks/useSystemAnalytics";
+import { useOptimizedAnalytics } from "@/hooks/useOptimizedAnalytics";
 
 const ArchivistDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const { stats, recentUploads, loading } = useArchivistDashboardData();
-  const { viewsSeries, uploadsSeries, loading: analyticsLoading } = useSystemAnalytics();
+  const { stats, recentUploads, loading, statsLoading } = useOptimizedArchivistData();
+  const { viewsSeries, uploadsSeries, loading: analyticsLoading } = useOptimizedAnalytics();
 
   const handleQuickAction = (action: string) => {
     switch (action) {
@@ -82,10 +82,10 @@ const ArchivistDashboard = () => {
           </div>
 
           {loading ? (
-            <div className="text-center text-gray-400 py-8">Loading stats...</div>
+            <div className="text-center text-gray-400 py-8">Loading dashboard...</div>
           ) : (
             <>
-              <StatisticsCards />
+              <OptimizedStatisticsCards />
               <ArchivistQuickActions onActionClick={handleQuickAction} />
               
               {/* Access Requests Management */}
@@ -104,4 +104,4 @@ const ArchivistDashboard = () => {
   );
 };
 
-export default ArchivistDashboard;
+export default memo(ArchivistDashboard);

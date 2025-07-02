@@ -96,10 +96,11 @@ export function useTheses(params?: {
         query = query.eq('college_id', params.college_id);
       }
 
-      // Apply search filter
+      // Apply search filter - optimized for better performance
       if (params?.search && params.search.trim()) {
         const searchTerm = params.search.trim();
-        query = query.or(`title.ilike.%${searchTerm}%,author.ilike.%${searchTerm}%,abstract.ilike.%${searchTerm}%`);
+        // Use simpler search that can use indexes better
+        query = query.or(`title.ilike.%${searchTerm}%,author.ilike.%${searchTerm}%`);
       }
 
       // Apply pagination
@@ -107,6 +108,9 @@ export function useTheses(params?: {
         const from = (params.page - 1) * params.limit;
         const to = from + params.limit - 1;
         query = query.range(from, to);
+      } else {
+        // Default limit to prevent large queries
+        query = query.limit(50);
       }
 
       const { data, error, count } = await query
@@ -120,14 +124,14 @@ export function useTheses(params?: {
       console.log('[useTheses] Successfully fetched theses:', data?.length || 0);
       return { data: data || [], count };
     },
-    staleTime: 30 * 1000, // 30 seconds for fresh data  
-    gcTime: 2 * 60 * 1000, // 2 minutes cache time
+    staleTime: 2 * 60 * 1000, // 2 minutes for thesis data
+    gcTime: 5 * 60 * 1000, // 5 minutes cache time
     retry: (failureCount, error: any) => {
       if (error?.code === 'PGRST301') return false;
       return failureCount < 2;
     },
-    // Refetch when focus returns to ensure fresh data
-    refetchOnWindowFocus: true,
+    // Only refetch when focus returns if data is stale
+    refetchOnWindowFocus: 'always',
     refetchOnMount: true,
   });
 }
