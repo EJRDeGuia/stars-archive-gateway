@@ -22,7 +22,7 @@ interface AuthContextType {
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Development mode flag - set to false for production
-const isDevelopment = true;
+const isDevelopment = false; // Changed to false to use real Supabase auth
 
 // Mock users for development
 const mockUsers: (AppUser & { password: string })[] = [
