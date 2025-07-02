@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiService } from '@/services/api';
@@ -204,9 +205,9 @@ export function useToggleFavorite() {
         (oldData: any[]) => {
           if (!oldData) return [];
           
-          if (result.removed) {
+          if ('removed' in result && result.removed) {
             return oldData.filter(fav => fav.id !== variables.favoriteId);
-          } else if (result.added) {
+          } else if ('added' in result && result.added) {
             return [...oldData, result];
           }
           
