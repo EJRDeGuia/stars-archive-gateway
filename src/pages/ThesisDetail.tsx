@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,7 +21,9 @@ import {
   Share2
 } from 'lucide-react';
 import ThesisPDFPreviewDialog from '@/components/ThesisPDFPreviewDialog';
-import { useThesis, useUserFavorites } from '@/hooks/useApi';
+import { useThesis } from '@/hooks/useApi';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import type { Thesis } from '@/types/thesis';
 import { semanticSearchService } from '@/services/semanticSearch';
 import { toast } from 'sonner';
@@ -29,9 +32,27 @@ const ThesisDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: thesis, isLoading, error } = useThesis(id || "") as { data: Thesis | undefined, isLoading: boolean, error: any };
-  const { data: userFavorites } = useUserFavorites(user?.id);
+  
+  // Fetch user favorites to check if this thesis is favorited
+  const { data: userFavorites } = useQuery({
+    queryKey: ["user_favorites", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      
+      const { data, error } = await supabase
+        .from("user_favorites")
+        .select("*")
+        .eq("user_id", user.id);
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id,
+  });
+
   const [showPreview, setShowPreview] = React.useState(false);
   const [relatedTheses, setRelatedTheses] = React.useState<Thesis[]>([]);
   const [loadingRelated, setLoadingRelated] = React.useState(false);
@@ -65,6 +86,17 @@ const ThesisDetail = () => {
       console.error('Error loading related theses:', error);
     } finally {
       setLoadingRelated(false);
+    }
+  };
+
+  const handleFavoriteToggle = (isFavorited: boolean) => {
+    // Invalidate the favorites query to ensure consistency
+    queryClient.invalidateQueries({ queryKey: ["user_favorites", user?.id] });
+    
+    if (isFavorited) {
+      toast.success("Added to your library");
+    } else {
+      toast.success("Removed from your library");
     }
   };
 
@@ -156,12 +188,13 @@ const ThesisDetail = () => {
                       <h1 className="text-4xl font-bold text-gray-900 mb-6 leading-tight flex-1">
                         {thesis.title}
                       </h1>
-                      {user && (
+                      {user && thesis && (
                         <div className="ml-4 flex-shrink-0">
                           <FavoriteButton
                             userId={user.id}
                             thesisId={thesis.id}
                             favoriteId={favoriteEntry?.id}
+                            onToggle={handleFavoriteToggle}
                           />
                         </div>
                       )}

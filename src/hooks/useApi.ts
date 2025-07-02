@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiService } from '@/services/api';
@@ -128,11 +127,20 @@ export function useUserFavorites(userId: string | undefined) {
     queryKey: ["user_favorites", userId],
     queryFn: async () => {
       if (!userId) return [];
+      
+      console.log('[useUserFavorites] Fetching favorites for user:', userId);
+      
       const { data, error } = await supabase
         .from("user_favorites")
         .select("*")
         .eq("user_id", userId);
-      if (error) throw error;
+      
+      if (error) {
+        console.error('[useUserFavorites] Error:', error);
+        throw error;
+      }
+      
+      console.log('[useUserFavorites] Fetched data:', data);
       return data || [];
     },
     enabled: !!userId,
@@ -141,34 +149,74 @@ export function useUserFavorites(userId: string | undefined) {
 
 export function useToggleFavorite() {
   const queryClient = useQueryClient();
+  
   return useMutation({
     mutationFn: async ({
       userId,
       thesisId,
       favoriteId,
-    }: { userId: string; thesisId: string; favoriteId?: string }) => {
+    }: { userId: string; thesisId: string; favoriteId?: string | null }) => {
+      console.log('[useToggleFavorite] Toggle favorite called with:', { userId, thesisId, favoriteId });
+      
       if (favoriteId) {
-        // Remove
+        // Remove favorite
+        console.log('[useToggleFavorite] Removing favorite:', favoriteId);
         const { error } = await supabase
           .from("user_favorites")
           .delete()
           .eq("id", favoriteId);
-        if (error) throw error;
-        return { removed: true };
+        
+        if (error) {
+          console.error('[useToggleFavorite] Error removing favorite:', error);
+          throw error;
+        }
+        
+        console.log('[useToggleFavorite] Successfully removed favorite');
+        return { removed: true, favoriteId };
       } else {
-        // Add
+        // Add favorite
+        console.log('[useToggleFavorite] Adding favorite for thesis:', thesisId);
         const { error, data } = await supabase
           .from("user_favorites")
           .insert([{ user_id: userId, thesis_id: thesisId }])
           .select()
           .single();
-        if (error) throw error;
+        
+        if (error) {
+          console.error('[useToggleFavorite] Error adding favorite:', error);
+          throw error;
+        }
+        
+        console.log('[useToggleFavorite] Successfully added favorite:', data);
         return { added: true, ...data };
       }
     },
-    onSuccess: () => {
+    onSuccess: (result, variables) => {
+      console.log('[useToggleFavorite] Success callback with result:', result);
+      
+      // Invalidate all favorite-related queries
       queryClient.invalidateQueries({ queryKey: ["user_favorites"] });
+      queryClient.invalidateQueries({ queryKey: ["user_favorites_with_theses"] });
+      
+      // Update the user favorites cache optimistically
+      queryClient.setQueryData(
+        ["user_favorites", variables.userId],
+        (oldData: any[]) => {
+          if (!oldData) return [];
+          
+          if (result.removed) {
+            return oldData.filter(fav => fav.id !== variables.favoriteId);
+          } else if (result.added) {
+            return [...oldData, result];
+          }
+          
+          return oldData;
+        }
+      );
     },
+    onError: (error) => {
+      console.error('[useToggleFavorite] Error:', error);
+    }
   });
 }
 

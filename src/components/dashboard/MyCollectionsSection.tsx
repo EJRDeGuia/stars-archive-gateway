@@ -1,11 +1,12 @@
 
 import { useAuth } from "@/hooks/useAuth";
-import { useUserFavorites, useSavedSearches } from "@/hooks/useApi";
+import { useSavedSearches } from "@/hooks/useApi";
 import { BookOpen, Search, Heart } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
 type Favorite = {
   id: string;
@@ -29,12 +30,16 @@ export default function MyCollectionsSection() {
   const { user } = useAuth();
   const userId = user?.id;
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // Fetch favorites with thesis details
-  const { data: favorites = [] } = useQuery({
+  const { data: favorites = [], refetch } = useQuery({
     queryKey: ["user_favorites_with_theses", userId],
     queryFn: async () => {
       if (!userId) return [];
+      
+      console.log('[MyCollections] Fetching favorites for user:', userId);
+      
       const { data, error } = await supabase
         .from("user_favorites")
         .select(`
@@ -50,13 +55,49 @@ export default function MyCollectionsSection() {
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('[MyCollections] Error fetching favorites:', error);
+        throw error;
+      }
+      
+      console.log('[MyCollections] Fetched favorites:', data);
       return data as Favorite[] || [];
     },
     enabled: !!userId,
   });
 
   const { data: savedSearches = [] } = useSavedSearches(userId) as { data: SavedSearch[] | undefined };
+
+  // Set up real-time subscription for favorites
+  useEffect(() => {
+    if (!userId) return;
+
+    console.log('[MyCollections] Setting up real-time subscription for user:', userId);
+    
+    const channel = supabase
+      .channel('dashboard_favorites_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_favorites',
+          filter: `user_id=eq.${userId}`
+        },
+        (payload) => {
+          console.log('[MyCollections] Real-time update received:', payload);
+          // Invalidate and refetch the favorites query
+          queryClient.invalidateQueries({ queryKey: ["user_favorites_with_theses", userId] });
+          refetch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('[MyCollections] Cleaning up real-time subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [userId, queryClient, refetch]);
 
   return (
     <div className="mb-12">
