@@ -46,8 +46,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const getSecurePDFUrl = () => {
     if (!thesisId || !user) return null;
     
-    // Use the secure edge function instead of direct storage URL
-    return `${supabase.supabaseUrl}/functions/v1/secure-thesis-access?thesisId=${thesisId}`;
+    // Use hardcoded Supabase URL since supabaseUrl is protected
+    return `https://cylsbcjqemluouxblywl.supabase.co/functions/v1/secure-thesis-access?thesisId=${thesisId}`;
   };
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
@@ -171,6 +171,17 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   // Set the number of preview pages to show
   const totalPagesToShow = actualMaxPages && numPages ? Math.min(actualMaxPages, numPages) : numPages;
 
+  // Create document loading function to handle async auth
+  const getDocumentConfig = async () => {
+    const session = await supabase.auth.getSession();
+    return {
+      url: securePdfUrl,
+      httpHeaders: {
+        'Authorization': `Bearer ${session.data.session?.access_token}`
+      }
+    };
+  };
+
   return (
     <Card className={className}>
       <CardContent className="p-0">
@@ -221,12 +232,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                 </div>
               ) : (
                 <Document
-                  file={{
-                    url: securePdfUrl,
-                    httpHeaders: {
-                      'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
-                    }
-                  }}
+                  file={securePdfUrl}
                   onLoadSuccess={onDocumentLoadSuccess}
                   onLoadError={onDocumentLoadError}
                   loading={

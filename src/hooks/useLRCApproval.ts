@@ -17,10 +17,17 @@ export const useLRCApproval = () => {
   const submitApprovalRequest = async ({ thesisId, requestType, justification }: LRCApprovalRequest) => {
     setIsLoading(true);
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
       const { data, error } = await supabase
         .from('lrc_approval_requests')
         .insert({
           thesis_id: thesisId,
+          user_id: user.id,
           request_type: requestType,
           justification: justification.trim()
         })

@@ -190,7 +190,7 @@ export class UploadService {
     try {
       // Return the secure function URL instead of direct storage URL
       const thesisId = storagePath.replace('.pdf', '');
-      return `${supabase.supabaseUrl}/functions/v1/secure-thesis-access?thesisId=${thesisId}`;
+      return `https://cylsbcjqemluouxblywl.supabase.co/functions/v1/secure-thesis-access?thesisId=${thesisId}`;
     } catch (error) {
       console.error('[UploadService] Error getting secure file URL:', error);
       throw new Error("Failed to get secure file URL");
