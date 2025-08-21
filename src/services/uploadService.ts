@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -17,18 +18,35 @@ export interface ThesisUploadData {
 export class UploadService {
   private static async validateUploadPermissions(userId: string): Promise<boolean> {
     try {
+      // Use the secure has_role function to check archivist permissions
       const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .in('role', ['archivist', 'admin']);
+        .rpc('has_role', { 
+          _user_id: userId, 
+          _role: 'archivist' 
+        });
 
       if (error) {
         console.error('[UploadService] Permission check error:', error);
         return false;
       }
 
-      return data && data.length > 0;
+      // Also check for admin role as fallback
+      if (!data) {
+        const { data: isAdmin, error: adminError } = await supabase
+          .rpc('has_role', { 
+            _user_id: userId, 
+            _role: 'admin' 
+          });
+
+        if (adminError) {
+          console.error('[UploadService] Admin permission check error:', adminError);
+          return false;
+        }
+
+        return isAdmin === true;
+      }
+
+      return data === true;
     } catch (error) {
       console.error('[UploadService] Permission validation failed:', error);
       return false;
@@ -56,15 +74,26 @@ export class UploadService {
     try {
       console.log('[UploadService] 1. Starting upload thesis...');
       
-      // Check permissions first
-      console.log('[UploadService] 2. Checking permissions for user:', data.uploadedBy);
+      // Check permissions first - only archivists can upload
+      console.log('[UploadService] 2. Checking archivist permissions for user:', data.uploadedBy);
       const hasPermission = await this.validateUploadPermissions(data.uploadedBy);
       console.log('[UploadService] 3. Permission check result:', hasPermission);
       
       if (!hasPermission) {
+        // Log unauthorized upload attempt
+        await supabase.rpc('log_audit_event', {
+          _action: 'unauthorized_upload_attempt',
+          _resource_type: 'thesis',
+          _details: { 
+            title: data.title,
+            user_id: data.uploadedBy,
+            reason: 'insufficient_permissions'
+          }
+        });
+
         return {
           success: false,
-          error: "You don't have permission to upload theses. Please contact an administrator."
+          error: "Only archivists can upload theses. Please contact an administrator if you need upload permissions."
         };
       }
 
@@ -94,11 +123,36 @@ export class UploadService {
 
       if (insertError) {
         console.error('[UploadService] Database insertion error:', insertError);
+        
+        // Log failed upload
+        await supabase.rpc('log_audit_event', {
+          _action: 'thesis_upload_failed',
+          _resource_type: 'thesis',
+          _details: { 
+            title: data.title,
+            error: insertError.message,
+            user_id: data.uploadedBy
+          }
+        });
+
         return {
           success: false,
           error: `Failed to save thesis: ${insertError.message}`
         };
       }
+
+      // Log successful upload
+      await supabase.rpc('log_audit_event', {
+        _action: 'thesis_uploaded',
+        _resource_type: 'thesis',
+        _resource_id: insertedThesis.id,
+        _details: { 
+          title: insertedThesis.title,
+          author: insertedThesis.author,
+          college_id: insertedThesis.college_id,
+          uploader_id: data.uploadedBy
+        }
+      });
 
       console.log('[UploadService] Thesis uploaded successfully:', insertedThesis.id);
 
@@ -109,6 +163,22 @@ export class UploadService {
 
     } catch (error: any) {
       console.error('[UploadService] Upload failed:', error);
+      
+      // Log upload error
+      try {
+        await supabase.rpc('log_audit_event', {
+          _action: 'thesis_upload_error',
+          _resource_type: 'thesis',
+          _details: { 
+            title: data.title,
+            error: error?.message || 'Unknown error',
+            user_id: data.uploadedBy
+          }
+        });
+      } catch (auditError) {
+        console.warn('[UploadService] Audit logging failed:', auditError);
+      }
+
       return {
         success: false,
         error: error?.message || "Unexpected error occurred during upload"
@@ -118,18 +188,12 @@ export class UploadService {
 
   public static getFileUrl(storagePath: string): string {
     try {
-      const { data } = supabase.storage
-        .from("thesis-pdfs")
-        .getPublicUrl(storagePath);
-        
-      if (!data.publicUrl) {
-        throw new Error("Failed to get file URL");
-      }
-      
-      return data.publicUrl;
+      // Return the secure function URL instead of direct storage URL
+      const thesisId = storagePath.replace('.pdf', '');
+      return `${supabase.supabaseUrl}/functions/v1/secure-thesis-access?thesisId=${thesisId}`;
     } catch (error) {
-      console.error('[UploadService] Error getting file URL:', error);
-      throw new Error("Failed to get file URL");
+      console.error('[UploadService] Error getting secure file URL:', error);
+      throw new Error("Failed to get secure file URL");
     }
   }
 

@@ -21,40 +21,8 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Development mode flag - set to false for production
-const isDevelopment = false; // Changed to false to use real Supabase auth
-
-// Mock users for development
-const mockUsers: (AppUser & { password: string })[] = [
-  {
-    id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-    name: 'Researcher User',
-    email: 'researcher@dlsl.edu.ph',
-    role: 'researcher',
-    password: 'password123'
-  },
-  {
-    id: 'b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
-    name: 'Archivist User',
-    email: 'archivist@dlsl.edu.ph',
-    role: 'archivist',
-    password: 'password123'
-  },
-  {
-    id: 'c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
-    name: 'Admin User',
-    email: 'admin@dlsl.edu.ph',
-    role: 'admin',
-    password: 'password123'
-  },
-  {
-    id: 'd3eebc99-9c0b-4ef8-bb6d-6bb9bd380a44',
-    name: 'Guest Researcher',
-    email: 'guest@dlsl.edu.ph',
-    role: 'guest_researcher',
-    password: 'password123'
-  }
-];
+// Remove development mode - production only
+const isDevelopment = false;
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AppUser | null>(null);
@@ -63,33 +31,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Check for existing session
     const checkUser = async () => {
-      if (isDevelopment) {
-        // In development, check localStorage for mock session
-        const storedUser = localStorage.getItem('stars_user');
-        if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          setUser(userData);
-        }
-        setIsLoading(false);
-      } else {
-        // In production, use real Supabase auth
-        const { data: { session } } = await supabase.auth.getSession();
+      // Only use real Supabase auth - no mock users
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await loadUserProfile(session.user);
+      }
+      setIsLoading(false);
+
+      // Listen for auth changes
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (session?.user) {
           await loadUserProfile(session.user);
+        } else {
+          setUser(null);
         }
-        setIsLoading(false);
+      });
 
-        // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-          if (session?.user) {
-            await loadUserProfile(session.user);
-          } else {
-            setUser(null);
-          }
-        });
-
-        return () => subscription.unsubscribe();
-      }
+      return () => subscription.unsubscribe();
     };
 
     checkUser();
@@ -143,54 +101,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     
-    if (isDevelopment) {
-      // Development mock login
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const foundUser = mockUsers.find(u => u.email === email && u.password === password);
-      
-      if (foundUser) {
-        const { password: _, ...userWithoutPassword } = foundUser;
-        setUser(userWithoutPassword);
-        localStorage.setItem('stars_user', JSON.stringify(userWithoutPassword));
+    // Production Supabase auth only
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        // The auth state change listener will handle loading the user profile
         setIsLoading(false);
         return true;
       }
-      
-      setIsLoading(false);
-      return false;
-    } else {
-      // Production Supabase auth
-      try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (error) throw error;
-
-        if (data.user) {
-          // The auth state change listener will handle loading the user profile
-          setIsLoading(false);
-          return true;
-        }
-      } catch (error) {
-        console.error('Login error:', error);
-      }
-      
-      setIsLoading(false);
-      return false;
+    } catch (error) {
+      console.error('Login error:', error);
     }
+    
+    setIsLoading(false);
+    return false;
   };
 
   const logout = async () => {
-    if (isDevelopment) {
-      setUser(null);
-      localStorage.removeItem('stars_user');
-    } else {
-      await supabase.auth.signOut();
-      setUser(null);
-    }
+    await supabase.auth.signOut();
+    setUser(null);
   };
 
   return (
