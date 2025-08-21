@@ -68,8 +68,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     }
   };
 
-  const onDocumentLoadError = (error: Error) => {
-    console.error('PDF load error:', error);
+  const handleDocumentError = () => {
+    console.error('PDF load error');
     setPdfError('Failed to load PDF. You may not have access to this document.');
     
     // Log PDF load failure
@@ -79,7 +79,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         resourceType: 'thesis',
         resourceId: thesisId,
         details: { 
-          error: error.message
+          error: 'Failed to load PDF document'
         }
       });
     }
@@ -171,17 +171,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   // Set the number of preview pages to show
   const totalPagesToShow = actualMaxPages && numPages ? Math.min(actualMaxPages, numPages) : numPages;
 
-  // Create document loading function to handle async auth
-  const getDocumentConfig = async () => {
-    const session = await supabase.auth.getSession();
-    return {
-      url: securePdfUrl,
-      httpHeaders: {
-        'Authorization': `Bearer ${session.data.session?.access_token}`
-      }
-    };
-  };
-
   return (
     <Card className={className}>
       <CardContent className="p-0">
@@ -234,7 +223,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                 <Document
                   file={securePdfUrl}
                   onLoadSuccess={onDocumentLoadSuccess}
-                  onLoadError={onDocumentLoadError}
                   loading={
                     <div className="w-full flex flex-col items-center justify-center py-14 text-gray-400">
                       <FileText className="w-12 h-12 mb-4 text-gray-300" />
