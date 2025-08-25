@@ -10,22 +10,34 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const { user, isLoading } = useAuth();
 
+  // Show loading spinner while checking authentication
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-dlsl-green"></div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-dlsl-green"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
       </div>
     );
   }
 
+  // Redirect to login if not authenticated
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
+  // Check role-based access
   if (requiredRole) {
-    const roleHierarchy = { guest_researcher: 1, researcher: 2, archivist: 3, admin: 4 };
-    const userLevel = roleHierarchy[user.role];
-    const requiredLevel = roleHierarchy[requiredRole];
+    const roleHierarchy = { 
+      guest_researcher: 1, 
+      researcher: 2, 
+      archivist: 3, 
+      admin: 4 
+    };
+    
+    const userLevel = roleHierarchy[user.role] || 1;
+    const requiredLevel = roleHierarchy[requiredRole] || 1;
     
     if (userLevel < requiredLevel) {
       return <Navigate to="/dashboard" replace />;

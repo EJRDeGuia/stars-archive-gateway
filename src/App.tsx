@@ -1,13 +1,14 @@
 
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthProvider } from "./contexts/AuthContext";
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import ThesisDetail from "./pages/ThesisDetail";
-import Upload from "./pages/Upload";
-import ProtectedRoute from "./components/ProtectedRoute";
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import Login from "@/pages/Login";
+import Dashboard from "@/pages/Dashboard";
+import ThesisDetail from "@/pages/ThesisDetail";
+import Upload from "@/pages/Upload";
 import EnhancedSearch from "@/pages/EnhancedSearch";
 import AdvancedSearch from "@/pages/AdvancedSearch";
 import ArchivistDashboard from "@/pages/ArchivistDashboard";
@@ -37,7 +38,7 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <Router>
         <AuthProvider>
           <div className="min-h-screen bg-background">
             <Toaster />
@@ -48,7 +49,7 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/resources" element={<Resources />} />
               
-              {/* Protected Routes */}
+              {/* Protected Routes - Core Phase A Features */}
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/thesis/:id" element={<ProtectedRoute><ThesisDetail /></ProtectedRoute>} />
               <Route path="/college/:id" element={<ProtectedRoute><CollegePage /></ProtectedRoute>} />
@@ -83,7 +84,7 @@ function App() {
             </Routes>
           </div>
         </AuthProvider>
-      </BrowserRouter>
+      </Router>
     </QueryClientProvider>
   );
 }

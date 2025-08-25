@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
+import { toast } from 'sonner';
 
 type UserRole = 'researcher' | 'archivist' | 'admin' | 'guest_researcher';
 
@@ -21,9 +22,6 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Remove development mode - production only
-const isDevelopment = false;
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AppUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,12 +29,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Check for existing session
     const checkUser = async () => {
-      // Only use real Supabase auth - no mock users
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        await loadUserProfile(session.user);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          await loadUserProfile(session.user);
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+        toast.error('Authentication error. Please try logging in again.');
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
 
       // Listen for auth changes
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -45,6 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           setUser(null);
         }
+        setIsLoading(false);
       });
 
       return () => subscription.unsubscribe();
@@ -55,6 +59,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadUserProfile = async (authUser: User) => {
     try {
+      console.log('Loading user profile for:', authUser.id);
+      
       // Get user role - only one query needed
       const { data: userRole, error } = await supabase
         .from('user_roles')
@@ -66,29 +72,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('Error fetching user role:', error);
       }
 
-      // Use existing role or default to researcher
-      const role = userRole?.role as UserRole || 'researcher';
+      let role: UserRole = 'researcher'; // Default role
 
       // If no role exists, create one
       if (!userRole) {
         console.log('Creating default role for new user:', authUser.id);
-        await supabase
+        const { error: insertError } = await supabase
           .from('user_roles')
           .insert({
             user_id: authUser.id,
             role: 'researcher'
           });
+
+        if (insertError) {
+          console.error('Error creating user role:', insertError);
+          toast.error('Error setting up user role. Please contact support.');
+        } else {
+          console.log('Successfully created researcher role for user');
+          role = 'researcher';
+        }
+      } else {
+        role = userRole.role as UserRole;
+        console.log('User role found:', role);
       }
 
-      setUser({
+      const userData = {
         id: authUser.id,
         name: authUser.email?.split('@')[0] || 'User',
         email: authUser.email || '',
         role: role
-      });
+      };
+
+      console.log('Setting user data:', userData);
+      setUser(userData);
+      
+      // Show welcome message for new users
+      if (!userRole) {
+        toast.success(`Welcome! You've been assigned the role of ${role}.`);
+      }
     } catch (error) {
       console.error('Error loading user profile:', error);
-      // Set default user data if role lookup fails
+      toast.error('Error loading user profile. Please try refreshing the page.');
+      
+      // Set fallback user data to prevent blank screens
       setUser({
         id: authUser.id,
         name: authUser.email?.split('@')[0] || 'User',
@@ -101,22 +127,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     
-    // Production Supabase auth only
     try {
+      console.log('Attempting login for:', email);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Login error:', error);
+        toast.error(error.message);
+        setIsLoading(false);
+        return false;
+      }
 
       if (data.user) {
+        console.log('Login successful, loading profile...');
         // The auth state change listener will handle loading the user profile
-        setIsLoading(false);
         return true;
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Login exception:', error);
+      toast.error('Login failed. Please try again.');
     }
     
     setIsLoading(false);
@@ -124,8 +157,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      toast.success('Logged out successfully');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error('Error logging out');
+    }
   };
 
   return (

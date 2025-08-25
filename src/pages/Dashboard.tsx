@@ -13,26 +13,29 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import SemanticSearchButton from "@/components/dashboard/SemanticSearchButton";
 import { getGreeting } from "@/utils/greetingUtils";
 import MyCollectionsSection from "@/components/dashboard/MyCollectionsSection";
-import ViewsChart from "@/components/analytics/ViewsChart";
-import { useResearcherViewsAnalytics } from "@/hooks/useResearcherViewsAnalytics";
 
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect admin users to admin dashboard and archivists to archivist dashboard
-  React.useEffect(() => {
-    if (user?.role === "admin") {
-      navigate("/admin");
-    } else if (user?.role === "archivist") {
-      navigate("/archivist");
-    }
-  }, [user, navigate]);
+  // Only redirect admin users to admin dashboard and archivists to archivist dashboard
+  // Remove this redirect to fix the blank screen issue
+  // React.useEffect(() => {
+  //   if (user?.role === "admin") {
+  //     navigate("/admin");
+  //   } else if (user?.role === "archivist") {
+  //     navigate("/archivist");
+  //   }
+  // }, [user, navigate]);
 
   const handleQuickAction = (action: string) => {
     switch (action) {
       case "upload":
-        navigate("/upload");
+        if (user?.role === "archivist" || user?.role === "admin") {
+          navigate("/upload");
+        } else {
+          toast.error("Only archivists can upload theses");
+        }
         break;
       case "collections":
         navigate("/collections");
@@ -50,17 +53,29 @@ const Dashboard = () => {
         navigate("/settings");
         break;
       case "admin":
-        navigate("/admin");
+        if (user?.role === "admin") {
+          navigate("/admin");
+        } else {
+          toast.error("Admin access required");
+        }
         break;
       case "archivist":
-        navigate("/archivist");
+        if (user?.role === "archivist" || user?.role === "admin") {
+          navigate("/archivist");
+        } else {
+          toast.error("Archivist access required");
+        }
         break;
       case "backup":
         toast.success('Database backup initiated successfully!');
         console.log('Database backup started');
         break;
       case "manage":
-        navigate("/manage-records");
+        if (user?.role === "archivist" || user?.role === "admin") {
+          navigate("/manage-records");
+        } else {
+          toast.error("Archivist access required");
+        }
         break;
       case "reports":
         toast.info('Reports feature coming soon!');
@@ -69,23 +84,37 @@ const Dashboard = () => {
         navigate("/explore");
         break;
       case "users":
-        toast.info('User Management feature coming soon!');
+        if (user?.role === "admin") {
+          navigate("/user-management");
+        } else {
+          toast.error("Admin access required");
+        }
         break;
       case "colleges":
-        toast.info('College Management feature coming soon!');
+        if (user?.role === "admin") {
+          navigate("/college-management");
+        } else {
+          toast.error("Admin access required");
+        }
         break;
       case "analytics":
-        toast.info('Analytics Dashboard feature coming soon!');
+        if (user?.role === "admin") {
+          navigate("/analytics-dashboard");
+        } else {
+          toast.error("Admin access required");
+        }
         break;
       case "security":
-        toast.info('Security Monitor feature coming soon!');
+        if (user?.role === "admin") {
+          navigate("/security-monitor");
+        } else {
+          toast.error("Admin access required");
+        }
         break;
       default:
         console.log("Unknown action:", action);
     }
   };
-
-  // Removed: const { data: chartData, loading: chartLoading } = useResearcherViewsAnalytics();
 
   return (
     <div className="min-h-screen bg-background">
@@ -102,9 +131,6 @@ const Dashboard = () => {
             userRole={user?.role || "researcher"}
             onActionClick={handleQuickAction}
           />
-
-          {/* Removed Analytics Chart for researcher */}
-
           <MyCollectionsSection />
           <CollegeGrid />
           <RecentActivity />
