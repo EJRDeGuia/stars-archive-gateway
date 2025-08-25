@@ -10,6 +10,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { Toaster } from "@/components/ui/toaster"
 import EnhancedSearch from "@/pages/EnhancedSearch";
 import AdvancedSearch from "@/pages/AdvancedSearch";
+import ArchivistDashboard from "@/pages/ArchivistDashboard";
+import AdminDashboard from "@/pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +29,9 @@ function App() {
               <Route path="/thesis/:id" element={<ProtectedRoute><ThesisDetail /></ProtectedRoute>} />
               
               <Route path="/upload" element={<ProtectedRoute requiredRole="archivist"><Upload /></ProtectedRoute>} />
+              
+              <Route path="/archivist" element={<ProtectedRoute requiredRole="archivist"><ArchivistDashboard /></ProtectedRoute>} />
+              <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
               
               <Route path="/search/enhanced" element={<EnhancedSearch />} />
               <Route path="/search/advanced" element={<AdvancedSearch />} />
