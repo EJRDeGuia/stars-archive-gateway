@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -58,6 +59,7 @@ const SearchResultsGrid: React.FC<SearchResultsGridProps> = ({
   onFacetFilter,
   onViewThesis
 }) => {
+  const { user } = useAuth();
   const [sortBy, setSortBy] = useState('relevance');
   const [showFacets, setShowFacets] = useState(true);
 
@@ -255,7 +257,12 @@ const SearchResultsGrid: React.FC<SearchResultsGridProps> = ({
                         >
                           {thesis.title}
                         </h3>
-                        <FavoriteButton thesisId={thesis.id} />
+                        {user && (
+                          <FavoriteButton 
+                            userId={user.id} 
+                            thesisId={thesis.id} 
+                          />
+                        )}
                       </div>
                       
                       <div className="flex items-center gap-4 text-sm text-gray-600">
