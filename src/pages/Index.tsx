@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Star, Search, FileText, Users, Database, Code, Calculator, Microscope, HeartPulse, UtensilsCrossed, BookOpen, Shield } from 'lucide-react';
-import Footer from '@/components/Footer';
+import { Star, Search, FileText, Users, Database, Code, Calculator, Microscope, HeartPulse, UtensilsCrossed, BookOpen, Shield, Mail, Phone, MapPin, Globe, Facebook, Twitter, Instagram } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 import CollegeCard from '@/components/CollegeCard';
 import { useCollegesWithCounts } from '@/hooks/useCollegesWithCounts';
 
@@ -55,7 +55,7 @@ const Index = () => {
       />
       
       {/* Darker overlay for better readability */}
-      <div className="fixed inset-0 bg-black/40" />
+      <div className="fixed inset-0 bg-black/50" />
 
       {/* Header */}
       <header className="relative z-50 bg-white/90 backdrop-blur-lg border-b border-border shadow-sm">
@@ -109,6 +109,12 @@ const Index = () => {
                   />
                 </div>
                 <Button 
+                  onClick={() => navigate('/explore')}
+                  className="h-12 px-8 bg-primary hover:bg-primary/90 text-white rounded-xl transition-all duration-200 hover:scale-105 shadow-lg font-semibold"
+                >
+                  Start Exploring
+                </Button>
+                <Button 
                   onClick={() => navigate('/login')}
                   variant="outline" 
                   className="h-12 px-6 bg-white/15 backdrop-blur-sm border-white/30 text-white hover:bg-white hover:text-foreground rounded-xl transition-all duration-200 hover:scale-105 shadow-lg"
@@ -118,37 +124,23 @@ const Index = () => {
               </div>
             </div>
             
-            {/* Enhanced Hero Cards */}
-            <div className="space-y-6 animate-fade-in">
-              <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-2xl rounded-2xl overflow-hidden group hover:shadow-3xl transition-all duration-300 hover:scale-105">
-                <CardContent className="p-8">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-4xl font-bold text-foreground mb-2">500+</p>
-                      <p className="text-lg font-medium text-muted-foreground">Theses Available</p>
-                      <p className="text-sm text-muted-foreground/80 mt-1">Across all departments</p>
-                    </div>
-                    <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                      <BookOpen className="w-8 h-8 text-white" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            {/* Circular Badges for Stats */}
+            <div className="flex items-center justify-center lg:justify-end space-x-8 animate-fade-in">
+              <div className="text-center group">
+                <div className="w-32 h-32 bg-white/95 backdrop-blur-lg rounded-full flex flex-col items-center justify-center shadow-2xl group-hover:shadow-3xl transition-all duration-300 group-hover:scale-110 border-4 border-white/20">
+                  <BookOpen className="w-8 h-8 text-primary mb-2" />
+                  <p className="text-3xl font-bold text-foreground">500+</p>
+                  <p className="text-sm font-medium text-muted-foreground">Theses</p>
+                </div>
+              </div>
               
-              <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-2xl rounded-2xl overflow-hidden group hover:shadow-3xl transition-all duration-300 hover:scale-105">
-                <CardContent className="p-8">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-4xl font-bold text-foreground mb-2">5</p>
-                      <p className="text-lg font-medium text-muted-foreground">Academic Colleges</p>
-                      <p className="text-sm text-muted-foreground/80 mt-1">Diverse research fields</p>
-                    </div>
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                      <Users className="w-8 h-8 text-white" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="text-center group">
+                <div className="w-32 h-32 bg-white/95 backdrop-blur-lg rounded-full flex flex-col items-center justify-center shadow-2xl group-hover:shadow-3xl transition-all duration-300 group-hover:scale-110 border-4 border-white/20">
+                  <Users className="w-8 h-8 text-blue-500 mb-2" />
+                  <p className="text-3xl font-bold text-foreground">5</p>
+                  <p className="text-sm font-medium text-muted-foreground">Colleges</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -226,7 +218,7 @@ const Index = () => {
             {features.map((feature, index) => (
               <Card 
                 key={index} 
-                className="text-center hover:shadow-2xl transition-all duration-300 bg-white/95 backdrop-blur-sm border-0 rounded-2xl hover:scale-105 animate-fade-in shadow-lg"
+                className="text-center hover:shadow-2xl transition-all duration-300 bg-white/95 backdrop-blur-sm border-0 rounded-2xl hover:scale-105 animate-fade-in shadow-lg group"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <CardContent className="p-10">
@@ -263,8 +255,7 @@ const Index = () => {
             </div>
             <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-3xl p-12 flex items-center justify-center animate-fade-in shadow-lg">
               <div className="text-center">
-                <Shield className="w-24 h-24 text-primary mx-auto mb-6" />
-                <Database className="w-16 h-16 text-primary/60 mx-auto" />
+                <Database className="w-24 h-24 text-primary mx-auto" />
               </div>
             </div>
           </div>
@@ -299,7 +290,144 @@ const Index = () => {
         </div>
       </section>
 
-      <Footer />
+      {/* Footer */}
+      <footer className="bg-primary text-white relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-12">
+            {/* Logo and Description */}
+            <div className="md:col-span-5">
+              <div className="flex items-center mb-4">
+                <Star className="h-8 w-8 mr-2 fill-white" />
+                <h3 className="text-2xl font-bold">STARS</h3>
+              </div>
+              <p className="text-white/90 mb-6 max-w-md">
+                Smart Thesis Archival and Retrieval System (STARS) - A modern
+                platform for thesis management at De La Salle Lipa. Enabling students, 
+                faculty, and researchers to discover academic knowledge.
+              </p>
+              <div className="flex space-x-4">
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-white hover:text-white/80 transition-colors">
+                  <Facebook className="h-5 w-5" />
+                </a>
+                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white hover:text-white/80 transition-colors">
+                  <Twitter className="h-5 w-5" />
+                </a>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-white hover:text-white/80 transition-colors">
+                  <Instagram className="h-5 w-5" />
+                </a>
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div className="md:col-span-2">
+              <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+              <ul className="space-y-2">
+                <li>
+                  <button onClick={() => navigate('/')} className="text-white/80 hover:text-white transition-colors text-left">
+                    Home
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => navigate('/about')} className="text-white/80 hover:text-white transition-colors hover:underline text-left">
+                    About STARS
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => navigate('/resources')} className="text-white/80 hover:text-white transition-colors hover:underline text-left">
+                    Resources
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => navigate('/login')} className="text-white/80 hover:text-white transition-colors hover:underline text-left">
+                    Login
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* Resources */}
+            <div className="md:col-span-2">
+              <h3 className="text-lg font-semibold mb-4">Resources</h3>
+              <ul className="space-y-2">
+                <li>
+                  <button onClick={() => navigate('/resources#user-guide')} className="text-white/80 hover:text-white transition-colors hover:underline text-left">
+                    User Guide
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => navigate('/resources#help-center')} className="text-white/80 hover:text-white transition-colors hover:underline text-left">
+                    Help Center
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => navigate('/resources#research-format')} className="text-white/80 hover:text-white transition-colors hover:underline text-left">
+                    Research Format
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => navigate('/resources#faq')} className="text-white/80 hover:text-white transition-colors hover:underline text-left">
+                    FAQ
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* Contact */}
+            <div className="md:col-span-3">
+              <h3 className="text-lg font-semibold mb-4">Contact</h3>
+              <ul className="space-y-3">
+                <li className="flex items-start">
+                  <MapPin className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+                  <span className="text-white/90">
+                    De La Salle Lipa<br />
+                    Learning Resource Center<br />
+                    Lipa City, Batangas
+                  </span>
+                </li>
+                <li className="flex items-center">
+                  <Phone className="h-5 w-5 mr-2" />
+                  <a 
+                    href="tel:+6343123456" 
+                    className="text-white/90 hover:text-white transition-colors hover:underline"
+                  >
+                    (043) 123-4567
+                  </a>
+                </li>
+                <li className="flex items-center">
+                  <Mail className="h-5 w-5 mr-2" />
+                  <a 
+                    href="mailto:lrc@dlsl.edu.ph" 
+                    className="text-white/90 hover:text-white transition-colors hover:underline"
+                  >
+                    lrc@dlsl.edu.ph
+                  </a>
+                </li>
+                <li className="flex items-center">
+                  <Globe className="h-5 w-5 mr-2" />
+                  <a 
+                    href="https://www.dlsl.edu.ph" 
+                    className="text-white/90 hover:text-white transition-colors hover:underline"
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >
+                    www.dlsl.edu.ph
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <Separator className="my-8 bg-white/20" />
+
+          <div className="flex flex-col md:flex-row justify-between items-center text-white/60 text-sm">
+            <p>© 2025 De La Salle Lipa - Learning Resource Center. All rights reserved.</p>
+            <div className="flex space-x-4 mt-4 md:mt-0">
+              <button onClick={() => navigate('/resources#privacy-policy')} className="hover:text-white transition-colors">Privacy Policy</button>
+              <button onClick={() => navigate('/resources#terms-of-service')} className="hover:text-white transition-colors">Terms of Service</button>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
