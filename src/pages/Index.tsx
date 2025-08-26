@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Star, Search, FileText, Users, Database, Shield, BarChart3, Settings } from 'lucide-react';
+import { Star, Search, FileText, Users, Database, BarChart3, Code, Calculator, Microscope, HeartPulse, UtensilsCrossed } from 'lucide-react';
 import Footer from '@/components/Footer';
 
 const Index = () => {
@@ -13,44 +13,64 @@ const Index = () => {
 
   const colleges = [
     {
+      id: '1',
       name: 'CITE',
       fullName: 'College of Information Technology and Engineering',
       description: 'Advancing technology through innovative research',
       count: '120+ Theses',
-      color: 'bg-red-100 border-red-200',
-      icon: '💻'
+      icon: Code,
+      bgColor: 'bg-red-500',
+      bgColorLight: 'bg-red-50',
+      textColor: 'text-red-600',
+      borderColor: 'border-red-200'
     },
     {
+      id: '2',
       name: 'CBEAM',
       fullName: 'College of Business, Economics, Accounting, and Management',
       description: 'Driving business excellence and economic growth',
       count: '145+ Theses',
-      color: 'bg-yellow-100 border-yellow-200',
-      icon: '📊'
+      icon: Calculator,
+      bgColor: 'bg-yellow-500',
+      bgColorLight: 'bg-yellow-50',
+      textColor: 'text-yellow-600',
+      borderColor: 'border-yellow-200'
     },
     {
+      id: '3',
       name: 'CEAS',
       fullName: 'College of Education, Arts, and Sciences',
       description: 'Exploring knowledge across diverse disciplines',
       count: '98+ Theses',
-      color: 'bg-blue-100 border-blue-200',
-      icon: '📚'
+      icon: Microscope,
+      bgColor: 'bg-blue-500',
+      bgColorLight: 'bg-blue-50',
+      textColor: 'text-blue-600',
+      borderColor: 'border-blue-200'
     },
     {
+      id: '4',
       name: 'CON',
       fullName: 'College of Nursing',
       description: 'Advancing healthcare through compassionate research',
       count: '76+ Theses',
-      color: 'bg-gray-100 border-gray-200',
-      icon: '🏥'
+      icon: HeartPulse,
+      bgColor: 'bg-gray-500',
+      bgColorLight: 'bg-gray-50',
+      textColor: 'text-gray-600',
+      borderColor: 'border-gray-200'
     },
     {
+      id: '5',
       name: 'CIHTM',
       fullName: 'College of International Hospitality and Tourism Management',
       description: 'Shaping the future of hospitality and tourism',
       count: '63+ Theses',
-      color: 'bg-green-100 border-green-200',
-      icon: '🏨'
+      icon: UtensilsCrossed,
+      bgColor: 'bg-green-500',
+      bgColorLight: 'bg-green-50',
+      textColor: 'text-green-600',
+      borderColor: 'border-green-200'
     }
   ];
 
@@ -84,10 +104,23 @@ const Index = () => {
     'Secure cloud storage'
   ];
 
+  const handleCollegeClick = (collegeId: string) => {
+    navigate(`/college/${collegeId}`);
+  };
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      {/* Fixed Background Image with Parallax */}
+      <div 
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat bg-attachment-fixed"
+        style={{
+          backgroundImage: `url('/lovable-uploads/fd7995a2-1df9-4aeb-bbfb-6a33723b9835.png')`,
+          willChange: 'transform'
+        }}
+      />
+
       {/* Header */}
-      <header className="bg-white border-b border-border">
+      <header className="relative z-50 bg-white/95 backdrop-blur-lg border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
@@ -100,10 +133,13 @@ const Index = () => {
               </div>
             </div>
             <nav className="hidden md:flex items-center space-x-8">
-              <a href="#" className="text-foreground hover:text-primary">About</a>
-              <a href="#" className="text-foreground hover:text-primary">Resources</a>
-              <a href="#" className="text-foreground hover:text-primary">Contact</a>
-              <Button onClick={() => navigate('/login')} className="bg-primary hover:bg-primary/90">
+              <a href="#about" className="text-foreground hover:text-primary transition-colors">About</a>
+              <a href="#resources" className="text-foreground hover:text-primary transition-colors">Resources</a>
+              <a href="#contact" className="text-foreground hover:text-primary transition-colors">Contact</a>
+              <Button 
+                onClick={() => navigate('/login')} 
+                className="bg-primary hover:bg-primary/90 rounded-xl transition-all duration-200 hover:scale-105"
+              >
                 Sign In
               </Button>
             </nav>
@@ -112,15 +148,11 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section 
-        className="relative bg-cover bg-center bg-no-repeat py-24"
-        style={{
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4)), url('/lovable-uploads/fd7995a2-1df9-4aeb-bbfb-6a33723b9835.png')`
-        }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative py-24 min-h-screen flex items-center">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="text-white">
+            <div className="text-white animate-fade-in">
               <div className="inline-flex items-center bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium mb-6">
                 <Star className="w-4 h-4 mr-2" />
                 De La Salle Lipa - Learning Resource Center
@@ -136,20 +168,20 @@ const Index = () => {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <Input 
                     placeholder="Start Exploring..." 
-                    className="pl-10 h-12 bg-white text-foreground"
+                    className="pl-10 h-12 bg-white/95 backdrop-blur-sm text-foreground rounded-xl"
                   />
                 </div>
                 <Button 
                   onClick={() => navigate('/login')}
                   variant="outline" 
-                  className="h-12 px-6 bg-transparent border-white text-white hover:bg-white hover:text-foreground"
+                  className="h-12 px-6 bg-white/10 backdrop-blur-sm border-white text-white hover:bg-white hover:text-foreground rounded-xl transition-all duration-200 hover:scale-105"
                 >
                   Login to Browse
                 </Button>
               </div>
             </div>
-            <div className="space-y-4">
-              <Card className="bg-white/90 backdrop-blur-sm">
+            <div className="space-y-4 animate-fade-in">
+              <Card className="bg-white/90 backdrop-blur-sm sleek-shadow-lg">
                 <CardContent className="p-4 flex items-center justify-between">
                   <div>
                     <p className="text-2xl font-bold text-foreground">500+ Theses</p>
@@ -160,7 +192,7 @@ const Index = () => {
                   </div>
                 </CardContent>
               </Card>
-              <Card className="bg-white/90 backdrop-blur-sm">
+              <Card className="bg-white/90 backdrop-blur-sm sleek-shadow-lg">
                 <CardContent className="p-4 flex items-center justify-between">
                   <div>
                     <p className="text-2xl font-bold text-foreground">5 Colleges</p>
@@ -177,9 +209,10 @@ const Index = () => {
       </section>
 
       {/* Find Academic Research Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+      <section className="relative py-16">
+        <div className="absolute inset-0 bg-white/85 backdrop-blur-sm" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 animate-fade-in">
             <h2 className="text-3xl font-bold text-foreground mb-4">Find Academic Research</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Discover undergraduate theses from all academic departments at De La Salle Lipa.
@@ -187,29 +220,54 @@ const Index = () => {
           </div>
 
           <div className="mb-8">
-            <Button className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3">
+            <Button 
+              onClick={() => navigate('/explore')}
+              className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 rounded-xl transition-all duration-200 hover:scale-105"
+            >
               Browse by College
             </Button>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {colleges.map((college, index) => (
-              <Card key={index} className={`${college.color} hover:shadow-lg transition-shadow cursor-pointer`}>
-                <CardContent className="p-6 text-center">
-                  <div className="text-4xl mb-4">{college.icon}</div>
-                  <h3 className="text-xl font-bold text-foreground mb-2">{college.name}</h3>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-3">{college.fullName}</h4>
-                  <p className="text-sm text-muted-foreground mb-4">{college.description}</p>
-                  <Badge variant="secondary" className="bg-white/80">
-                    {college.count}
-                  </Badge>
-                </CardContent>
-              </Card>
-            ))}
+            {colleges.map((college, index) => {
+              const IconComponent = college.icon;
+              return (
+                <Card 
+                  key={college.id} 
+                  className="group hover:shadow-xl transition-all duration-300 cursor-pointer bg-white/95 backdrop-blur-sm sleek-shadow hover:scale-105 animate-fade-in"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                  onClick={() => handleCollegeClick(college.id)}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={`w-12 h-12 ${college.bgColor} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200`}>
+                        <IconComponent className="w-6 h-6 text-white" />
+                      </div>
+                      <Badge variant="secondary" className="bg-gray-100 text-gray-700">
+                        {college.count}
+                      </Badge>
+                    </div>
+                    <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
+                      {college.name}
+                    </h3>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-3 line-clamp-2">
+                      {college.fullName}
+                    </h4>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {college.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
 
           <div className="text-center mt-8">
-            <Button variant="outline" onClick={() => navigate('/search/advanced')}>
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/search/advanced')}
+              className="rounded-xl transition-all duration-200 hover:scale-105"
+            >
               Advanced Search
             </Button>
           </div>
@@ -217,18 +275,23 @@ const Index = () => {
       </section>
 
       {/* Platform Features */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+      <section className="relative py-16">
+        <div className="absolute inset-0 bg-white/85 backdrop-blur-sm" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 animate-fade-in">
             <h2 className="text-3xl font-bold text-foreground mb-4">Platform Features</h2>
             <p className="text-muted-foreground">Everything you need for academic research</p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="text-center hover:shadow-lg transition-shadow">
+              <Card 
+                key={index} 
+                className="text-center hover:shadow-xl transition-all duration-300 bg-white/95 backdrop-blur-sm sleek-shadow hover:scale-105 animate-fade-in"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
                 <CardContent className="p-6">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
                     <feature.icon className="w-6 h-6 text-primary" />
                   </div>
                   <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
@@ -241,10 +304,11 @@ const Index = () => {
       </section>
 
       {/* Academic Research Management */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative py-16">
+        <div className="absolute inset-0 bg-white/85 backdrop-blur-sm" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
+            <div className="animate-fade-in">
               <h2 className="text-3xl font-bold text-foreground mb-6">Academic Research Management</h2>
               <p className="text-muted-foreground mb-8">
                 STARS provides a comprehensive platform for managing and accessing academic research with modern tools and intuitive design.
@@ -258,7 +322,7 @@ const Index = () => {
                 ))}
               </div>
             </div>
-            <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-3xl p-8 flex items-center justify-center">
+            <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-3xl p-8 flex items-center justify-center animate-fade-in">
               <div className="text-center">
                 <Star className="w-24 h-24 text-primary mx-auto mb-4" />
                 <BarChart3 className="w-16 h-16 text-primary/60 mx-auto" />
@@ -269,8 +333,9 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-primary text-white py-16">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+      <section className="relative bg-primary text-white py-16">
+        <div className="absolute inset-0 bg-black/20" />
+        <div className="relative z-10 max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold mb-4">Ready to start exploring?</h2>
           <p className="text-lg mb-8 text-primary-foreground/90">
             Join researchers and students in discovering academic work. Sign in to access the full repository.
@@ -279,14 +344,15 @@ const Index = () => {
             <Button 
               onClick={() => navigate('/login')}
               variant="secondary" 
-              className="bg-white text-primary hover:bg-gray-100"
+              className="bg-white text-primary hover:bg-gray-100 rounded-xl transition-all duration-200 hover:scale-105"
             >
               <Star className="w-4 h-4 mr-2" />
               Sign In to STARS
             </Button>
             <Button 
               variant="outline" 
-              className="border-white text-white hover:bg-white hover:text-primary"
+              className="border-white text-white hover:bg-white hover:text-primary rounded-xl transition-all duration-200 hover:scale-105"
+              onClick={() => navigate('/about')}
             >
               Learn More
             </Button>
