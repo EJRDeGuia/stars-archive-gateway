@@ -13,7 +13,6 @@ import EnhancedSearch from "@/pages/EnhancedSearch";
 import AdvancedSearch from "@/pages/AdvancedSearch";
 import ArchivistDashboard from "@/pages/ArchivistDashboard";
 import AdminDashboard from "@/pages/AdminDashboard";
-import Index from "@/pages/Index";
 import CollegePage from "@/pages/CollegePage";
 import Explore from "@/pages/Explore";
 import Collections from "@/pages/Collections";
@@ -44,7 +43,7 @@ function App() {
             <Toaster />
             <Routes>
               {/* Public Routes */}
-              <Route path="/" element={<Index />} />
+              <Route path="/" element={<Login />} />
               <Route path="/login" element={<Login />} />
               <Route path="/about" element={<About />} />
               <Route path="/resources" element={<Resources />} />
