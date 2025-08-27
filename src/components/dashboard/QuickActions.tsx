@@ -19,7 +19,7 @@ interface QuickActionsProps {
 const QuickActions: React.FC<QuickActionsProps> = ({ userRole, onActionClick }) => {
   const isAdmin = userRole === 'admin';
   const isArchivist = userRole === 'archivist';
-  const canUpload = userRole === 'archivist' || userRole === 'admin';
+  const canUpload = userRole === 'archivist';
 
   const actions = [
     ...(isAdmin ? [{
@@ -34,7 +34,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({ userRole, onActionClick }) 
       description: 'Submit new research work',
       icon: Upload
     }] : []),
-    ...(isArchivist || isAdmin ? [{
+    ...(isArchivist ? [{
       id: 'manage',
       title: 'Manage Records',
       description: 'Review and organize theses',

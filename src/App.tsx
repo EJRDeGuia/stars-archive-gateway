@@ -65,8 +65,8 @@ function App() {
               <Route path="/search/enhanced" element={<ProtectedRoute><EnhancedSearch /></ProtectedRoute>} />
               <Route path="/search/advanced" element={<ProtectedRoute><AdvancedSearch /></ProtectedRoute>} />
               
-              {/* Archivist Routes */}
-              <Route path="/upload" element={<ProtectedRoute requiredRole="archivist"><Upload /></ProtectedRoute>} />
+              {/* Archivist Routes - Upload is exclusive to archivists */}
+              <Route path="/upload" element={<ProtectedRoute requiredRole="archivist" exactRole={true}><Upload /></ProtectedRoute>} />
               <Route path="/archivist" element={<ProtectedRoute requiredRole="archivist"><ArchivistDashboard /></ProtectedRoute>} />
               <Route path="/manage-records" element={<ProtectedRoute requiredRole="archivist"><ManageRecords /></ProtectedRoute>} />
               <Route path="/manage-collections" element={<ProtectedRoute requiredRole="archivist"><ManageCollections /></ProtectedRoute>} />

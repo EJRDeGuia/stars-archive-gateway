@@ -15,7 +15,7 @@ interface AppUser {
 
 interface AuthContextType {
   user: AppUser | null;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ success: boolean; redirectPath?: string }>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -124,7 +124,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const getRoleDashboardPath = (role: UserRole): string => {
+    switch (role) {
+      case 'admin':
+        return '/admin';
+      case 'archivist':
+        return '/archivist';
+      case 'researcher':
+      case 'guest_researcher':
+      default:
+        return '/dashboard';
+    }
+  };
+
+  const login = async (email: string, password: string): Promise<{ success: boolean; redirectPath?: string }> => {
     setIsLoading(true);
     
     try {
@@ -139,13 +152,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('Login error:', error);
         toast.error(error.message);
         setIsLoading(false);
-        return false;
+        return { success: false };
       }
 
       if (data.user) {
         console.log('Login successful, loading profile...');
-        // The auth state change listener will handle loading the user profile
-        return true;
+        
+        // Get user role to determine redirect path
+        const { data: userRole, error: roleError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', data.user.id)
+          .maybeSingle();
+
+        let role: UserRole = 'researcher'; // Default role
+        if (!roleError && userRole) {
+          role = userRole.role as UserRole;
+        }
+
+        // Load the user profile (this will trigger the auth state change)
+        await loadUserProfile(data.user);
+        
+        const redirectPath = getRoleDashboardPath(role);
+        console.log('Redirecting to:', redirectPath);
+        
+        setIsLoading(false);
+        return { success: true, redirectPath };
       }
     } catch (error) {
       console.error('Login exception:', error);
@@ -153,7 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     
     setIsLoading(false);
-    return false;
+    return { success: false };
   };
 
   const logout = async () => {

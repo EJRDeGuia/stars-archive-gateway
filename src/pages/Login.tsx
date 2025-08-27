@@ -27,13 +27,14 @@ const Login = () => {
       setError('Please fill in all fields');
       return;
     }
-    const success = await login(email, password);
-    if (success) {
+    const result = await login(email, password);
+    if (result.success) {
       toast({
         title: "Welcome back!",
         description: "Successfully logged in to STARS."
       });
-      navigate('/dashboard');
+      // Redirect to role-specific dashboard
+      navigate(result.redirectPath || '/dashboard');
     } else {
       setError('Invalid email or password');
     }

@@ -31,7 +31,7 @@ const Dashboard = () => {
   const handleQuickAction = (action: string) => {
     switch (action) {
       case "upload":
-        if (user?.role === "archivist" || user?.role === "admin") {
+        if (user?.role === "archivist") {
           navigate("/upload");
         } else {
           toast.error("Only archivists can upload theses");
