@@ -7,7 +7,8 @@ import {
   Home,
   Bell,
   Menu,
-  Star
+  Star,
+  X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import NotificationPanel from './NotificationPanel';
@@ -24,6 +25,7 @@ const Header = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -89,8 +91,9 @@ const Header = () => {
             variant="ghost" 
             size="icon" 
             className="md:hidden text-slate-600 dark:text-gray-200 hover:text-dlsl-green hover:bg-dlsl-green/10 dark:hover:text-dlsl-green dark:hover:bg-dlsl-green/10 rounded-xl"
+            onClick={() => setShowMobileMenu(!showMobileMenu)}
           >
-            <Menu className="h-5 w-5" />
+            {showMobileMenu ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
           
           {/* Right Side */}
@@ -172,6 +175,94 @@ const Header = () => {
           )}
         </div>
       </div>
+
+      {/* Mobile Navigation Menu */}
+      {showMobileMenu && (
+        <div className="md:hidden bg-background/95 backdrop-blur-lg border-t border-border">
+          <div className="px-6 py-4 space-y-3">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                navigate('/dashboard');
+                setShowMobileMenu(false);
+              }}
+              className="w-full justify-start text-slate-600 dark:text-gray-200 hover:text-dlsl-green hover:bg-dlsl-green/10 rounded-xl"
+            >
+              <Home className="mr-3 h-4 w-4" />
+              Dashboard
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                navigate('/explore');
+                setShowMobileMenu(false);
+              }}
+              className="w-full justify-start text-slate-600 dark:text-gray-200 hover:text-dlsl-green hover:bg-dlsl-green/10 rounded-xl"
+            >
+              Explore
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                navigate('/collections');
+                setShowMobileMenu(false);
+              }}
+              className="w-full justify-start text-slate-600 dark:text-gray-200 hover:text-dlsl-green hover:bg-dlsl-green/10 rounded-xl"
+            >
+              Collections
+            </Button>
+            {user && (
+              <>
+                <div className="border-t border-border pt-3 mt-3">
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      navigate('/profile');
+                      setShowMobileMenu(false);
+                    }}
+                    className="w-full justify-start text-slate-600 dark:text-gray-200 hover:text-dlsl-green hover:bg-dlsl-green/10 rounded-xl"
+                  >
+                    <User className="mr-3 h-4 w-4" />
+                    Profile
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      navigate('/settings');
+                      setShowMobileMenu(false);
+                    }}
+                    className="w-full justify-start text-slate-600 dark:text-gray-200 hover:text-dlsl-green hover:bg-dlsl-green/10 rounded-xl"
+                  >
+                    Settings
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      handleLogout();
+                      setShowMobileMenu(false);
+                    }}
+                    className="w-full justify-start text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl"
+                  >
+                    <LogOut className="mr-3 h-4 w-4" />
+                    Sign out
+                  </Button>
+                </div>
+              </>
+            )}
+            {!user && (
+              <Button
+                onClick={() => {
+                  navigate('/login');
+                  setShowMobileMenu(false);
+                }}
+                className="w-full bg-gradient-to-r from-dlsl-green to-dlsl-green-light hover:from-dlsl-green-dark hover:to-dlsl-green text-white rounded-xl"
+              >
+                Sign in
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
       
       <NotificationPanel isOpen={showNotifications} onClose={() => setShowNotifications(false)} />
     </header>
