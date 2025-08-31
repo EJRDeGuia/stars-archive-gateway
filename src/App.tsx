@@ -32,6 +32,11 @@ import SystemSettings from "@/pages/SystemSettings";
 import SecurityMonitor from "@/pages/SecurityMonitor";
 import RequestThesisAccess from "@/pages/RequestThesisAccess";
 import NotFound from "@/pages/NotFound";
+import ContentManagement from "@/pages/ContentManagement";
+import AboutContentManager from "@/pages/AboutContentManager";
+import ResourcesContentManager from "@/pages/ResourcesContentManager";
+import TeamMembersManager from "@/pages/TeamMembersManager";
+import AnnouncementsManager from "@/pages/AnnouncementsManager";
 
 const queryClient = new QueryClient();
 
@@ -78,6 +83,13 @@ function App() {
               <Route path="/analytics-dashboard" element={<ProtectedRoute requiredRole="admin"><AnalyticsDashboard /></ProtectedRoute>} />
               <Route path="/system-settings" element={<ProtectedRoute requiredRole="admin"><SystemSettings /></ProtectedRoute>} />
               <Route path="/security-monitor" element={<ProtectedRoute requiredRole="admin"><SecurityMonitor /></ProtectedRoute>} />
+              
+              {/* Phase 5: Content Management Routes */}
+              <Route path="/admin/content" element={<ProtectedRoute requiredRole="admin"><ContentManagement /></ProtectedRoute>} />
+              <Route path="/admin/content/about" element={<ProtectedRoute requiredRole="admin"><AboutContentManager /></ProtectedRoute>} />
+              <Route path="/admin/content/resources" element={<ProtectedRoute requiredRole="admin"><ResourcesContentManager /></ProtectedRoute>} />
+              <Route path="/admin/content/team" element={<ProtectedRoute requiredRole="admin"><TeamMembersManager /></ProtectedRoute>} />
+              <Route path="/admin/announcements" element={<ProtectedRoute requiredRole="admin"><AnnouncementsManager /></ProtectedRoute>} />
               
               {/* 404 Route */}
               <Route path="*" element={<NotFound />} />
