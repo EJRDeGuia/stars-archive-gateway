@@ -95,16 +95,17 @@ export const useContentVersions = (contentTable?: string, contentId?: string) =>
 
       if (versionError) throw versionError;
 
-      // Update the target table with the version data - simplified approach
-      const updateData = {
-        ...version.content_data,
-        updated_at: new Date().toISOString()
-      };
-      
-      // Note: Direct table updates require RPC function for dynamic table names
-      console.log('Restore version data:', updateData);
-
-      if (error) throw error;
+    // Update the target table with the version data - simplified approach
+    const updateData = {
+      ...(typeof version.content_data === 'object' && version.content_data !== null ? version.content_data : {}),
+      updated_at: new Date().toISOString()
+    };
+    
+    // Note: Direct table updates require RPC function for dynamic table names
+    console.log('Restore version data:', updateData);
+    
+    // For now, just return the update data since direct table updates need RPC
+    return updateData;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['content-versions'] });
