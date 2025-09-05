@@ -116,7 +116,36 @@ export function usePDFUpload({ setUploadedFiles, setIsExtracting }: UsePDFUpload
           throw new Error("Upload completed but no data returned");
         }
 
-        console.log('[usePDFUpload] Upload successful:', data);
+        console.log('[usePDFUpload] Upload successful, starting security scan:', data);
+
+        // Start security scan after successful upload
+        try {
+          const { data: scanData, error: scanError } = await supabase.functions.invoke('malware-scan', {
+            body: {
+              filePath: storagePath,
+              fileName: file.name,
+              fileSize: file.size,
+              mimeType: file.type
+            }
+          });
+
+          if (scanError) {
+            console.warn('[usePDFUpload] Security scan failed:', scanError);
+            // Don't fail upload for scan errors, just warn
+            toast.warning(`${file.name} uploaded but security scan failed`);
+          } else if (scanData?.scanResult === 'malicious') {
+            console.warn('[usePDFUpload] File flagged as malicious:', scanData);
+            throw new Error(`File flagged as potentially malicious: ${scanData.threatDetails?.threats?.[0] || 'Unknown threat'}`);
+          } else if (scanData?.scanResult === 'suspicious') {
+            console.warn('[usePDFUpload] File flagged as suspicious:', scanData);
+            toast.warning(`${file.name} uploaded but flagged as suspicious. Please review before submission.`);
+          } else {
+            console.log('[usePDFUpload] File passed security scan');
+          }
+        } catch (scanErr: any) {
+          console.error('[usePDFUpload] Security scan error:', scanErr);
+          throw scanErr; // Re-throw scan errors that indicate malicious content
+        }
 
         // Update the file with storage path and complete status
         setUploadedFiles((prev) =>
