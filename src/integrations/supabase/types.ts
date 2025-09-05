@@ -258,6 +258,69 @@ export type Database = {
         }
         Relationships: []
       }
+      failed_login_attempts: {
+        Row: {
+          attempted_at: string
+          blocked_until: string | null
+          email: string | null
+          id: string
+          ip_address: unknown
+          user_agent: string | null
+        }
+        Insert: {
+          attempted_at?: string
+          blocked_until?: string | null
+          email?: string | null
+          id?: string
+          ip_address: unknown
+          user_agent?: string | null
+        }
+        Update: {
+          attempted_at?: string
+          blocked_until?: string | null
+          email?: string | null
+          id?: string
+          ip_address?: unknown
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      file_scan_results: {
+        Row: {
+          created_at: string
+          file_path: string
+          id: string
+          quarantined: boolean
+          scan_provider: string
+          scan_results: Json | null
+          scan_status: string
+          scanned_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          file_path: string
+          id?: string
+          quarantined?: boolean
+          scan_provider?: string
+          scan_results?: Json | null
+          scan_status?: string
+          scanned_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          file_path?: string
+          id?: string
+          quarantined?: boolean
+          scan_provider?: string
+          scan_results?: Json | null
+          scan_status?: string
+          scanned_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       guest_sessions: {
         Row: {
           created_at: string | null
@@ -485,6 +548,96 @@ export type Database = {
           id?: string
           name?: string
           query?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      security_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          description: string
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          resolved: boolean
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          description: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          description?: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      session_tracking: {
+        Row: {
+          created_at: string
+          device_fingerprint: Json | null
+          expires_at: string
+          id: string
+          ip_address: unknown | null
+          is_active: boolean
+          last_activity: string
+          location_data: Json | null
+          session_token: string
+          session_type: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_fingerprint?: Json | null
+          expires_at: string
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean
+          last_activity?: string
+          location_data?: Json | null
+          session_token: string
+          session_type?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_fingerprint?: Json | null
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean
+          last_activity?: string
+          location_data?: Json | null
+          session_token?: string
+          session_type?: string
+          user_agent?: string | null
           user_id?: string
         }
         Relationships: []
@@ -844,6 +997,31 @@ export type Database = {
         Args: { _thesis_id: string; _user_id?: string }
         Returns: boolean
       }
+      check_failed_login_attempts: {
+        Args: { _email?: string; _ip_address: unknown }
+        Returns: {
+          attempts_count: number
+          blocked_until: string
+          is_blocked: boolean
+        }[]
+      }
+      create_user_session: {
+        Args: {
+          _device_fingerprint?: Json
+          _expires_in_hours?: number
+          _ip_address?: unknown
+          _location_data?: Json
+          _session_token: string
+          _session_type?: string
+          _user_agent?: string
+          _user_id: string
+        }
+        Returns: string
+      }
+      detect_user_anomalies: {
+        Args: { _user_id: string }
+        Returns: undefined
+      }
       get_college_thesis_counts: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -966,6 +1144,10 @@ export type Database = {
           _user_agent?: string
         }
         Returns: string
+      }
+      log_failed_login: {
+        Args: { _email: string; _ip_address: unknown; _user_agent?: string }
+        Returns: undefined
       }
       sparsevec_out: {
         Args: { "": unknown }
