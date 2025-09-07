@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.malware-scan]
 verify_jwt = true
+
+[functions.session-manager]
+verify_jwt = true
+
+[functions.anomaly-detector]
+verify_jwt = true
