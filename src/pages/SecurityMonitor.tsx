@@ -9,6 +9,7 @@ import { useSecurityMonitor } from "@/hooks/useSecurityMonitor";
 import SecurityStatsCards from "@/components/security/SecurityStatsCards";
 import SecurityAlertsPanel from "@/components/security/SecurityAlertsPanel";
 import ActiveSessionsPanel from "@/components/security/ActiveSessionsPanel";
+import SystemHealthMonitor from "@/components/security/SystemHealthMonitor";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -21,8 +22,7 @@ const SecurityMonitor = () => {
   const handleRunAnomalyDetection = async () => {
     try {
       toast.loading("Running anomaly detection...");
-      // Run for all users - in a real system you'd select specific users
-      await actions.runAnomalyDetection('all-users');
+      await actions.runAnomalyDetection();
       toast.success("Anomaly detection completed");
     } catch (error) {
       toast.error("Failed to run anomaly detection");
@@ -124,20 +124,26 @@ const SecurityMonitor = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Security Alerts */}
-            <SecurityAlertsPanel
-              alerts={filteredAlerts}
-              loading={loading}
-              onResolveAlert={actions.resolveAlert}
-            />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Security Alerts - spans 2 columns */}
+            <div className="lg:col-span-2">
+              <SecurityAlertsPanel
+                alerts={filteredAlerts}
+                loading={loading}
+                onResolveAlert={actions.resolveAlert}
+              />
+            </div>
 
-            {/* Active Sessions */}
-            <ActiveSessionsPanel
-              sessions={filteredSessions}
-              loading={loading}
-              onTerminateSession={actions.terminateSession}
-            />
+            {/* Right column - Active Sessions and System Health */}
+            <div className="space-y-8">
+              <ActiveSessionsPanel
+                sessions={filteredSessions}
+                loading={loading}
+                onTerminateSession={actions.terminateSession}
+              />
+              
+              <SystemHealthMonitor loading={loading} />
+            </div>
           </div>
           
           {error && (

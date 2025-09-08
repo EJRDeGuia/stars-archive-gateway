@@ -170,6 +170,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           role = userRole.role as UserRole;
         }
 
+        // Create session tracking record
+        try {
+          await supabase.functions.invoke('session-manager', {
+            body: {
+              action: 'create_session',
+              sessionData: {
+                userId: data.user.id,
+                deviceFingerprint: navigator.userAgent,
+                ipAddress: null, // Will be detected server-side
+                userAgent: navigator.userAgent,
+                locationData: null, // Could be enhanced with geolocation
+                sessionType: role
+              }
+            }
+          });
+          console.log('Session tracking created successfully');
+        } catch (sessionError) {
+          console.error('Failed to create session tracking:', sessionError);
+        }
+
         // Load the user profile (this will trigger the auth state change)
         await loadUserProfile(data.user);
         

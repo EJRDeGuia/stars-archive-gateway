@@ -165,10 +165,16 @@ export const useSecurityMonitor = () => {
     }
   };
 
-  const runAnomalyDetection = async (userId: string) => {
+  const runAnomalyDetection = async (userId?: string) => {
     try {
+      // Use current user if no userId provided
+      const targetUserId = userId || user?.id;
+      if (!targetUserId) {
+        throw new Error('No user ID available for anomaly detection');
+      }
+
       const { data, error } = await supabase.functions.invoke('anomaly-detector', {
-        body: { userId }
+        body: { userId: targetUserId }
       });
 
       if (error) throw error;
