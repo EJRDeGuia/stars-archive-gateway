@@ -12,6 +12,7 @@ import ThesisDetail from "@/pages/ThesisDetail";
 import Upload from "@/pages/Upload";
 import EnhancedSearch from "@/pages/EnhancedSearch";
 import AdvancedSearch from "@/pages/AdvancedSearch";
+import AdvancedSearchPage from "@/pages/AdvancedSearchPage";
 import ArchivistDashboard from "@/pages/ArchivistDashboard";
 import AdminDashboard from "@/pages/AdminDashboard";
 import CollegePage from "@/pages/CollegePage";
@@ -69,6 +70,7 @@ function App() {
               {/* Search Routes */}
               <Route path="/search/enhanced" element={<ProtectedRoute><EnhancedSearch /></ProtectedRoute>} />
               <Route path="/search/advanced" element={<ProtectedRoute><AdvancedSearch /></ProtectedRoute>} />
+              <Route path="/search/ai" element={<ProtectedRoute><AdvancedSearchPage /></ProtectedRoute>} />
               
               {/* Archivist Routes - Upload is exclusive to archivists */}
               <Route path="/upload" element={<ProtectedRoute requiredRole="archivist" exactRole={true}><Upload /></ProtectedRoute>} />
