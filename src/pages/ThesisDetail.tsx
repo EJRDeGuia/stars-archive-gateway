@@ -105,6 +105,12 @@ const ThesisDetail = () => {
     if (fileUrl.startsWith("http")) {
       return fileUrl;
     }
+    
+    // Handle demo PDFs directly
+    if (fileUrl.startsWith("/demo-pdfs/")) {
+      return fileUrl;
+    }
+    
     let cleanFileUrl = fileUrl.trim().replace(/^\/+/, "");
     cleanFileUrl = cleanFileUrl.replace(/\/{2,}/g, "/");
     return `https://cylsbcjqemluouxblywl.supabase.co/storage/v1/object/public/thesis-pdfs/${cleanFileUrl}`;

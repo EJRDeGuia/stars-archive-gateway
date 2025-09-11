@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -42,13 +42,41 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   // Determine actual max pages based on user role
   const actualMaxPages = hasElevatedAccess ? undefined : (maxPages || 10);
 
-  // Create secure PDF URL using the edge function
-  const getSecurePDFUrl = () => {
-    if (!thesisId || !user) return null;
-    
-    // Use hardcoded Supabase URL since supabaseUrl is protected
-    return `https://cylsbcjqemluouxblywl.supabase.co/functions/v1/secure-thesis-access?thesisId=${thesisId}`;
-  };
+  const [pdfSource, setPdfSource] = useState<string | { url: string; httpHeaders: Record<string, string> } | null>(null);
+
+  // Load PDF source when component mounts or pdfUrl changes
+  useEffect(() => {
+    const loadPDFSource = async () => {
+      if (!pdfUrl) {
+        setPdfSource(null);
+        return;
+      }
+      
+      // If it's a demo PDF or public URL, use it directly
+      if (pdfUrl.startsWith('/demo-pdfs/') || pdfUrl.includes('/storage/v1/object/public/') || pdfUrl.startsWith('http')) {
+        setPdfSource(pdfUrl);
+        return;
+      }
+      
+      // For secure PDFs, use the edge function with authorization
+      if (!thesisId || !user) {
+        setPdfSource(null);
+        return;
+      }
+      
+      // Get the current session to access the JWT token
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      setPdfSource({
+        url: `https://cylsbcjqemluouxblywl.supabase.co/functions/v1/secure-thesis-access?thesisId=${thesisId}`,
+        httpHeaders: {
+          'Authorization': `Bearer ${session?.access_token || ''}`,
+        }
+      });
+    };
+
+    loadPDFSource();
+  }, [pdfUrl, thesisId, user]);
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
@@ -124,11 +152,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     );
   }
 
-  // Get the secure PDF URL
-  const securePdfUrl = getSecurePDFUrl();
-
-  // NO PDF PROVIDED OR NO SECURE ACCESS
-  if (!securePdfUrl) {
+  // NO PDF PROVIDED OR NO ACCESS
+  if (!pdfSource) {
     return (
       <Card className={`${className}`}>
         <CardContent className="p-0">
@@ -221,7 +246,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                 </div>
               ) : (
                 <Document
-                  file={securePdfUrl}
+                  file={pdfSource}
                   onLoadSuccess={onDocumentLoadSuccess}
                   loading={
                     <div className="w-full flex flex-col items-center justify-center py-14 text-gray-400">

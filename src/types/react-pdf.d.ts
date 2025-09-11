@@ -3,7 +3,7 @@ declare module 'react-pdf' {
   import * as React from 'react';
 
   export interface DocumentProps {
-    file?: string | File | Blob | Uint8Array | null;
+    file?: string | File | Blob | Uint8Array | { url: string; httpHeaders?: Record<string, string> } | null;
     onLoadSuccess?: (pdf: { numPages: number }) => void;
     loading?: React.ReactNode;
     error?: React.ReactNode;
