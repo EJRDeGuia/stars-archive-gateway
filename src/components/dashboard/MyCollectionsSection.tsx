@@ -105,7 +105,7 @@ export default function MyCollectionsSection() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Favorites */}
-        <Card className="group relative overflow-hidden bg-gradient-to-br from-white to-rose-50/50 border border-rose-100 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover-scale">
+        <Card className="group relative overflow-hidden bg-gradient-to-br from-white to-rose-50/50 border border-rose-100 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
           <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-rose-100 to-pink-50 rounded-full blur-xl opacity-50"></div>
           <div className="relative p-6">
             <div className="flex items-center gap-3 mb-4">
@@ -158,7 +158,7 @@ export default function MyCollectionsSection() {
         </Card>
         
         {/* Saved Conversations */}
-        <Card className="group relative overflow-hidden bg-gradient-to-br from-white to-blue-50/50 border border-blue-100 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover-scale">
+        <Card className="group relative overflow-hidden bg-gradient-to-br from-white to-blue-50/50 border border-blue-100 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
           <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-100 to-sky-50 rounded-full blur-xl opacity-50"></div>
           <div className="relative p-6">
             <div className="flex items-center gap-3 mb-4">

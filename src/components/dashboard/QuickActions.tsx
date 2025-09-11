@@ -74,7 +74,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({ userRole, onActionClick }) 
           {actions.map((action) => (
             <Card 
               key={action.id}
-              className="group hover-scale shadow-sm transition-all duration-300 cursor-pointer" 
+              className="group shadow-sm transition-all duration-300 cursor-pointer hover:shadow-lg" 
               onClick={() => onActionClick(action.id)}
             >
               <CardContent className="p-6 text-center">

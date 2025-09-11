@@ -13,7 +13,6 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import SemanticSearchButton from "@/components/dashboard/SemanticSearchButton";
 import { getGreeting } from "@/utils/greetingUtils";
 import MyCollectionsSection from "@/components/dashboard/MyCollectionsSection";
-import { RecommendationsSection } from "@/components/dashboard/RecommendationsSection";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -134,16 +133,7 @@ const Dashboard = () => {
           />
           <div className="space-y-12">
             <MyCollectionsSection />
-            
-            <div className="grid gap-8 lg:grid-cols-3">
-              <div className="lg:col-span-2">
-                <CollegeGrid />
-              </div>
-              <div className="space-y-8">
-                <RecommendationsSection />
-                <RecentActivity />
-              </div>
-            </div>
+            <CollegeGrid />
           </div>
         </DashboardLayout>
       </main>

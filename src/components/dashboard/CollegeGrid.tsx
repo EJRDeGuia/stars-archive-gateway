@@ -45,7 +45,7 @@ const CollegeGrid: React.FC = () => {
           {colleges.slice(0, 3).map((college, index) => (
             <div
               key={college.id}
-              className="animate-fade-in hover-scale"
+              className="animate-fade-in"
               style={{ animationDelay: `${index * 150}ms` }}
             >
               <CollegeCard
@@ -61,7 +61,7 @@ const CollegeGrid: React.FC = () => {
           {colleges.slice(3, 5).map((college, index) => (
             <div
               key={college.id}
-              className="animate-fade-in hover-scale"
+              className="animate-fade-in"
               style={{ animationDelay: `${(index + 3) * 150}ms` }}
             >
               <CollegeCard
