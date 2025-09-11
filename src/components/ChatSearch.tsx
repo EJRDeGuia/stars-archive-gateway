@@ -2,12 +2,14 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Send, Sparkles, Loader, User, Bot, Lightbulb } from 'lucide-react';
+import { Send, Sparkles, Loader, User, Bot, Lightbulb, Save, FolderOpen, Trash2 } from 'lucide-react';
 import { semanticSearchService } from '@/services/semanticSearch';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from "@/contexts/AuthContext";
-import { useSaveSearch } from "@/hooks/useApi";
+import { useSaveSearch, useSavedConversations, useSaveConversation, useUpdateConversation, useDeleteConversation } from "@/hooks/useApi";
 import SaveSearchModal from "./SaveSearchModal";
+import SaveConversationModal from "./SaveConversationModal";
+import LoadConversationModal from "./LoadConversationModal";
 import { useNavigate } from 'react-router-dom';
 
 type Thesis = {
@@ -48,7 +50,14 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const [showSaveModal, setShowSaveModal] = useState(false);
+  const [showSaveConversationModal, setShowSaveConversationModal] = useState(false);
+  const [showLoadConversationModal, setShowLoadConversationModal] = useState(false);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [currentConversationName, setCurrentConversationName] = useState<string>("");
+  
   const saveSearch = useSaveSearch();
+  const saveConversation = useSaveConversation();
+  const updateConversation = useUpdateConversation();
   const navigate = useNavigate();
 
   // TRACK THE LAST SEARCH RESULT for improved control
@@ -65,6 +74,77 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
     Array.isArray(lastResult.results) &&
     lastResult.results.length > 0 &&
     !showSaveModal; // Don't show button if modal is already open
+
+  // Auto-save conversation when chat changes (if conversation exists)
+  useEffect(() => {
+    if (currentConversationId && chat.length > 0 && user?.id) {
+      const saveTimer = setTimeout(() => {
+        updateConversation.mutate({
+          id: currentConversationId,
+          conversation: chat,
+        });
+      }, 2000); // Auto-save after 2 seconds of inactivity
+      
+      return () => clearTimeout(saveTimer);
+    }
+  }, [chat, currentConversationId, user?.id, updateConversation]);
+
+  // Conversation management handlers
+  const handleSaveConversation = (name: string) => {
+    if (user?.id && chat.length > 0) {
+      if (currentConversationId) {
+        // Update existing conversation
+        updateConversation.mutate({
+          id: currentConversationId,
+          conversation: chat,
+        });
+        setCurrentConversationName(name);
+        toast({
+          title: "Conversation Updated",
+          description: `Updated "${name}" successfully.`,
+        });
+      } else {
+        // Save new conversation
+        saveConversation.mutate({
+          userId: user.id,
+          name,
+          conversation: chat,
+        }, {
+          onSuccess: (data) => {
+            setCurrentConversationId(data.id);
+            setCurrentConversationName(name);
+            toast({
+              title: "Conversation Saved",
+              description: `Saved "${name}" to your dashboard.`,
+            });
+          },
+        });
+      }
+      setShowSaveConversationModal(false);
+    }
+  };
+
+  const handleLoadConversation = (conversationData: any) => {
+    // Load the conversation data into the chat
+    setChat(conversationData.conversation_data || []);
+    setCurrentConversationId(conversationData.id);
+    setCurrentConversationName(conversationData.name);
+    setShowLoadConversationModal(false);
+    toast({
+      title: "Conversation Loaded",
+      description: `Loaded "${conversationData.name}" successfully.`,
+    });
+  };
+
+  const handleClearConversation = () => {
+    setChat([]);
+    setCurrentConversationId(null);
+    setCurrentConversationName("");
+    toast({
+      title: "Conversation Cleared",
+      description: "Started a new conversation.",
+    });
+  };
 
   // Animate visibility of Save Search button
   useEffect(() => {
@@ -204,14 +284,60 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
   return (
     <Card className="w-full max-w-3xl mx-auto sleek-shadow-xl border-0 flex flex-col bg-white/95 overflow-hidden min-h-[580px] h-[70vh] animate-fade-in">
       {/* Header / Title */}
-      <div className="p-6 border-b flex gap-3 items-center bg-gradient-to-r from-dlsl-green/10 to-white">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-dlsl-green to-emerald-400 flex items-center justify-center">
-          <Sparkles className="w-6 h-6 text-white" />
+      <div className="p-6 border-b flex gap-3 items-center justify-between bg-gradient-to-r from-dlsl-green/10 to-white">
+        <div className="flex gap-3 items-center">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-dlsl-green to-emerald-400 flex items-center justify-center">
+            <Sparkles className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-slate-800 tracking-tight">Chat Research</h2>
+            <p className="text-xs text-gray-500">
+              {currentConversationName ? `Conversation: ${currentConversationName}` : "Ask about theses at De La Salle Lipa"}
+            </p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-lg font-bold text-slate-800 tracking-tight">Chat Research</h2>
-          <p className="text-xs text-gray-500">Ask about theses at De La Salle Lipa</p>
-        </div>
+        
+        {/* Conversation Management Buttons */}
+        {user && (
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowLoadConversationModal(true)}
+              className="text-dlsl-green border-dlsl-green/30 hover:bg-dlsl-green/5"
+              title="Load saved conversation"
+            >
+              <FolderOpen className="h-4 w-4 mr-2" />
+              Load
+            </Button>
+            
+            {chat.length > 0 && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowSaveConversationModal(true)}
+                  className="text-dlsl-green border-dlsl-green/30 hover:bg-dlsl-green/5"
+                  title="Save this conversation"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Save
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleClearConversation}
+                  className="text-slate-500 border-slate-300 hover:bg-slate-50"
+                  title="Clear conversation and start new"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Clear
+                </Button>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Suggestions Bar - NEW */}
@@ -383,6 +509,21 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
         onSave={handleSaveSearch}
         defaultName={lastResult?.query ? lastResult.query.slice(0, 32) : "Research Query"}
         autoFocus
+      />
+      
+      {/* Conversation Management Modals */}
+      <SaveConversationModal
+        open={showSaveConversationModal}
+        onClose={() => setShowSaveConversationModal(false)}
+        onSave={handleSaveConversation}
+        defaultName={currentConversationName || (lastResult?.query ? `Chat: ${lastResult.query.slice(0, 20)}...` : "New Chat")}
+        autoFocus
+      />
+      
+      <LoadConversationModal
+        open={showLoadConversationModal}
+        onClose={() => setShowLoadConversationModal(false)}
+        onLoad={handleLoadConversation}
       />
     </Card>
   );

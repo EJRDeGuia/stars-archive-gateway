@@ -1,12 +1,13 @@
 
 import { useAuth } from "@/contexts/AuthContext";
-import { useSavedSearches } from "@/hooks/useApi";
-import { BookOpen, Search, Heart } from "lucide-react";
+import { useSavedSearches, useSavedConversations } from "@/hooks/useApi";
+import { BookOpen, Search, Heart, MessageCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
+import { formatDistanceToNow } from 'date-fns';
 
 type Favorite = {
   id: string;
@@ -67,6 +68,7 @@ export default function MyCollectionsSection() {
   });
 
   const { data: savedSearches = [] } = useSavedSearches(userId) as { data: SavedSearch[] | undefined };
+  const { data: savedConversations = [] } = useSavedConversations(userId);
 
   // Set up real-time subscription for favorites
   useEffect(() => {
@@ -102,7 +104,7 @@ export default function MyCollectionsSection() {
   return (
     <div className="mb-12">
       <h2 className="text-xl font-bold mb-4 text-slate-800">My Collections</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Favorites */}
         <Card className="p-6 bg-white/95 border border-dlsl-green/15">
           <div className="flex items-center gap-3 mb-2 font-semibold">
@@ -138,7 +140,7 @@ export default function MyCollectionsSection() {
         {/* Saved Searches */}
         <Card className="p-6 bg-white/95 border border-dlsl-green/15">
           <div className="flex items-center gap-3 mb-2 font-semibold">
-            <Search className="text-dlsl-green" /> Saved Searches
+            <Search className="text-dlsl-green" /> Saved Searches ({savedSearches.length})
           </div>
           {savedSearches.length === 0 ? (
             <div className="text-gray-400 text-sm">No saved searches yet.</div>
@@ -157,6 +159,36 @@ export default function MyCollectionsSection() {
               ))}
               {savedSearches.length > 5 && (
                 <li className="text-xs text-gray-400 mt-1">+{savedSearches.length - 5} more</li>
+              )}
+            </ul>
+          )}
+        </Card>
+        
+        {/* Saved Conversations */}
+        <Card className="p-6 bg-white/95 border border-dlsl-green/15">
+          <div className="flex items-center gap-3 mb-2 font-semibold">
+            <MessageCircle className="text-dlsl-green" /> Saved Conversations ({savedConversations.length})
+          </div>
+          {savedConversations.length === 0 ? (
+            <div className="text-gray-400 text-sm">No saved conversations yet.</div>
+          ) : (
+            <ul className="text-dlsl-green font-medium space-y-1">
+              {savedConversations.slice(0, 5).map((conversation: any) => (
+                <li
+                  key={conversation.id}
+                  className="hover:underline cursor-pointer text-sm"
+                  onClick={() => navigate(`/explore?conversation=${conversation.id}`)}
+                >
+                  <div>
+                    <div className="font-medium line-clamp-1">{conversation.name}</div>
+                    <div className="text-xs text-gray-500">
+                      {formatDistanceToNow(new Date(conversation.updated_at), { addSuffix: true })} • {conversation.conversation_data?.length || 0} messages
+                    </div>
+                  </div>
+                </li>
+              ))}
+              {savedConversations.length > 5 && (
+                <li className="text-xs text-gray-400 mt-1">+{savedConversations.length - 5} more</li>
               )}
             </ul>
           )}

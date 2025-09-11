@@ -427,7 +427,7 @@ export function useSaveConversation() {
     }: { userId: string; name: string; conversation: any[] }) => {
       const { data, error } = await (supabase as any)
         .from("saved_conversations")
-        .insert([{ user_id: userId, name: name.trim(), conversation }])
+        .insert([{ user_id: userId, name: name.trim(), conversation_data: conversation }])
         .select()
         .single();
       if (error) throw error;
@@ -448,7 +448,7 @@ export function useUpdateConversation() {
     }: { id: string; conversation: any[] }) => {
       const { data, error } = await (supabase as any)
         .from("saved_conversations")
-        .update({ conversation, updated_at: new Date().toISOString() })
+        .update({ conversation_data: conversation, updated_at: new Date().toISOString() })
         .eq("id", id)
         .select()
         .single();
