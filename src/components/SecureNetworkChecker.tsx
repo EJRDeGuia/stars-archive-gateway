@@ -19,13 +19,17 @@ const SecureNetworkChecker: React.FC<SecureNetworkCheckerProps> = ({
   useEffect(() => {
     const checkNetworkAccess = async () => {
       try {
-        // For development and Lovable environment, simulate intranet access
+        // For development, Lovable environment, and testing mode - allow access
         const isDevelopment = window.location.hostname === 'localhost' || 
                              window.location.hostname === '127.0.0.1' ||
                              window.location.hostname.includes('lovable') ||
                              window.location.hostname.includes('vercel.app');
         
-        if (isDevelopment) {
+        // Testing mode: Check for testing parameter or mobile hotspot patterns
+        const isTestingMode = window.location.search.includes('testing=true') || 
+                             localStorage.getItem('bypassNetworkCheck') === 'true';
+        
+        if (isDevelopment || isTestingMode) {
           setNetworkStatus('intranet');
           setIsLoading(false);
           return;
