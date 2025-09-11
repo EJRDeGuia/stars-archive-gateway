@@ -55,13 +55,14 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
     .reverse()
     .find(item => item.type === 'result' || (item.type === "error" && item.query));
 
-  // Only show the Save Search button if there is a successful search result
+  // Only show the Save Search button and modal after successful search with results
   const userCanSaveSearch =
     !!user &&
     !!lastResult &&
     lastResult.type === 'result' &&
     Array.isArray(lastResult.results) &&
-    lastResult.results.length > 0;
+    lastResult.results.length > 0 &&
+    !showSaveModal; // Don't show button if modal is already open
 
   // Animate visibility of Save Search button
   useEffect(() => {
@@ -349,16 +350,14 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
           </Button>
         )}
       </form>
-      {/* SaveSearchModal - opened only after search with result */}
-      {userCanSaveSearch && (
-        <SaveSearchModal 
-          open={showSaveModal} 
-          onClose={() => setShowSaveModal(false)} 
-          onSave={handleSaveSearch}
-          defaultName={lastResult?.query ? lastResult.query.slice(0, 32) : "Research Query"}
-          autoFocus
-        />
-      )}
+      {/* SaveSearchModal - show only when modal state is true */}
+      <SaveSearchModal 
+        open={showSaveModal} 
+        onClose={() => setShowSaveModal(false)} 
+        onSave={handleSaveSearch}
+        defaultName={lastResult?.query ? lastResult.query.slice(0, 32) : "Research Query"}
+        autoFocus
+      />
     </Card>
   );
 };
