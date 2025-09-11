@@ -6,7 +6,7 @@ import { Send, Sparkles, Loader, User, Bot, Lightbulb, Save, FolderOpen, Trash2 
 import { semanticSearchService } from '@/services/semanticSearch';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from "@/contexts/AuthContext";
-import { useSavedConversations, useSaveConversation, useUpdateConversation, useDeleteConversation } from "@/hooks/useApi";
+import { useSaveConversation, useUpdateConversation } from "@/hooks/useApi";
 import SaveConversationModal from "./SaveConversationModal";
 import LoadConversationModal from "./LoadConversationModal";
 import { useNavigate } from 'react-router-dom';
@@ -53,7 +53,7 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [currentConversationName, setCurrentConversationName] = useState<string>("");
   
-  const saveSearch = useSaveSearch();
+  
   const saveConversation = useSaveConversation();
   const updateConversation = useUpdateConversation();
   const navigate = useNavigate();
@@ -65,13 +65,6 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
     .find(item => item.type === 'result' || (item.type === "error" && item.query));
 
   // Only show the Save Search button and modal after successful search with results
-  const userCanSaveSearch =
-    !!user &&
-    !!lastResult &&
-    lastResult.type === 'result' &&
-    Array.isArray(lastResult.results) &&
-    lastResult.results.length > 0 &&
-    !showSaveModal; // Don't show button if modal is already open
 
   // Auto-save conversation when chat changes (if conversation exists)
   useEffect(() => {
@@ -144,13 +137,6 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
     });
   };
 
-  // Animate visibility of Save Search button
-  useEffect(() => {
-    // If chat has no usable search, close the modal
-    if ((!lastResult || !userCanSaveSearch) && showSaveModal) {
-      setShowSaveModal(false);
-    }
-  }, [lastResult, userCanSaveSearch, showSaveModal]);
 
   // Scroll to bottom on new chat
   useEffect(() => {
@@ -262,22 +248,6 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
     }, 100);
   };
 
-  // Save last query as "search"
-  const handleSaveSearch = (name: string) => {
-    if (user?.id && lastResult && lastResult.query) {
-      saveSearch.mutate({
-        userId: user.id,
-        name,
-        query: lastResult.query,
-      });
-      setShowSaveModal(false);
-      toast({
-        title: "Search Saved",
-        description: `Saved "${name}" to your dashboard.`,
-        variant: "default"
-      });
-    }
-  };
 
   return (
     <Card className="w-full max-w-3xl mx-auto sleek-shadow-xl border-0 flex flex-col bg-white/95 overflow-hidden min-h-[580px] h-[70vh] animate-fade-in">
@@ -485,29 +455,7 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
             ? <Loader className="animate-spin h-5 w-5" />
             : <Send className="h-5 w-5" />}
         </Button>
-        {/* Improved Save Search Button - only show after actual result */}
-        {userCanSaveSearch && (
-          <Button
-            type="button"
-            variant="outline"
-            className="ml-4 text-dlsl-green border-dlsl-green/30 px-3 font-semibold animate-fade-in"
-            onClick={() => setShowSaveModal(true)}
-            tabIndex={0}
-            title="Save this search to your dashboard for quick access"
-            aria-label="Save this search"
-          >
-            Save Search
-          </Button>
-        )}
       </form>
-      {/* SaveSearchModal - show only when modal state is true */}
-      <SaveSearchModal 
-        open={showSaveModal} 
-        onClose={() => setShowSaveModal(false)} 
-        onSave={handleSaveSearch}
-        defaultName={lastResult?.query ? lastResult.query.slice(0, 32) : "Research Query"}
-        autoFocus
-      />
       
       {/* Conversation Management Modals */}
       <SaveConversationModal
