@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import TestingModeToggle from "@/components/TestingModeToggle";
 import Index from "@/pages/Index";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
@@ -48,6 +49,7 @@ function App() {
         <AuthProvider>
           <div className="min-h-screen bg-background">
             <Toaster />
+            <TestingModeToggle />
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Index />} />
