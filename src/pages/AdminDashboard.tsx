@@ -55,6 +55,9 @@ const AdminDashboard = () => {
       case 'audit':
         navigate('/audit-logs');
         break;
+      case 'content':
+        navigate('/admin/content');
+        break;
       default:
         toast.info('Feature coming soon!');
         break;

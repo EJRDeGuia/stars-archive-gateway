@@ -14,7 +14,8 @@ import {
   Shield,
   BookOpen,
   UserCheck,
-  Globe
+  Globe,
+  ArrowLeft
 } from 'lucide-react';
 
 const ContentManagement = () => {
@@ -92,6 +93,18 @@ const ContentManagement = () => {
       
       <main className="container mx-auto px-6 py-8">
         <div className="max-w-6xl mx-auto">
+          {/* Back Button */}
+          <div className="mb-6">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/admin')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Admin Dashboard
+            </Button>
+          </div>
+
           {/* Header Section */}
           <div className="text-center mb-12">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-dlsl-green to-dlsl-green-light rounded-full mb-4">

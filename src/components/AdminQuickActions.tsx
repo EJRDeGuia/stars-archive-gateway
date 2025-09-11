@@ -10,7 +10,9 @@ import {
   Settings,
   Shield,
   Database,
-  FileText
+  FileText,
+  ShieldCheck,
+  Edit3
 } from 'lucide-react';
 
 interface AdminQuickActionsProps {
@@ -60,6 +62,20 @@ const AdminQuickActions: React.FC<AdminQuickActionsProps> = ({ onActionClick }) 
       description: 'Configure system preferences',
       icon: Settings,
       color: 'bg-dlsl-green'
+    },
+    {
+      id: 'security',
+      title: 'Security Monitor',
+      description: 'Monitor security alerts and logs',
+      icon: ShieldCheck,
+      color: 'bg-dlsl-green'
+    },
+    {
+      id: 'content',
+      title: 'Content Management',
+      description: 'Manage site content and pages',
+      icon: Edit3,
+      color: 'bg-dlsl-green'
     }
   ];
 
@@ -76,7 +92,7 @@ const AdminQuickActions: React.FC<AdminQuickActionsProps> = ({ onActionClick }) 
         </CardHeader>
         <CardContent>
           <div className="flex justify-center">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl">
               {quickActions.map((action) => (
                 <Button
                   key={action.id}
