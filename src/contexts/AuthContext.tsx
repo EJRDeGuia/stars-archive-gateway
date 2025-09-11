@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { toast } from 'sonner';
+import { getDashboardPath } from '@/utils/dashboardUtils';
 
 type UserRole = 'researcher' | 'archivist' | 'admin' | 'guest_researcher';
 
@@ -125,16 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const getRoleDashboardPath = (role: UserRole): string => {
-    switch (role) {
-      case 'admin':
-        return '/admin';
-      case 'archivist':
-        return '/archivist';
-      case 'researcher':
-      case 'guest_researcher':
-      default:
-        return '/dashboard';
-    }
+    return getDashboardPath(role);
   };
 
   const login = async (email: string, password: string): Promise<{ success: boolean; redirectPath?: string }> => {
