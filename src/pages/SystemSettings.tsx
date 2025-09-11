@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import Header from '@/components/Header';
@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useSystemSettings } from '@/hooks/useSystemSettings';
 import {
   Settings,
   ArrowLeft,
@@ -17,35 +18,64 @@ import {
   Shield,
   Mail,
   Globe,
-  Save
+  Save,
+  Loader2
 } from 'lucide-react';
 
 const SystemSettings = () => {
   const navigate = useNavigate();
-  const [settings, setSettings] = useState({
-    siteName: 'DLSL Thesis Repository',
-    siteDescription: 'Digital repository for De La Salle Lipa theses and research papers',
-    maxFileSize: '50',
-    allowedFileTypes: 'pdf,doc,docx',
-    enableEmailNotifications: true,
-    enableAutoBackup: true,
-    backupFrequency: 'daily',
-    maintenanceMode: false,
-    enableRegistration: true,
-    requireEmailVerification: true
-  });
+  const { 
+    settings, 
+    settingsMap, 
+    isLoading, 
+    updateSetting, 
+    updateMultipleSettings, 
+    isUpdating,
+    getSettingValue 
+  } = useSystemSettings();
 
   const handleSave = () => {
-    toast.success('System settings updated successfully!');
-    console.log('Settings saved:', settings);
+    const updates = [
+      { id: settingsMap['site_name']?.id, value: settingsMap['site_name']?.parsedValue },
+      { id: settingsMap['site_description']?.id, value: settingsMap['site_description']?.parsedValue },
+      { id: settingsMap['max_file_size']?.id, value: settingsMap['max_file_size']?.parsedValue },
+      { id: settingsMap['allowed_file_types']?.id, value: settingsMap['allowed_file_types']?.parsedValue },
+      { id: settingsMap['enable_email_notifications']?.id, value: settingsMap['enable_email_notifications']?.parsedValue },
+      { id: settingsMap['enable_auto_backup']?.id, value: settingsMap['enable_auto_backup']?.parsedValue },
+      { id: settingsMap['backup_frequency']?.id, value: settingsMap['backup_frequency']?.parsedValue },
+      { id: settingsMap['maintenance_mode']?.id, value: settingsMap['maintenance_mode']?.parsedValue },
+      { id: settingsMap['enable_registration']?.id, value: settingsMap['enable_registration']?.parsedValue },
+      { id: settingsMap['require_email_verification']?.id, value: settingsMap['require_email_verification']?.parsedValue }
+    ].filter(update => update.id);
+
+    if (updates.length > 0) {
+      updateMultipleSettings(updates);
+    }
   };
 
   const handleInputChange = (key: string, value: string | boolean) => {
-    setSettings(prev => ({
-      ...prev,
-      [key]: value
-    }));
+    const setting = settingsMap[key];
+    if (setting) {
+      updateSetting({ id: setting.id, value });
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="flex-1">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+            <div className="text-center">
+              <Loader2 className="w-8 h-8 animate-spin mx-auto text-dlsl-green" />
+              <p className="mt-2 text-gray-600">Loading system settings...</p>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -93,8 +123,8 @@ const SystemSettings = () => {
                   <Label htmlFor="siteName">Site Name</Label>
                   <Input
                     id="siteName"
-                    value={settings.siteName}
-                    onChange={(e) => handleInputChange('siteName', e.target.value)}
+                    value={getSettingValue('site_name', 'DLSL Thesis Repository')}
+                    onChange={(e) => handleInputChange('site_name', e.target.value)}
                   />
                 </div>
                 
@@ -102,8 +132,8 @@ const SystemSettings = () => {
                   <Label htmlFor="siteDescription">Site Description</Label>
                   <Textarea
                     id="siteDescription"
-                    value={settings.siteDescription}
-                    onChange={(e) => handleInputChange('siteDescription', e.target.value)}
+                    value={getSettingValue('site_description', 'Digital repository for De La Salle Lipa theses and research papers')}
+                    onChange={(e) => handleInputChange('site_description', e.target.value)}
                     rows={3}
                   />
                 </div>
@@ -113,8 +143,8 @@ const SystemSettings = () => {
                   <Input
                     id="maxFileSize"
                     type="number"
-                    value={settings.maxFileSize}
-                    onChange={(e) => handleInputChange('maxFileSize', e.target.value)}
+                    value={getSettingValue('max_file_size', '50')}
+                    onChange={(e) => handleInputChange('max_file_size', e.target.value)}
                   />
                 </div>
 
@@ -122,8 +152,8 @@ const SystemSettings = () => {
                   <Label htmlFor="allowedFileTypes">Allowed File Types</Label>
                   <Input
                     id="allowedFileTypes"
-                    value={settings.allowedFileTypes}
-                    onChange={(e) => handleInputChange('allowedFileTypes', e.target.value)}
+                    value={getSettingValue('allowed_file_types', 'pdf,doc,docx')}
+                    onChange={(e) => handleInputChange('allowed_file_types', e.target.value)}
                     placeholder="pdf,doc,docx"
                   />
                 </div>
@@ -148,8 +178,8 @@ const SystemSettings = () => {
                   </div>
                   <Switch
                     id="enableEmailNotifications"
-                    checked={settings.enableEmailNotifications}
-                    onCheckedChange={(checked) => handleInputChange('enableEmailNotifications', checked)}
+                    checked={getSettingValue('enable_email_notifications', true)}
+                    onCheckedChange={(checked) => handleInputChange('enable_email_notifications', checked)}
                   />
                 </div>
 
@@ -160,8 +190,8 @@ const SystemSettings = () => {
                   </div>
                   <Switch
                     id="enableRegistration"
-                    checked={settings.enableRegistration}
-                    onCheckedChange={(checked) => handleInputChange('enableRegistration', checked)}
+                    checked={getSettingValue('enable_registration', true)}
+                    onCheckedChange={(checked) => handleInputChange('enable_registration', checked)}
                   />
                 </div>
 
@@ -172,8 +202,8 @@ const SystemSettings = () => {
                   </div>
                   <Switch
                     id="requireEmailVerification"
-                    checked={settings.requireEmailVerification}
-                    onCheckedChange={(checked) => handleInputChange('requireEmailVerification', checked)}
+                    checked={getSettingValue('require_email_verification', true)}
+                    onCheckedChange={(checked) => handleInputChange('require_email_verification', checked)}
                   />
                 </div>
 
@@ -184,8 +214,8 @@ const SystemSettings = () => {
                   </div>
                   <Switch
                     id="maintenanceMode"
-                    checked={settings.maintenanceMode}
-                    onCheckedChange={(checked) => handleInputChange('maintenanceMode', checked)}
+                    checked={getSettingValue('maintenance_mode', false)}
+                    onCheckedChange={(checked) => handleInputChange('maintenance_mode', checked)}
                   />
                 </div>
               </CardContent>
@@ -209,8 +239,8 @@ const SystemSettings = () => {
                   </div>
                   <Switch
                     id="enableAutoBackup"
-                    checked={settings.enableAutoBackup}
-                    onCheckedChange={(checked) => handleInputChange('enableAutoBackup', checked)}
+                    checked={getSettingValue('enable_auto_backup', true)}
+                    onCheckedChange={(checked) => handleInputChange('enable_auto_backup', checked)}
                   />
                 </div>
 
@@ -218,8 +248,8 @@ const SystemSettings = () => {
                   <Label htmlFor="backupFrequency">Backup Frequency</Label>
                   <select
                     className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-dlsl-green"
-                    value={settings.backupFrequency}
-                    onChange={(e) => handleInputChange('backupFrequency', e.target.value)}
+                    value={getSettingValue('backup_frequency', 'daily')}
+                    onChange={(e) => handleInputChange('backup_frequency', e.target.value)}
                   >
                     <option value="hourly">Hourly</option>
                     <option value="daily">Daily</option>
@@ -283,9 +313,14 @@ const SystemSettings = () => {
             <Button
               onClick={handleSave}
               className="bg-dlsl-green hover:bg-dlsl-green/90 text-white px-8 py-3"
+              disabled={isUpdating}
             >
-              <Save className="w-5 h-5 mr-2" />
-              Save Settings
+              {isUpdating ? (
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              ) : (
+                <Save className="w-5 h-5 mr-2" />
+              )}
+              {isUpdating ? 'Saving...' : 'Save Settings'}
             </Button>
           </div>
         </div>
