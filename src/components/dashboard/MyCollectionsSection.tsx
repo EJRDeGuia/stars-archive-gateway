@@ -96,69 +96,114 @@ export default function MyCollectionsSection() {
   }, [userId, queryClient, refetch]);
 
   return (
-    <div className="mb-12">
-      <h2 className="text-xl font-bold mb-4 text-slate-800">My Collections</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="mb-16 animate-fade-in">
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-2">
+          My Collections
+        </h2>
+        <p className="text-gray-600">Your saved research and conversations at a glance</p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Favorites */}
-        <Card className="p-6 bg-white/95 border border-dlsl-green/15 rounded-xl shadow-sm hover-scale animate-fade-in">
-          <div className="flex items-center gap-3 mb-2 font-semibold">
-            <Heart className="text-dlsl-green" /> My Library ({favorites.length})
+        <Card className="group relative overflow-hidden bg-gradient-to-br from-white to-rose-50/50 border border-rose-100 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover-scale">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-rose-100 to-pink-50 rounded-full blur-xl opacity-50"></div>
+          <div className="relative p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-rose-100 rounded-lg">
+                <Heart className="text-rose-600 h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900">My Library</h3>
+                <p className="text-sm text-gray-600">{favorites.length} saved theses</p>
+              </div>
+            </div>
+            {favorites.length === 0 ? (
+              <div className="text-center py-6">
+                <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Heart className="h-6 w-6 text-rose-400" />
+                </div>
+                <p className="text-gray-500 text-sm">None yet. Add favorites from thesis pages!</p>
+              </div>
+            ) : (
+              <ul className="space-y-3">
+                {favorites.slice(0, 5).map((favorite, index) => (
+                  <li
+                    className="group/item cursor-pointer transition-all duration-200 hover:translate-x-1"
+                    key={favorite.id}
+                    onClick={() => navigate(`/thesis/${favorite.thesis_id}`)}
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    {favorite.theses?.title ? (
+                      <div className="p-3 rounded-lg border border-rose-100 hover:border-rose-200 hover:bg-white/60 transition-all duration-200">
+                        <div className="font-medium line-clamp-1 text-gray-900 group-hover/item:text-rose-600">
+                          {favorite.theses.title}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">by {favorite.theses.author}</div>
+                      </div>
+                    ) : (
+                      <div className="p-3 rounded-lg border border-rose-100 hover:border-rose-200 hover:bg-white/60 transition-all duration-200">
+                        <span className="text-gray-600">Thesis #{favorite.thesis_id?.slice(0, 6) || ""}</span>
+                      </div>
+                    )}
+                  </li>
+                ))}
+                {favorites.length > 5 && (
+                  <li className="text-xs text-gray-400 text-center pt-2 border-t border-rose-100">
+                    +{favorites.length - 5} more items
+                  </li>
+                )}
+              </ul>
+            )}
           </div>
-          {favorites.length === 0 ? (
-            <div className="text-gray-400 text-sm">None yet. Add favorites from thesis pages!</div>
-          ) : (
-            <ul className="text-dlsl-green font-medium space-y-1">
-              {favorites.slice(0, 5).map((favorite) => (
-                <li
-                  className="hover:underline cursor-pointer text-sm"
-                  key={favorite.id}
-                  onClick={() => navigate(`/thesis/${favorite.thesis_id}`)}
-                >
-                  {favorite.theses?.title ? (
-                    <div>
-                      <div className="font-medium line-clamp-1">{favorite.theses.title}</div>
-                      <div className="text-xs text-gray-500">by {favorite.theses.author}</div>
-                    </div>
-                  ) : (
-                    `Thesis #${favorite.thesis_id?.slice(0, 6) || ""}`
-                  )}
-                </li>
-              ))}
-              {favorites.length > 5 && (
-                <li className="text-xs text-gray-400 mt-1">+{favorites.length - 5} more</li>
-              )}
-            </ul>
-          )}
         </Card>
         
         {/* Saved Conversations */}
-        <Card className="p-6 bg-white/95 border border-dlsl-green/15 rounded-xl shadow-sm hover-scale animate-fade-in">
-          <div className="flex items-center gap-3 mb-2 font-semibold">
-            <MessageCircle className="text-dlsl-green" /> Saved Conversations ({savedConversations.length})
-          </div>
-          {savedConversations.length === 0 ? (
-            <div className="text-gray-400 text-sm">No saved conversations yet.</div>
-          ) : (
-            <ul className="text-dlsl-green font-medium space-y-1">
-              {savedConversations.slice(0, 5).map((conversation: any) => (
-                <li
-                  key={conversation.id}
-                  className="hover:underline cursor-pointer text-sm"
-                  onClick={() => navigate(`/explore?conversation=${conversation.id}`)}
-                >
-                  <div>
-                    <div className="font-medium line-clamp-1">{conversation.name}</div>
-                    <div className="text-xs text-gray-500">
-                      {formatDistanceToNow(new Date(conversation.updated_at), { addSuffix: true })} • {conversation.conversation_data?.length || 0} messages
+        <Card className="group relative overflow-hidden bg-gradient-to-br from-white to-blue-50/50 border border-blue-100 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover-scale">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-100 to-sky-50 rounded-full blur-xl opacity-50"></div>
+          <div className="relative p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <MessageCircle className="text-blue-600 h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900">Saved Conversations</h3>
+                <p className="text-sm text-gray-600">{savedConversations.length} conversations</p>
+              </div>
+            </div>
+            {savedConversations.length === 0 ? (
+              <div className="text-center py-6">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <MessageCircle className="h-6 w-6 text-blue-400" />
+                </div>
+                <p className="text-gray-500 text-sm">No saved conversations yet.</p>
+              </div>
+            ) : (
+              <ul className="space-y-3">
+                {savedConversations.slice(0, 5).map((conversation: any, index: number) => (
+                  <li
+                    key={conversation.id}
+                    className="group/item cursor-pointer transition-all duration-200 hover:translate-x-1"
+                    onClick={() => navigate(`/explore?conversation=${conversation.id}`)}
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    <div className="p-3 rounded-lg border border-blue-100 hover:border-blue-200 hover:bg-white/60 transition-all duration-200">
+                      <div className="font-medium line-clamp-1 text-gray-900 group-hover/item:text-blue-600">
+                        {conversation.name}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {formatDistanceToNow(new Date(conversation.updated_at), { addSuffix: true })} • {conversation.conversation_data?.length || 0} messages
+                      </div>
                     </div>
-                  </div>
-                </li>
-              ))}
-              {savedConversations.length > 5 && (
-                <li className="text-xs text-gray-400 mt-1">+{savedConversations.length - 5} more</li>
-              )}
-            </ul>
-          )}
+                  </li>
+                ))}
+                {savedConversations.length > 5 && (
+                  <li className="text-xs text-gray-400 text-center pt-2 border-t border-blue-100">
+                    +{savedConversations.length - 5} more conversations
+                  </li>
+                )}
+              </ul>
+            )}
+          </div>
         </Card>
       </div>
     </div>

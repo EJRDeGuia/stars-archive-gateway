@@ -132,12 +132,17 @@ const Dashboard = () => {
             userRole={user?.role || "researcher"}
             onActionClick={handleQuickAction}
           />
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="space-y-12">
             <MyCollectionsSection />
-            <RecommendationsSection />
-            <div>
-              <CollegeGrid />
-              <RecentActivity />
+            
+            <div className="grid gap-8 lg:grid-cols-3">
+              <div className="lg:col-span-2">
+                <CollegeGrid />
+              </div>
+              <div className="space-y-8">
+                <RecommendationsSection />
+                <RecentActivity />
+              </div>
             </div>
           </div>
         </DashboardLayout>
