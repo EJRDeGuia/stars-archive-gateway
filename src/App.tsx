@@ -28,6 +28,7 @@ import Resources from "@/pages/Resources";
 import ManageRecords from "@/pages/ManageRecords";
 import ManageCollections from "@/pages/ManageCollections";
 import UserManagement from "@/pages/UserManagement";
+import AuditLogs from "@/pages/AuditLogs";
 import CollegeManagement from "@/pages/CollegeManagement";
 import AnalyticsDashboard from "@/pages/AnalyticsDashboard";
 import SystemSettings from "@/pages/SystemSettings";
@@ -83,6 +84,7 @@ function App() {
               {/* Admin Routes */}
               <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
               <Route path="/user-management" element={<ProtectedRoute requiredRole="admin"><UserManagement /></ProtectedRoute>} />
+              <Route path="/audit-logs" element={<ProtectedRoute requiredRole="admin"><AuditLogs /></ProtectedRoute>} />
               <Route path="/college-management" element={<ProtectedRoute requiredRole="admin"><CollegeManagement /></ProtectedRoute>} />
               <Route path="/analytics-dashboard" element={<ProtectedRoute requiredRole="admin"><AnalyticsDashboard /></ProtectedRoute>} />
               <Route path="/system-settings" element={<ProtectedRoute requiredRole="admin"><SystemSettings /></ProtectedRoute>} />

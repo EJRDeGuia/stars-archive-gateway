@@ -38,6 +38,15 @@ const AdminDashboard = () => {
       case 'users':
         navigate('/user-management');
         break;
+      case 'audit':
+        navigate('/audit-logs');
+        break;
+      case 'security':
+        navigate('/security-monitor');
+        break;
+      case 'analytics':
+        navigate('/analytics-dashboard');
+        break;
       case 'colleges':
         navigate('/college-management');
         break;
