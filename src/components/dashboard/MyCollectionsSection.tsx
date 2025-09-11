@@ -1,7 +1,7 @@
 
 import { useAuth } from "@/contexts/AuthContext";
-import { useSavedSearches, useSavedConversations } from "@/hooks/useApi";
-import { BookOpen, Search, Heart, MessageCircle } from "lucide-react";
+import { useSavedConversations } from "@/hooks/useApi";
+import { BookOpen, Heart, MessageCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -20,12 +20,6 @@ type Favorite = {
   };
 }
 
-type SavedSearch = {
-  id: string;
-  name: string;
-  query: string;
-  created_at?: string;
-}
 
 export default function MyCollectionsSection() {
   const { user } = useAuth();
@@ -67,7 +61,7 @@ export default function MyCollectionsSection() {
     enabled: !!userId,
   });
 
-  const { data: savedSearches = [] } = useSavedSearches(userId) as { data: SavedSearch[] | undefined };
+  
   const { data: savedConversations = [] } = useSavedConversations(userId);
 
   // Set up real-time subscription for favorites
@@ -132,33 +126,6 @@ export default function MyCollectionsSection() {
               ))}
               {favorites.length > 5 && (
                 <li className="text-xs text-gray-400 mt-1">+{favorites.length - 5} more</li>
-              )}
-            </ul>
-          )}
-        </Card>
-        
-        {/* Saved Searches */}
-        <Card className="p-6 bg-white/95 border border-dlsl-green/15">
-          <div className="flex items-center gap-3 mb-2 font-semibold">
-            <Search className="text-dlsl-green" /> Saved Searches ({savedSearches.length})
-          </div>
-          {savedSearches.length === 0 ? (
-            <div className="text-gray-400 text-sm">No saved searches yet.</div>
-          ) : (
-            <ul className="text-dlsl-green font-medium space-y-1">
-              {savedSearches.slice(0, 5).map((s) => (
-                <li
-                  key={s.id}
-                  className="hover:underline cursor-pointer"
-                  onClick={() =>
-                    navigate(`/explore?q=${encodeURIComponent(s.query)}`)
-                  }
-                >
-                  {s.name} <span className="text-xs text-gray-400">({s.created_at?.slice(0,10)})</span>
-                </li>
-              ))}
-              {savedSearches.length > 5 && (
-                <li className="text-xs text-gray-400 mt-1">+{savedSearches.length - 5} more</li>
               )}
             </ul>
           )}

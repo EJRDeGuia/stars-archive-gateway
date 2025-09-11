@@ -340,63 +340,6 @@ export function useToggleFavorite() {
   });
 }
 
-// Enhanced saved searches with better performance
-export function useSavedSearches(userId: string | undefined) {
-  return useQuery({
-    queryKey: ["saved_searches", userId],
-    queryFn: async () => {
-      if (!userId) return [];
-      const { data, error } = await supabase
-        .from("saved_searches")
-        .select("*")
-        .eq("user_id", userId)
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!userId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-}
-
-export function useSaveSearch() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({
-      userId,
-      name,
-      query,
-      filters,
-    }: { userId: string; name: string; query: string; filters?: any }) => {
-      const { data, error } = await supabase
-        .from("saved_searches")
-        .insert([{ user_id: userId, name: name.trim(), query: query.trim(), filters }])
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["saved_searches"] });
-    },
-  });
-}
-
-export function useDeleteSavedSearch() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("saved_searches")
-        .delete()
-        .eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["saved_searches"] });
-    },
-  });
-}
 
 // Saved conversations hooks
 export function useSavedConversations(userId: string | undefined) {
