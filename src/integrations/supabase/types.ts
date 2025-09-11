@@ -522,6 +522,36 @@ export type Database = {
           },
         ]
       }
+      rate_limits: {
+        Row: {
+          action: string
+          blocked: boolean | null
+          count: number | null
+          created_at: string | null
+          id: string
+          identifier: string
+          window_start: string | null
+        }
+        Insert: {
+          action: string
+          blocked?: boolean | null
+          count?: number | null
+          created_at?: string | null
+          id?: string
+          identifier: string
+          window_start?: string | null
+        }
+        Update: {
+          action?: string
+          blocked?: boolean | null
+          count?: number | null
+          created_at?: string | null
+          id?: string
+          identifier?: string
+          window_start?: string | null
+        }
+        Relationships: []
+      }
       resources_content: {
         Row: {
           category: string | null
@@ -1072,6 +1102,15 @@ export type Database = {
         Args: { _ip_address: unknown }
         Returns: Json
       }
+      check_rate_limit: {
+        Args: {
+          _action: string
+          _identifier: string
+          _limit?: number
+          _window_minutes?: number
+        }
+        Returns: Json
+      }
       create_user_session: {
         Args: {
           _device_fingerprint?: Json
@@ -1088,6 +1127,10 @@ export type Database = {
       detect_user_anomalies: {
         Args: { _user_id: string }
         Returns: undefined
+      }
+      encrypt_sensitive_field: {
+        Args: { _data: string; _key?: string }
+        Returns: string
       }
       enhanced_audit_log: {
         Args: {
