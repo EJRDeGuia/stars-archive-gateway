@@ -8,7 +8,6 @@ import Footer from "@/components/Footer";
 import WelcomeSection from "@/components/dashboard/WelcomeSection";
 import QuickActions from "@/components/dashboard/QuickActions";
 import CollegeGrid from "@/components/dashboard/CollegeGrid";
-import RecentActivity from "@/components/dashboard/RecentActivity";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import SemanticSearchButton from "@/components/dashboard/SemanticSearchButton";
 import { getGreeting } from "@/utils/greetingUtils";
