@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from "@/contexts/AuthContext";
 import { useSaveSearch } from "@/hooks/useApi";
 import SaveSearchModal from "./SaveSearchModal";
+import { useNavigate } from 'react-router-dom';
 
 type Thesis = {
   id: string;
@@ -48,6 +49,7 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
   const { user } = useAuth();
   const [showSaveModal, setShowSaveModal] = useState(false);
   const saveSearch = useSaveSearch();
+  const navigate = useNavigate();
 
   // TRACK THE LAST SEARCH RESULT for improved control
   const lastResult = chat
@@ -258,8 +260,20 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
                 ) : (
                   <div className="flex flex-col gap-4">
                     {item.results!.slice(0, 3).map((thesis, tidx) => (
-                      <div key={tidx} className="border border-slate-100 rounded-lg p-3 bg-slate-50 hover:bg-dlsl-green/5 transition-all cursor-pointer">
-                        <div className="font-bold text-dlsl-green text-md mb-0.5">{thesis.title}</div>
+                      <div 
+                        key={tidx} 
+                        className="border border-slate-100 rounded-lg p-3 bg-slate-50 hover:bg-dlsl-green/5 transition-all cursor-pointer hover:shadow-md hover:border-dlsl-green/30"
+                        onClick={() => navigate(`/thesis/${thesis.id}`)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            navigate(`/thesis/${thesis.id}`);
+                          }
+                        }}
+                      >
+                        <div className="font-bold text-dlsl-green text-md mb-0.5 hover:underline">{thesis.title}</div>
                         <div className="text-xs text-slate-500 mb-0.5">{thesis.author} • {thesis.year} • <span className="">{thesis.college}</span></div>
                         <div className="text-slate-700 text-sm mb-1">{thesis.abstract?.substring(0, 100)}...</div>
                         <div className="flex flex-wrap gap-2 mt-1">
@@ -286,7 +300,19 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
                   </div>
                   <ul className="space-y-1">
                     {item.suggestions.map((s, sidx) => (
-                      <li key={sidx} className="text-sm text-dlsl-green/90 hover:underline cursor-pointer">
+                      <li 
+                        key={sidx} 
+                        className="text-sm text-dlsl-green/90 hover:underline cursor-pointer p-1 rounded hover:bg-dlsl-green/10 transition-colors"
+                        onClick={() => navigate(`/thesis/${s.id}`)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            navigate(`/thesis/${s.id}`);
+                          }
+                        }}
+                      >
                         {s.title}
                         <span className="text-xs text-slate-500 ml-2">
                           ({s.author}, {s.year})
