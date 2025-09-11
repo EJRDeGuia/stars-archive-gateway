@@ -351,6 +351,42 @@ export type Database = {
         }
         Relationships: []
       }
+      ip_reputation: {
+        Row: {
+          blocked: boolean | null
+          created_at: string | null
+          id: string
+          ip_address: unknown
+          last_updated: string | null
+          metadata: Json | null
+          reputation_score: number | null
+          source: string | null
+          threat_types: string[] | null
+        }
+        Insert: {
+          blocked?: boolean | null
+          created_at?: string | null
+          id?: string
+          ip_address: unknown
+          last_updated?: string | null
+          metadata?: Json | null
+          reputation_score?: number | null
+          source?: string | null
+          threat_types?: string[] | null
+        }
+        Update: {
+          blocked?: boolean | null
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown
+          last_updated?: string | null
+          metadata?: Json | null
+          reputation_score?: number | null
+          source?: string | null
+          threat_types?: string[] | null
+        }
+        Relationships: []
+      }
       lrc_approval_requests: {
         Row: {
           expires_at: string | null
@@ -522,6 +558,33 @@ export type Database = {
           section?: string
           title?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      saved_conversations: {
+        Row: {
+          conversation_data: Json
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          conversation_data?: Json
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          conversation_data?: Json
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -1005,6 +1068,10 @@ export type Database = {
           is_blocked: boolean
         }[]
       }
+      check_ip_reputation: {
+        Args: { _ip_address: unknown }
+        Returns: Json
+      }
       create_user_session: {
         Args: {
           _device_fingerprint?: Json
@@ -1021,6 +1088,18 @@ export type Database = {
       detect_user_anomalies: {
         Args: { _user_id: string }
         Returns: undefined
+      }
+      enhanced_audit_log: {
+        Args: {
+          _action: string
+          _additional_metadata?: Json
+          _new_data?: Json
+          _old_data?: Json
+          _resource_id?: string
+          _resource_type: string
+          _risk_level?: string
+        }
+        Returns: string
       }
       get_college_thesis_counts: {
         Args: Record<PropertyKey, never>
@@ -1149,6 +1228,10 @@ export type Database = {
         Args: { _email: string; _ip_address: unknown; _user_agent?: string }
         Returns: undefined
       }
+      mask_sensitive_data: {
+        Args: { _data: string; _mask_type?: string }
+        Returns: string
+      }
       sparsevec_out: {
         Args: { "": unknown }
         Returns: unknown
@@ -1179,6 +1262,14 @@ export type Database = {
           thesis_title: string
           updated_status: Database["public"]["Enums"]["thesis_status"]
         }[]
+      }
+      validate_session_security: {
+        Args: {
+          _current_ip: unknown
+          _current_user_agent: string
+          _session_token: string
+        }
+        Returns: Json
       }
       vector_avg: {
         Args: { "": number[] }
