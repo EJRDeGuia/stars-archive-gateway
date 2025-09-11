@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import { getDashboardPath } from '@/utils/dashboardUtils';
 import ThesisUploadForm from "@/components/ThesisUploadForm";
 import PDFUploadCard from "@/components/PDFUploadCard";
 import { useAuth } from '@/contexts/AuthContext';
@@ -199,7 +200,8 @@ const Upload = () => {
 
       // Navigate back to archivist dashboard after a short delay
       setTimeout(() => {
-        navigate('/archivist');
+        const dashboardPath = getDashboardPath(user?.role);
+        navigate(dashboardPath);
       }, 2000);
 
     } catch (err: any) {
@@ -230,7 +232,10 @@ const Upload = () => {
         <div className="mb-6">
           <Button
             variant="ghost"
-            onClick={() => navigate('/dashboard')}
+            onClick={() => {
+              const dashboardPath = getDashboardPath(user?.role);
+              navigate(dashboardPath);
+            }}
             className="mb-4 text-dlsl-green hover:text-dlsl-green-dark"
             disabled={isSubmitting}
           >
@@ -258,7 +263,10 @@ const Upload = () => {
             departments={departments}
             isExtracting={isExtracting || isSubmitting}
             onSubmit={handleFormSubmit}
-            onCancel={() => navigate("/dashboard")}
+            onCancel={() => {
+              const dashboardPath = getDashboardPath(user?.role);
+              navigate(dashboardPath);
+            }}
           />
         </div>
       </main>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { getDashboardPath } from '@/utils/dashboardUtils';
 import { Button } from '@/components/ui/button';
 import { 
   LogOut, 
@@ -32,6 +33,11 @@ const Header = () => {
     navigate('/');
   };
 
+  const handleDashboardNavigation = () => {
+    const dashboardPath = getDashboardPath(user?.role);
+    navigate(dashboardPath);
+  };
+
   const handleExploreClick = () => {
     navigate('/explore');
   };
@@ -47,7 +53,7 @@ const Header = () => {
           {/* Logo and Nav */}
           <div className="flex items-center">
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={handleDashboardNavigation}
               className="flex items-center hover:opacity-80 transition-all duration-200 group"
             >
               <div className="w-10 h-10 bg-gradient-to-br from-dlsl-green via-dlsl-green-light to-emerald-400 rounded-xl flex items-center justify-center sleek-shadow-lg group-hover:sleek-shadow-xl transition-all duration-200">
@@ -63,7 +69,7 @@ const Header = () => {
                 variant="ghost" 
                 size="sm" 
                 className="text-slate-600 dark:text-gray-200 hover:text-dlsl-green hover:bg-dlsl-green/10 dark:hover:text-dlsl-green dark:hover:bg-dlsl-green/10 rounded-xl px-4 py-2 font-medium transition-all duration-200"
-                onClick={() => navigate('/dashboard')}
+                onClick={handleDashboardNavigation}
               >
                 Dashboard
               </Button>
@@ -130,7 +136,7 @@ const Header = () => {
                   <DropdownMenuLabel className="text-slate-700 font-semibold">My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-slate-200" />
                   <DropdownMenuItem 
-                    onClick={() => navigate('/dashboard')}
+                    onClick={handleDashboardNavigation}
                     className="cursor-pointer hover:bg-dlsl-green/10 hover:text-dlsl-green transition-colors rounded-lg mx-1"
                   >
                     <Home className="mr-3 h-4 w-4" />
@@ -183,7 +189,7 @@ const Header = () => {
             <Button
               variant="ghost"
               onClick={() => {
-                navigate('/dashboard');
+                handleDashboardNavigation();
                 setShowMobileMenu(false);
               }}
               className="w-full justify-start text-slate-600 dark:text-gray-200 hover:text-dlsl-green hover:bg-dlsl-green/10 rounded-xl"

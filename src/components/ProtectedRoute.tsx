@@ -1,6 +1,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
+import { getDashboardPath } from '@/utils/dashboardUtils';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -33,7 +34,7 @@ const ProtectedRoute = ({ children, requiredRole, exactRole = false }: Protected
     if (exactRole) {
       // Exact role matching - user must have the exact required role
       if (user.role !== requiredRole) {
-        return <Navigate to="/dashboard" replace />;
+        return <Navigate to={getDashboardPath(user.role)} replace />;
       }
     } else {
       // Hierarchical role checking (default behavior)
@@ -48,7 +49,7 @@ const ProtectedRoute = ({ children, requiredRole, exactRole = false }: Protected
       const requiredLevel = roleHierarchy[requiredRole] || 1;
       
       if (userLevel < requiredLevel) {
-        return <Navigate to="/dashboard" replace />;
+        return <Navigate to={getDashboardPath(user.role)} replace />;
       }
     }
   }

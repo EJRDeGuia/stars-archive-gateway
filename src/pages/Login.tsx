@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Star, Eye, EyeOff, ArrowLeft, Sparkles } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { getDashboardPath } from '@/utils/dashboardUtils';
 import Footer from '@/components/Footer';
 import { Separator } from '@/components/ui/separator';
 
@@ -33,8 +34,8 @@ const Login = () => {
         title: "Welcome back!",
         description: "Successfully logged in to STARS."
       });
-      // Redirect to role-specific dashboard
-      navigate(result.redirectPath || '/dashboard');
+      // Redirect using a simple fallback approach  
+      navigate('/dashboard');
     } else {
       setError('Invalid email or password');
     }

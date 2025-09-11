@@ -8,7 +8,6 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import TestingModeToggle from "@/components/TestingModeToggle";
 import Index from "@/pages/Index";
 import Login from "@/pages/Login";
-import Dashboard from "@/pages/Dashboard";
 import ThesisDetail from "@/pages/ThesisDetail";
 import Upload from "@/pages/Upload";
 import EnhancedSearch from "@/pages/EnhancedSearch";
@@ -40,6 +39,8 @@ import AboutContentManager from "@/pages/AboutContentManager";
 import ResourcesContentManager from "@/pages/ResourcesContentManager";
 import TeamMembersManager from "@/pages/TeamMembersManager";
 import AnnouncementsManager from "@/pages/AnnouncementsManager";
+import { getDashboardPath } from "@/utils/dashboardUtils";
+import DashboardRedirect from "@/components/DashboardRedirect";
 
 const queryClient = new QueryClient();
 
@@ -59,7 +60,7 @@ function App() {
               <Route path="/resources" element={<Resources />} />
               
               {/* Protected Routes - Core Phase A Features */}
-              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute><DashboardRedirect /></ProtectedRoute>} />
               <Route path="/thesis/:id" element={<ProtectedRoute><ThesisDetail /></ProtectedRoute>} />
               <Route path="/college/:id" element={<ProtectedRoute><CollegePage /></ProtectedRoute>} />
               <Route path="/explore" element={<ProtectedRoute><Explore /></ProtectedRoute>} />
