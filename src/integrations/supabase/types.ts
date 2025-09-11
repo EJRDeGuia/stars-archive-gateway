@@ -125,6 +125,48 @@ export type Database = {
         }
         Relationships: []
       }
+      backup_records: {
+        Row: {
+          backup_location: string | null
+          backup_size_bytes: number | null
+          backup_status: string
+          backup_type: string
+          completed_at: string | null
+          created_at: string | null
+          encryption_status: string | null
+          id: string
+          metadata: Json | null
+          retention_until: string | null
+          verification_hash: string | null
+        }
+        Insert: {
+          backup_location?: string | null
+          backup_size_bytes?: number | null
+          backup_status?: string
+          backup_type: string
+          completed_at?: string | null
+          created_at?: string | null
+          encryption_status?: string | null
+          id?: string
+          metadata?: Json | null
+          retention_until?: string | null
+          verification_hash?: string | null
+        }
+        Update: {
+          backup_location?: string | null
+          backup_size_bytes?: number | null
+          backup_status?: string
+          backup_type?: string
+          completed_at?: string | null
+          created_at?: string | null
+          encryption_status?: string | null
+          id?: string
+          metadata?: Json | null
+          retention_until?: string | null
+          verification_hash?: string | null
+        }
+        Relationships: []
+      }
       collection_theses: {
         Row: {
           added_at: string | null
@@ -255,6 +297,57 @@ export type Database = {
           created_by?: string | null
           id?: string
           version_number?: number
+        }
+        Relationships: []
+      }
+      download_permissions: {
+        Row: {
+          approval_notes: string | null
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string | null
+          download_limit: number | null
+          downloads_used: number | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          justification: string | null
+          permission_level: string
+          thesis_id: string
+          user_id: string
+          watermark_applied: boolean | null
+        }
+        Insert: {
+          approval_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          download_limit?: number | null
+          downloads_used?: number | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          justification?: string | null
+          permission_level?: string
+          thesis_id: string
+          user_id: string
+          watermark_applied?: boolean | null
+        }
+        Update: {
+          approval_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          download_limit?: number | null
+          downloads_used?: number | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          justification?: string | null
+          permission_level?: string
+          thesis_id?: string
+          user_id?: string
+          watermark_applied?: boolean | null
         }
         Relationships: []
       }
@@ -1045,6 +1138,45 @@ export type Database = {
           },
         ]
       }
+      user_permissions: {
+        Row: {
+          expires_at: string | null
+          granted_at: string | null
+          granted_by: string | null
+          id: string
+          is_active: boolean | null
+          metadata: Json | null
+          permission_type: string
+          resource_id: string | null
+          resource_type: string
+          user_id: string
+        }
+        Insert: {
+          expires_at?: string | null
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          permission_type: string
+          resource_id?: string | null
+          resource_type: string
+          user_id: string
+        }
+        Update: {
+          expires_at?: string | null
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          permission_type?: string
+          resource_id?: string | null
+          resource_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -1063,6 +1195,42 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      watermark_records: {
+        Row: {
+          applied_at: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          thesis_id: string
+          user_id: string
+          verification_hash: string | null
+          watermark_data: Json
+          watermark_type: string
+        }
+        Insert: {
+          applied_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          thesis_id: string
+          user_id: string
+          verification_hash?: string | null
+          watermark_data: Json
+          watermark_type?: string
+        }
+        Update: {
+          applied_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          thesis_id?: string
+          user_id?: string
+          verification_hash?: string | null
+          watermark_data?: Json
+          watermark_type?: string
         }
         Relationships: []
       }
@@ -1111,6 +1279,23 @@ export type Database = {
         }
         Returns: Json
       }
+      cleanup_expired_sessions: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      comprehensive_audit_log: {
+        Args: {
+          _action: string
+          _additional_metadata?: Json
+          _compliance_tags?: string[]
+          _new_data?: Json
+          _old_data?: Json
+          _resource_id?: string
+          _resource_type: string
+          _risk_level?: string
+        }
+        Returns: string
+      }
       create_user_session: {
         Args: {
           _device_fingerprint?: Json
@@ -1124,9 +1309,17 @@ export type Database = {
         }
         Returns: string
       }
+      decrypt_data: {
+        Args: { _encrypted_data: string; _key_name?: string }
+        Returns: string
+      }
       detect_user_anomalies: {
         Args: { _user_id: string }
         Returns: undefined
+      }
+      encrypt_data: {
+        Args: { _data: string; _key_name?: string }
+        Returns: string
       }
       encrypt_sensitive_field: {
         Args: { _data: string; _key?: string }
@@ -1143,6 +1336,10 @@ export type Database = {
           _risk_level?: string
         }
         Returns: string
+      }
+      generate_watermark: {
+        Args: { _thesis_id: string; _user_id: string; _watermark_type?: string }
+        Returns: Json
       }
       get_college_thesis_counts: {
         Args: Record<PropertyKey, never>
@@ -1207,6 +1404,15 @@ export type Database = {
       }
       has_elevated_access: {
         Args: { _user_id: string }
+        Returns: boolean
+      }
+      has_permission: {
+        Args: {
+          _permission_type: string
+          _resource_id?: string
+          _resource_type?: string
+          _user_id: string
+        }
         Returns: boolean
       }
       has_role: {
@@ -1306,6 +1512,14 @@ export type Database = {
           updated_status: Database["public"]["Enums"]["thesis_status"]
         }[]
       }
+      validate_download_permission: {
+        Args: {
+          _requested_level?: string
+          _thesis_id: string
+          _user_id: string
+        }
+        Returns: Json
+      }
       validate_session_security: {
         Args: {
           _current_ip: unknown
@@ -1337,6 +1551,10 @@ export type Database = {
       vector_typmod_in: {
         Args: { "": unknown[] }
         Returns: number
+      }
+      verify_backup_integrity: {
+        Args: { _backup_id: string }
+        Returns: Json
       }
     }
     Enums: {
