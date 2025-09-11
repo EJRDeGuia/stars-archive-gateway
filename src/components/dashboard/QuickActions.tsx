@@ -67,14 +67,14 @@ const QuickActions: React.FC<QuickActionsProps> = ({ userRole, onActionClick }) 
   ];
 
   return (
-    <div className="mb-12">
+    <div className="mb-12 animate-fade-in">
       <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Quick Actions</h2>
       <div className="flex justify-center">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl">
           {actions.map((action) => (
             <Card 
               key={action.id}
-              className="hover:shadow-lg transition-all duration-300 cursor-pointer group" 
+              className="group hover-scale shadow-sm transition-all duration-300 cursor-pointer" 
               onClick={() => onActionClick(action.id)}
             >
               <CardContent className="p-6 text-center">

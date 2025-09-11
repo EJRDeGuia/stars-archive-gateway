@@ -100,7 +100,7 @@ export default function MyCollectionsSection() {
       <h2 className="text-xl font-bold mb-4 text-slate-800">My Collections</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Favorites */}
-        <Card className="p-6 bg-white/95 border border-dlsl-green/15">
+        <Card className="p-6 bg-white/95 border border-dlsl-green/15 rounded-xl shadow-sm hover-scale animate-fade-in">
           <div className="flex items-center gap-3 mb-2 font-semibold">
             <Heart className="text-dlsl-green" /> My Library ({favorites.length})
           </div>
@@ -132,7 +132,7 @@ export default function MyCollectionsSection() {
         </Card>
         
         {/* Saved Conversations */}
-        <Card className="p-6 bg-white/95 border border-dlsl-green/15">
+        <Card className="p-6 bg-white/95 border border-dlsl-green/15 rounded-xl shadow-sm hover-scale animate-fade-in">
           <div className="flex items-center gap-3 mb-2 font-semibold">
             <MessageCircle className="text-dlsl-green" /> Saved Conversations ({savedConversations.length})
           </div>

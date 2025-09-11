@@ -78,10 +78,22 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
 
       const { data: { session } } = await supabase.auth.getSession();
 
-      // Treat pdfUrl as a storage path (e.g., 'timestamp_rand_name.pdf')
+      // Normalize pdfUrl to a storage path (e.g., 'timestamp_rand_name.pdf')
+      let storagePath = pdfUrl.trim();
+
+      // If a full public storage URL was provided, extract the path after the bucket prefix
+      const publicPrefix = '/storage/v1/object/public/thesis-pdfs/';
+      if (storagePath.startsWith('http') && storagePath.includes(publicPrefix)) {
+        storagePath = storagePath.split(publicPrefix)[1];
+      }
+      // If the bucket prefix is included, strip it
+      if (storagePath.startsWith('thesis-pdfs/')) {
+        storagePath = storagePath.replace(/^thesis-pdfs\//, '');
+      }
+
       const params = new URLSearchParams();
       params.set('thesisId', thesisId);
-      params.set('path', pdfUrl);
+      params.set('path', storagePath);
 
       setPdfSource({
         url: `https://cylsbcjqemluouxblywl.supabase.co/functions/v1/secure-thesis-access?${params.toString()}`,
