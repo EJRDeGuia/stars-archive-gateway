@@ -16,6 +16,7 @@ import AdminSystemStatus from '@/components/admin/AdminSystemStatus';
 import AdminRecentTheses from '@/components/admin/AdminRecentTheses';
 import ViewsChart from "@/components/analytics/ViewsChart";
 import { useSystemAnalytics } from "@/hooks/useSystemAnalytics";
+import SystemValidation from '@/components/admin/SystemValidation';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -28,27 +29,19 @@ const AdminDashboard = () => {
     navigate(`/college/${collegeId}`);
   };
 
-  const handleBackupDatabase = () => {
-    toast.success('Database backup initiated successfully!');
-    console.log('Database backup started');
-  };
-
   const handleQuickAction = (action: string) => {
     switch (action) {
       case 'users':
         navigate('/user-management');
         break;
-      case 'audit':
-        navigate('/audit-logs');
-        break;
-      case 'security':
-        navigate('/security-monitor');
-        break;
-      case 'analytics':
-        navigate('/analytics-dashboard');
-        break;
       case 'colleges':
         navigate('/college-management');
+        break;
+      case 'manage':
+        navigate('/manage-records');
+        break;
+      case 'backup':
+        navigate('/backup-management');
         break;
       case 'analytics':
         navigate('/analytics-dashboard');
@@ -59,13 +52,9 @@ const AdminDashboard = () => {
       case 'security':
         navigate('/security-monitor');
         break;
-      case 'backup':
-        handleBackupDatabase();
+      case 'audit':
+        navigate('/audit-logs');
         break;
-      case 'manage':
-        navigate('/manage-records');
-        break;
-      // Fix: handle dashboard navigation for unspecified actions gracefully
       default:
         toast.info('Feature coming soon!');
         break;
@@ -119,6 +108,9 @@ const AdminDashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
           <AdminRecentActivity />
           <AdminSystemStatus />
+        </div>
+        <div className="mb-12">
+          <SystemValidation />
         </div>
           <AdminCollegesOverview
             colleges={colleges}

@@ -39,6 +39,7 @@ import AboutContentManager from "@/pages/AboutContentManager";
 import ResourcesContentManager from "@/pages/ResourcesContentManager";
 import TeamMembersManager from "@/pages/TeamMembersManager";
 import AnnouncementsManager from "@/pages/AnnouncementsManager";
+import BackupManagement from "@/pages/BackupManagement";
 import { getDashboardPath } from "@/utils/dashboardUtils";
 import DashboardRedirect from "@/components/DashboardRedirect";
 
@@ -90,6 +91,7 @@ function App() {
               <Route path="/analytics-dashboard" element={<ProtectedRoute requiredRole="admin"><AnalyticsDashboard /></ProtectedRoute>} />
               <Route path="/system-settings" element={<ProtectedRoute requiredRole="admin"><SystemSettings /></ProtectedRoute>} />
               <Route path="/security-monitor" element={<ProtectedRoute requiredRole="admin"><SecurityMonitor /></ProtectedRoute>} />
+              <Route path="/backup-management" element={<ProtectedRoute requiredRole="admin"><BackupManagement /></ProtectedRoute>} />
               
               {/* Phase 5: Content Management Routes */}
               <Route path="/admin/content" element={<ProtectedRoute requiredRole="admin"><ContentManagement /></ProtectedRoute>} />
