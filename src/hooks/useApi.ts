@@ -397,3 +397,82 @@ export function useDeleteSavedSearch() {
     },
   });
 }
+
+// Saved conversations hooks
+export function useSavedConversations(userId: string | undefined) {
+  return useQuery({
+    queryKey: ["saved_conversations", userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      const { data, error } = await (supabase as any)
+        .from("saved_conversations")
+        .select("*")
+        .eq("user_id", userId)
+        .order('updated_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
+export function useSaveConversation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      name,
+      conversation,
+    }: { userId: string; name: string; conversation: any[] }) => {
+      const { data, error } = await (supabase as any)
+        .from("saved_conversations")
+        .insert([{ user_id: userId, name: name.trim(), conversation }])
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["saved_conversations"] });
+    },
+  });
+}
+
+export function useUpdateConversation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      conversation,
+    }: { id: string; conversation: any[] }) => {
+      const { data, error } = await (supabase as any)
+        .from("saved_conversations")
+        .update({ conversation, updated_at: new Date().toISOString() })
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["saved_conversations"] });
+    },
+  });
+}
+
+export function useDeleteConversation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await (supabase as any)
+        .from("saved_conversations")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["saved_conversations"] });
+    },
+  });
+}
