@@ -143,10 +143,9 @@ const Upload = () => {
         throw new Error("No completed file upload found");
       }
 
-      console.log('[Upload] File found, getting URL...');
-      // Get the file URL from storage
-      const fileUrl = UploadService.getFileUrl(completedFile.storagePath);
-      console.log('[Upload] File URL obtained:', fileUrl);
+      console.log('[Upload] File found, using storage path...');
+      // Use the storage path; the secure function will handle authenticated access
+      const fileUrl = completedFile.storagePath;
 
       console.log('[Upload] Calling upload service...');
       // Use the upload service for optimized thesis insertion

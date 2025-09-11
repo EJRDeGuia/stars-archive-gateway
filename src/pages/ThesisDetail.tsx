@@ -277,7 +277,7 @@ const ThesisDetail = () => {
                   {canViewPDF && thesis.file_url ? (
                     <div className="border border-gray-200 rounded-xl overflow-hidden">
                       <PDFViewer
-                        pdfUrl={getPublicPdfUrl(thesis.file_url)}
+                        pdfUrl={thesis.file_url}
                         title={thesis.title}
                         canView={canViewPDF}
                         maxPages={10}
@@ -390,7 +390,7 @@ const ThesisDetail = () => {
         <ThesisPDFPreviewDialog
           open={showPreview}
           onOpenChange={setShowPreview}
-          pdfUrl={getPublicPdfUrl(thesis.file_url)}
+          pdfUrl={thesis.file_url}
           title={thesis.title}
           author={thesis.author}
           year={thesisYearString}

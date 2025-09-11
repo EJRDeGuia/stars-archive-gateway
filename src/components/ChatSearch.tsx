@@ -6,8 +6,7 @@ import { Send, Sparkles, Loader, User, Bot, Lightbulb, Save, FolderOpen, Trash2 
 import { semanticSearchService } from '@/services/semanticSearch';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from "@/contexts/AuthContext";
-import { useSaveSearch, useSavedConversations, useSaveConversation, useUpdateConversation, useDeleteConversation } from "@/hooks/useApi";
-import SaveSearchModal from "./SaveSearchModal";
+import { useSavedConversations, useSaveConversation, useUpdateConversation, useDeleteConversation } from "@/hooks/useApi";
 import SaveConversationModal from "./SaveConversationModal";
 import LoadConversationModal from "./LoadConversationModal";
 import { useNavigate } from 'react-router-dom';
@@ -49,7 +48,6 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
   const { toast } = useToast();
   const chatEndRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
-  const [showSaveModal, setShowSaveModal] = useState(false);
   const [showSaveConversationModal, setShowSaveConversationModal] = useState(false);
   const [showLoadConversationModal, setShowLoadConversationModal] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);

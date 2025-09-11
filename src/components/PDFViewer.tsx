@@ -52,23 +52,39 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         return;
       }
       
-      // If it's a demo PDF or public URL, use it directly
-      if (pdfUrl.startsWith('/demo-pdfs/') || pdfUrl.includes('/storage/v1/object/public/') || pdfUrl.startsWith('http')) {
+      // If it's a demo PDF or a public URL, use it directly
+      if (pdfUrl.startsWith('/demo-pdfs/')) {
         setPdfSource(pdfUrl);
         return;
       }
-      
-      // For secure PDFs, use the edge function with authorization
+
+      // If the URL is already pointing to our secure edge function, attach auth headers
+      if (pdfUrl.startsWith('http') && pdfUrl.includes('/functions/v1/secure-thesis-access')) {
+        const { data: { session } } = await supabase.auth.getSession();
+        setPdfSource({
+          url: pdfUrl,
+          httpHeaders: {
+            'Authorization': `Bearer ${session?.access_token || ''}`,
+          }
+        });
+        return;
+      }
+
+      // For private PDFs stored in Supabase storage, use the edge function with authorization
       if (!thesisId || !user) {
         setPdfSource(null);
         return;
       }
-      
-      // Get the current session to access the JWT token
+
       const { data: { session } } = await supabase.auth.getSession();
-      
+
+      // Treat pdfUrl as a storage path (e.g., 'timestamp_rand_name.pdf')
+      const params = new URLSearchParams();
+      params.set('thesisId', thesisId);
+      params.set('path', pdfUrl);
+
       setPdfSource({
-        url: `https://cylsbcjqemluouxblywl.supabase.co/functions/v1/secure-thesis-access?thesisId=${thesisId}`,
+        url: `https://cylsbcjqemluouxblywl.supabase.co/functions/v1/secure-thesis-access?${params.toString()}`,
         httpHeaders: {
           'Authorization': `Bearer ${session?.access_token || ''}`,
         }

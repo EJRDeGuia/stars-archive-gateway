@@ -92,10 +92,13 @@ serve(async (req) => {
       );
     }
 
-    // Get the thesis file from storage
+    // Determine storage path
+    const path = url.searchParams.get('path');
+
+    // Get the thesis file from storage (prefer explicit path if provided)
     const { data: fileData, error: downloadError } = await supabaseClient.storage
       .from('thesis-pdfs')
-      .download(`${thesisId}.pdf`);
+      .download(path || `${thesisId}.pdf`);
 
     if (downloadError) {
       console.error('File download failed:', downloadError);
