@@ -1,233 +1,211 @@
-import { serve } from "https://deno.land/std@0.208.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+interface BackupManagerRequest {
+  action: 'create_backup' | 'verify_backup' | 'restore_backup' | 'list_backups' | 'cleanup_old_backups';
+  data?: {
+    backupType?: 'full' | 'incremental' | 'config_only';
+    backupId?: string;
+  };
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: req.headers.get('Authorization')! },
+        },
+      }
+    );
 
-    const { action, data } = await req.json();
-    
-    console.log(`Backup manager action: ${action}`);
+    const { action, data = {} }: BackupManagerRequest = await req.json();
 
     switch (action) {
       case 'create_backup': {
-        const { backupType = 'incremental', retentionDays = 30 } = data;
+        const { backupType = 'incremental' } = data;
         
-        // Simulate backup creation (in production, implement actual backup)
-        const backupId = crypto.randomUUID();
-        const backupSize = Math.floor(Math.random() * 1000000000); // Random size for simulation
-        const verificationHash = await crypto.subtle.digest(
-          'SHA-256', 
-          new TextEncoder().encode(`backup-${backupId}-${Date.now()}`)
-        );
-        
-        // Record backup in database
-        const { data: backupRecord, error } = await supabase
+        // Simulate backup creation with realistic data
+        const backupRecord = {
+          backup_type: backupType,
+          backup_status: 'completed',
+          backup_size_bytes: Math.floor(Math.random() * 1000000000) + 100000000, // 100MB to 1GB
+          backup_location: `s3://dlsl-backups/backup_${Date.now()}.sql.gz`,
+          verification_hash: crypto.randomUUID(),
+          retention_until: new Date(Date.now() + (30 * 24 * 60 * 60 * 1000)).toISOString(), // 30 days
+        };
+
+        const { data: backup, error } = await supabaseClient
           .from('backup_records')
-          .insert({
-            id: backupId,
-            backup_type: backupType,
-            backup_status: 'completed',
-            backup_size_bytes: backupSize,
-            backup_location: `encrypted-storage://backups/${backupId}`,
-            encryption_status: 'encrypted',
-            verification_hash: Array.from(new Uint8Array(verificationHash))
-              .map(b => b.toString(16).padStart(2, '0')).join(''),
-            completed_at: new Date().toISOString(),
-            retention_until: new Date(Date.now() + retentionDays * 24 * 60 * 60 * 1000).toISOString(),
-            metadata: {
-              backup_method: 'automated',
-              compression_ratio: 0.75,
-              encryption_algorithm: 'AES-256-GCM'
-            }
-          })
+          .insert([backupRecord])
           .select()
           .single();
 
-        if (error) {
-          console.error('Backup record creation error:', error);
-          return new Response(
-            JSON.stringify({ error: 'Failed to record backup' }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-          );
-        }
+        if (error) throw error;
 
-        console.log(`Backup created successfully: ${backupId}`);
+        // Log the backup creation
+        await supabaseClient.rpc('comprehensive_audit_log', {
+          _action: 'backup_created',
+          _resource_type: 'system',
+          _resource_id: backup.id,
+          _risk_level: 'medium',
+          _compliance_tags: ['backup_management', 'data_protection'],
+          _additional_metadata: { backup_type: backupType, backup_size: backupRecord.backup_size_bytes }
+        });
 
-        return new Response(
-          JSON.stringify({
-            success: true,
-            backup: backupRecord
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return new Response(JSON.stringify({
+          success: true,
+          message: `${backupType} backup created successfully`,
+          backup: backup
+        }), {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       }
 
       case 'verify_backup': {
         const { backupId } = data;
-        
-        const { data: verification, error } = await supabase
-          .rpc('verify_backup_integrity', { _backup_id: backupId });
-
-        if (error) {
-          console.error('Backup verification error:', error);
-          return new Response(
-            JSON.stringify({ error: 'Backup verification failed' }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-          );
+        if (!backupId) {
+          throw new Error('Backup ID is required for verification');
         }
 
-        return new Response(
-          JSON.stringify({
-            success: true,
-            verification
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        const { data: result, error } = await supabaseClient
+          .rpc('verify_backup_integrity', { _backup_id: backupId });
+
+        if (error) throw error;
+
+        return new Response(JSON.stringify({
+          success: true,
+          verification: result
+        }), {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       }
 
       case 'restore_backup': {
-        const { backupId, targetEnvironment = 'current' } = data;
-        
-        // Check admin permissions
-        const authHeader = req.headers.get('Authorization');
-        if (!authHeader) {
-          return new Response(
-            JSON.stringify({ error: 'Authentication required' }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
-          );
+        const { backupId } = data;
+        if (!backupId) {
+          throw new Error('Backup ID is required for restore');
         }
 
-        const { data: { user } } = await supabase.auth.getUser(
-          authHeader.replace('Bearer ', '')
-        );
-
+        // Check user permissions (admin only)
+        const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) {
-          return new Response(
-            JSON.stringify({ error: 'Invalid authentication' }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
-          );
+          throw new Error('Authentication required');
         }
 
-        // Verify admin role
-        const { data: userRole } = await supabase
+        const { data: userRole, error: roleError } = await supabaseClient
           .from('user_roles')
           .select('role')
           .eq('user_id', user.id)
+          .eq('role', 'admin')
           .single();
 
-        if (userRole?.role !== 'admin') {
-          return new Response(
-            JSON.stringify({ error: 'Admin privileges required' }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
-          );
+        if (roleError || !userRole) {
+          throw new Error('Admin privileges required for backup restoration');
         }
 
-        // Simulate backup restoration (in production, implement actual restore)
-        const restoreId = crypto.randomUUID();
-        
-        // Log critical action
-        await supabase.rpc('comprehensive_audit_log', {
+        // Log restore initiation
+        await supabaseClient.rpc('comprehensive_audit_log', {
           _action: 'backup_restore_initiated',
           _resource_type: 'system',
           _resource_id: backupId,
-          _new_data: {
-            backup_id: backupId,
-            target_environment: targetEnvironment,
-            restore_id: restoreId,
-            initiated_by: user.id
-          },
           _risk_level: 'critical',
-          _compliance_tags: ['backup_management', 'disaster_recovery', 'system_restore']
+          _compliance_tags: ['backup_restoration', 'system_recovery'],
+          _additional_metadata: { initiated_by: user.id }
         });
 
-        console.log(`Backup restoration initiated: ${restoreId} from backup ${backupId}`);
-
-        return new Response(
-          JSON.stringify({
-            success: true,
-            restore_id: restoreId,
-            status: 'restore_initiated',
-            estimated_completion: new Date(Date.now() + 30 * 60 * 1000).toISOString()
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        // In a real implementation, this would trigger the actual restore process
+        return new Response(JSON.stringify({
+          success: true,
+          message: 'Backup restoration initiated. This process may take several minutes.',
+          status: 'initiated'
+        }), {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       }
 
       case 'list_backups': {
-        const { data: backups, error } = await supabase
+        const { data: backups, error } = await supabaseClient
           .from('backup_records')
           .select('*')
           .order('created_at', { ascending: false })
           .limit(20);
 
-        if (error) {
-          console.error('Backup listing error:', error);
-          return new Response(
-            JSON.stringify({ error: 'Failed to list backups' }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-          );
-        }
+        if (error) throw error;
 
-        return new Response(
-          JSON.stringify({
-            success: true,
-            backups
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return new Response(JSON.stringify({
+          success: true,
+          backups: backups || []
+        }), {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       }
 
       case 'cleanup_old_backups': {
-        // Clean up backups past retention period
-        const { data: expiredBackups, error: cleanupError } = await supabase
+        const { data: deletedBackups, error } = await supabaseClient
           .from('backup_records')
           .delete()
           .lt('retention_until', new Date().toISOString())
           .select();
 
-        if (cleanupError) {
-          console.error('Backup cleanup error:', cleanupError);
-          return new Response(
-            JSON.stringify({ error: 'Backup cleanup failed' }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-          );
+        if (error) throw error;
+
+        const deletedCount = deletedBackups?.length || 0;
+
+        // Log cleanup activity
+        if (deletedCount > 0) {
+          await supabaseClient.rpc('comprehensive_audit_log', {
+            _action: 'backup_cleanup',
+            _resource_type: 'system',
+            _risk_level: 'low',
+            _compliance_tags: ['backup_management', 'data_retention'],
+            _additional_metadata: { deleted_backups: deletedCount }
+          });
         }
 
-        console.log(`Cleaned up ${expiredBackups?.length || 0} expired backups`);
-
-        return new Response(
-          JSON.stringify({
-            success: true,
-            cleaned_count: expiredBackups?.length || 0
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return new Response(JSON.stringify({
+          success: true,
+          message: `Cleaned up ${deletedCount} expired backups`,
+          deletedCount
+        }), {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       }
 
       default:
-        return new Response(
-          JSON.stringify({ error: 'Invalid action' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-        );
+        return new Response(JSON.stringify({
+          success: false,
+          message: 'Invalid action specified'
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
     }
-
-  } catch (error) {
+  } catch (error: any) {
     console.error('Backup manager error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-    );
+    return new Response(JSON.stringify({
+      success: false,
+      message: error.message || 'Internal server error'
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });

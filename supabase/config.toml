@@ -17,3 +17,12 @@ verify_jwt = false
 
 [functions.advanced-search]
 verify_jwt = false
+
+[functions.backup-manager]
+verify_jwt = true
+
+[functions.security-report-generator]
+verify_jwt = true
+
+[functions.notification-manager]
+verify_jwt = true

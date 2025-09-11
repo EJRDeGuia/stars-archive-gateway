@@ -92,34 +92,40 @@ export type Database = {
       audit_logs: {
         Row: {
           action: string
+          category: string | null
           created_at: string | null
           details: Json | null
           id: string
           ip_address: unknown | null
           resource_id: string | null
           resource_type: string
+          severity: string | null
           user_agent: string | null
           user_id: string | null
         }
         Insert: {
           action: string
+          category?: string | null
           created_at?: string | null
           details?: Json | null
           id?: string
           ip_address?: unknown | null
           resource_id?: string | null
           resource_type: string
+          severity?: string | null
           user_agent?: string | null
           user_id?: string | null
         }
         Update: {
           action?: string
+          category?: string | null
           created_at?: string | null
           details?: Json | null
           id?: string
           ip_address?: unknown | null
           resource_id?: string | null
           resource_type?: string
+          severity?: string | null
           user_agent?: string | null
           user_id?: string | null
         }
@@ -828,6 +834,39 @@ export type Database = {
         }
         Relationships: []
       }
+      system_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          setting_description: string | null
+          setting_key: string
+          setting_label: string
+          setting_type: string
+          setting_value: Json
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          setting_description?: string | null
+          setting_key: string
+          setting_label: string
+          setting_type?: string
+          setting_value: Json
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          setting_description?: string | null
+          setting_key?: string
+          setting_label?: string
+          setting_type?: string
+          setting_value?: Json
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       system_statistics: {
         Row: {
           id: string
@@ -1296,6 +1335,16 @@ export type Database = {
         }
         Returns: string
       }
+      create_system_notification: {
+        Args: {
+          _expires_at?: string
+          _message: string
+          _target_roles?: string[]
+          _title: string
+          _type?: string
+        }
+        Returns: string
+      }
       create_user_session: {
         Args: {
           _device_fingerprint?: Json
@@ -1336,6 +1385,10 @@ export type Database = {
           _risk_level?: string
         }
         Returns: string
+      }
+      generate_security_report: {
+        Args: { _end_date?: string; _start_date?: string }
+        Returns: Json
       }
       generate_watermark: {
         Args: { _thesis_id: string; _user_id: string; _watermark_type?: string }

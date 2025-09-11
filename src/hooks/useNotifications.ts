@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 export interface Notification {
   id: string;
@@ -15,38 +17,85 @@ export interface Notification {
 
 export const useNotifications = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
-  // Fetch notifications for current user
+  // Fetch notifications for current user with role-based filtering
   const { data: notifications = [], isLoading, error } = useQuery({
-    queryKey: ['notifications'],
+    queryKey: ['notifications', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .order('created_at', { ascending: false });
+      if (!user) return [];
+      
+      const { data, error } = await supabase.functions.invoke('notification-manager', {
+        body: { action: 'get_notifications' }
+      });
       
       if (error) throw error;
-      return data as Notification[];
-    }
+      if (!data.success) throw new Error(data.message);
+      
+      return data.notifications as Notification[];
+    },
+    enabled: !!user
   });
 
-  // Create notification
+  // Create notification for specific users
   const createNotification = useMutation({
-    mutationFn: async (notification: Omit<Notification, 'id' | 'user_id' | 'created_at' | 'is_read'>) => {
-      const { data, error } = await supabase
-        .from('notifications')
-        .insert([{
-          ...notification,
-          user_id: (await supabase.auth.getUser()).data.user?.id
-        }])
-        .select()
-        .single();
+    mutationFn: async (params: {
+      title: string;
+      message: string;
+      type?: 'info' | 'success' | 'warning' | 'error';
+      targetUsers?: string[];
+      targetRoles?: string[];
+      expiresAt?: string;
+      metadata?: any;
+    }) => {
+      const { data, error } = await supabase.functions.invoke('notification-manager', {
+        body: { 
+          action: 'create_notification',
+          data: params
+        }
+      });
       
       if (error) throw error;
+      if (!data.success) throw new Error(data.message);
+      
       return data;
     },
     onSuccess: () => {
+      toast.success('Notification created successfully');
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to create notification: ${error.message}`);
+    }
+  });
+
+  // Broadcast notification (admin/archivist only)
+  const broadcastNotification = useMutation({
+    mutationFn: async (params: {
+      title: string;
+      message: string;
+      type?: 'info' | 'success' | 'warning' | 'error';
+      expiresAt?: string;
+      metadata?: any;
+    }) => {
+      const { data, error } = await supabase.functions.invoke('notification-manager', {
+        body: { 
+          action: 'broadcast_notification',
+          data: params
+        }
+      });
+      
+      if (error) throw error;
+      if (!data.success) throw new Error(data.message);
+      
+      return data;
+    },
+    onSuccess: () => {
+      toast.success('Broadcast notification sent successfully');
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to broadcast notification: ${error.message}`);
     }
   });
 
@@ -103,9 +152,12 @@ export const useNotifications = () => {
     unreadCount,
     isLoading,
     error,
-    createNotification,
+    createNotification: createNotification.mutate,
+    broadcastNotification: broadcastNotification.mutate,
     markAsRead,
     markAllAsRead,
-    deleteNotification
+    deleteNotification,
+    isCreating: createNotification.isPending,
+    isBroadcasting: broadcastNotification.isPending,
   };
 };

@@ -112,14 +112,14 @@ const AdminDashboard = () => {
             />
           </div>
 
-          <AdminStatsGrid />
-          <div className="mb-12">
-            <AdminQuickActions onActionClick={handleQuickAction} />
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-            <AdminRecentActivity />
-            <AdminSystemStatus />
-          </div>
+        <AdminStatsGrid />
+        <div className="mb-12">
+          <AdminQuickActions onActionClick={handleQuickAction} />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+          <AdminRecentActivity />
+          <AdminSystemStatus />
+        </div>
           <AdminCollegesOverview
             colleges={colleges}
             collegesLoading={collegesLoading}
