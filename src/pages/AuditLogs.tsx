@@ -23,7 +23,7 @@ import {
   AlertTriangle,
   Shield,
   Download,
-  Refresh,
+  RefreshCw,
   Clock,
   MapPin,
   Eye,
@@ -167,7 +167,7 @@ const AuditLogs: React.FC = () => {
         ip_address: log.ip_address as string || null,
         user_agent: log.user_agent || '',
         details: log.details || {},
-        severity: log.severity || 'low',
+        severity: (log.severity || 'low') as 'low' | 'medium' | 'high' | 'critical',
         category: log.category || 'general'
       }));
 
@@ -310,7 +310,7 @@ const AuditLogs: React.FC = () => {
                   onClick={loadAuditLogs}
                   disabled={loading}
                 >
-                  <Refresh className="w-4 h-4" />
+                  <RefreshCw className="w-4 h-4" />
                 </Button>
               </div>
             </div>

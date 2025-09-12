@@ -1516,14 +1516,25 @@ export type Database = {
         Returns: unknown
       }
       log_audit_event: {
-        Args: {
-          _action: string
-          _details?: Json
-          _ip_address?: unknown
-          _resource_id?: string
-          _resource_type: string
-          _user_agent?: string
-        }
+        Args:
+          | {
+              _action: string
+              _category?: string
+              _details?: Json
+              _ip_address?: string
+              _resource_id?: string
+              _resource_type: string
+              _severity?: string
+              _user_agent?: string
+            }
+          | {
+              _action: string
+              _details?: Json
+              _ip_address?: unknown
+              _resource_id?: string
+              _resource_type: string
+              _user_agent?: string
+            }
         Returns: string
       }
       log_failed_login: {
