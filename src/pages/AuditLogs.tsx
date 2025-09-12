@@ -32,7 +32,7 @@ import {
 
 interface AuditLog {
   id: string;
-  user_id: string;
+  user_id: string | null;
   action: string;
   resource_type: string;
   resource_id: string | null;
@@ -162,13 +162,18 @@ const AuditLogs: React.FC = () => {
         return;
       }
 
-      const processedLogs = (data || []).map(log => ({
+      const processedLogs: AuditLog[] = (data || []).map(log => ({
         ...log,
-        ip_address: log.ip_address as string || null,
+        ip_address: (log.ip_address as string) || null,
         user_agent: log.user_agent || '',
         details: log.details || {},
-        severity: (log.severity || 'low') as 'low' | 'medium' | 'high' | 'critical',
-        category: log.category || 'general'
+        severity: (['low', 'medium', 'high', 'critical'].includes(log.severity) 
+          ? log.severity 
+          : 'low') as 'low' | 'medium' | 'high' | 'critical',
+        category: log.category || 'general',
+        user_id: log.user_id || null,
+        resource_id: log.resource_id || null,
+        created_at: log.created_at || new Date().toISOString()
       }));
 
       setLogs(processedLogs);
