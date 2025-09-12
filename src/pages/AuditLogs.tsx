@@ -7,9 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, format, subDays, startOfDay, endOfDay } from 'date-fns';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   FileText,
   Search,
@@ -20,7 +22,12 @@ import {
   Activity,
   AlertTriangle,
   Shield,
-  Download
+  Download,
+  Refresh,
+  Clock,
+  MapPin,
+  Eye,
+  AlertCircle
 } from 'lucide-react';
 
 interface AuditLog {
@@ -33,23 +40,80 @@ interface AuditLog {
   ip_address: string | null;
   user_agent: string;
   created_at: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  category: string;
 }
 
 const AuditLogs: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [actionFilter, setActionFilter] = useState('all');
   const [resourceFilter, setResourceFilter] = useState('all');
+  const [severityFilter, setSeverityFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('all');
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [realTimeEnabled, setRealTimeEnabled] = useState(true);
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
-  const logsPerPage = 50;
+  const logsPerPage = 25;
 
   useEffect(() => {
     loadAuditLogs();
-  }, [page, actionFilter, resourceFilter, searchQuery]);
+  }, [page, actionFilter, resourceFilter, severityFilter, categoryFilter, dateFilter, searchQuery]);
+
+  // Real-time subscription for new audit logs
+  useEffect(() => {
+    if (!realTimeEnabled || !user) return;
+
+    const channel = supabase
+      .channel('audit-logs-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'audit_logs'
+        },
+        (payload) => {
+          const newLog = payload.new as AuditLog;
+          setLogs(prevLogs => {
+            const exists = prevLogs.find(log => log.id === newLog.id);
+            if (exists) return prevLogs;
+            return [newLog, ...prevLogs.slice(0, logsPerPage - 1)];
+          });
+          setLastRefresh(new Date());
+          toast.info('New audit log entry detected', {
+            description: `${newLog.action} on ${newLog.resource_type}`,
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [realTimeEnabled, user, logsPerPage]);
+
+  const getDateRange = (filter: string) => {
+    const now = new Date();
+    switch (filter) {
+      case 'today':
+        return [startOfDay(now), endOfDay(now)];
+      case 'yesterday':
+        return [startOfDay(subDays(now, 1)), endOfDay(subDays(now, 1))];
+      case 'week':
+        return [startOfDay(subDays(now, 7)), endOfDay(now)];
+      case 'month':
+        return [startOfDay(subDays(now, 30)), endOfDay(now)];
+      default:
+        return null;
+    }
+  };
 
   const loadAuditLogs = async () => {
     try {
@@ -63,15 +127,31 @@ const AuditLogs: React.FC = () => {
 
       // Apply filters
       if (actionFilter !== 'all') {
-        query = query.eq('action', actionFilter);
+        query = query.ilike('action', `%${actionFilter}%`);
       }
 
       if (resourceFilter !== 'all') {
         query = query.eq('resource_type', resourceFilter);
       }
 
+      if (severityFilter !== 'all') {
+        query = query.eq('severity', severityFilter);
+      }
+
+      if (categoryFilter !== 'all') {
+        query = query.eq('category', categoryFilter);
+      }
+
+      if (dateFilter !== 'all') {
+        const dateRange = getDateRange(dateFilter);
+        if (dateRange) {
+          query = query.gte('created_at', dateRange[0].toISOString())
+                       .lte('created_at', dateRange[1].toISOString());
+        }
+      }
+
       if (searchQuery) {
-        query = query.or(`action.ilike.%${searchQuery}%,resource_type.ilike.%${searchQuery}%,ip_address.ilike.%${searchQuery}%`);
+        query = query.or(`action.ilike.%${searchQuery}%,resource_type.ilike.%${searchQuery}%,ip_address.ilike.%${searchQuery}%,user_id.ilike.%${searchQuery}%`);
       }
 
       const { data, error, count } = await query;
@@ -82,13 +162,18 @@ const AuditLogs: React.FC = () => {
         return;
       }
 
-      setLogs((data || []).map(log => ({
+      const processedLogs = (data || []).map(log => ({
         ...log,
         ip_address: log.ip_address as string || null,
         user_agent: log.user_agent || '',
-        details: log.details || {}
-      })));
+        details: log.details || {},
+        severity: log.severity || 'low',
+        category: log.category || 'general'
+      }));
+
+      setLogs(processedLogs);
       setTotalCount(count || 0);
+      setLastRefresh(new Date());
     } catch (error) {
       console.error('Error loading audit logs:', error);
       toast.error('Failed to load audit logs');
@@ -140,6 +225,21 @@ const AuditLogs: React.FC = () => {
     }
   };
 
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'critical':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'high':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'low':
+        return 'bg-green-100 text-green-800 border-green-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
   const getActionBadgeColor = (action: string) => {
     if (action.includes('delete') || action.includes('unauthorized') || action.includes('failed')) {
       return 'bg-red-100 text-red-800 border-red-200';
@@ -188,9 +288,9 @@ const AuditLogs: React.FC = () => {
       
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
-          {/* Header */}
+            {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center justify-between mb-6">
               <Button
                 variant="outline"
                 onClick={() => navigate('/admin')}
@@ -199,6 +299,20 @@ const AuditLogs: React.FC = () => {
                 <ArrowLeft className="w-4 h-4" />
                 Back to Admin Dashboard
               </Button>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <Clock className="w-4 h-4" />
+                  Last updated: {format(lastRefresh, 'HH:mm:ss')}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={loadAuditLogs}
+                  disabled={loading}
+                >
+                  <Refresh className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
             
             <div className="flex items-center gap-3 mb-6">
@@ -207,22 +321,44 @@ const AuditLogs: React.FC = () => {
               </div>
               <div>
                 <h1 className="text-4xl font-bold text-gray-900">Audit Logs</h1>
-                <p className="text-xl text-gray-600">System activity monitoring and compliance</p>
+                <p className="text-xl text-gray-600">Comprehensive system activity monitoring and compliance</p>
               </div>
             </div>
+
+            {/* Real-time Status */}
+            <Alert className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="flex items-center justify-between">
+                <span>
+                  Real-time monitoring: <strong className="text-dlsl-green">Active</strong>
+                  {' '}• Total logs: <strong>{totalCount.toLocaleString()}</strong>
+                  {' '}• Showing page {page} of {Math.ceil(totalCount / logsPerPage)}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setRealTimeEnabled(!realTimeEnabled)}
+                >
+                  {realTimeEnabled ? 'Disable' : 'Enable'} Real-time
+                </Button>
+              </AlertDescription>
+            </Alert>
           </div>
 
-          {/* Filters */}
+          {/* Advanced Filters */}
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>Filter Logs</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Filter className="w-5 h-5" />
+                Advanced Filters
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col lg:flex-row gap-4">
-                <div className="flex-1 relative">
+              <div className="grid grid-cols-1 lg:grid-cols-6 gap-4">
+                <div className="lg:col-span-2 relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <Input
-                    placeholder="Search by action, resource type, or IP address..."
+                    placeholder="Search by action, resource, IP, or user ID..."
                     className="pl-10"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -230,7 +366,7 @@ const AuditLogs: React.FC = () => {
                 </div>
                 
                 <Select value={actionFilter} onValueChange={setActionFilter}>
-                  <SelectTrigger className="w-40">
+                  <SelectTrigger>
                     <SelectValue placeholder="Action" />
                   </SelectTrigger>
                   <SelectContent>
@@ -242,11 +378,12 @@ const AuditLogs: React.FC = () => {
                     <SelectItem value="delete">Delete</SelectItem>
                     <SelectItem value="upload">Upload</SelectItem>
                     <SelectItem value="download">Download</SelectItem>
+                    <SelectItem value="failed">Failed Attempts</SelectItem>
                   </SelectContent>
                 </Select>
 
                 <Select value={resourceFilter} onValueChange={setResourceFilter}>
-                  <SelectTrigger className="w-40">
+                  <SelectTrigger>
                     <SelectValue placeholder="Resource" />
                   </SelectTrigger>
                   <SelectContent>
@@ -255,12 +392,55 @@ const AuditLogs: React.FC = () => {
                     <SelectItem value="user">User</SelectItem>
                     <SelectItem value="system">System</SelectItem>
                     <SelectItem value="collection">Collection</SelectItem>
+                    <SelectItem value="security">Security</SelectItem>
                   </SelectContent>
                 </Select>
 
+                <Select value={severityFilter} onValueChange={setSeverityFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Severity" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Levels</SelectItem>
+                    <SelectItem value="critical">Critical</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={dateFilter} onValueChange={setDateFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Time Range" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Time</SelectItem>
+                    <SelectItem value="today">Today</SelectItem>
+                    <SelectItem value="yesterday">Yesterday</SelectItem>
+                    <SelectItem value="week">Last 7 Days</SelectItem>
+                    <SelectItem value="month">Last 30 Days</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex gap-2 mt-4">
                 <Button onClick={exportLogs} className="bg-dlsl-green hover:bg-dlsl-green/90">
                   <Download className="w-4 h-4 mr-2" />
-                  Export
+                  Export CSV
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setSearchQuery('');
+                    setActionFilter('all');
+                    setResourceFilter('all');
+                    setSeverityFilter('all');
+                    setCategoryFilter('all');
+                    setDateFilter('all');
+                    setPage(1);
+                  }}
+                >
+                  Clear Filters
                 </Button>
               </div>
             </CardContent>
@@ -286,16 +466,28 @@ const AuditLogs: React.FC = () => {
                   {logs.map((log) => (
                     <div
                       key={log.id}
-                      className="flex items-start gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+                      className={`flex items-start gap-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors ${
+                        log.severity === 'critical' || log.severity === 'high' 
+                          ? 'border-red-200 bg-red-50/30' 
+                          : 'border-gray-200'
+                      }`}
                     >
-                      <div className="w-8 h-8 bg-dlsl-green/10 rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        log.severity === 'critical' ? 'bg-red-100' :
+                        log.severity === 'high' ? 'bg-orange-100' :
+                        log.severity === 'medium' ? 'bg-yellow-100' :
+                        'bg-dlsl-green/10'
+                      }`}>
                         {getResourceIcon(log.resource_type)}
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-2">
+                        <div className="flex items-center gap-3 mb-2 flex-wrap">
                           <Badge className={getActionBadgeColor(log.action)}>
                             {log.action}
+                          </Badge>
+                          <Badge className={getSeverityColor(log.severity)}>
+                            {log.severity.toUpperCase()}
                           </Badge>
                           <span className="text-sm text-gray-600">
                             {log.resource_type}
@@ -308,21 +500,41 @@ const AuditLogs: React.FC = () => {
                         </div>
 
                         <div className="text-sm text-gray-900 mb-1">
-                          User: <span className="font-mono text-xs">{log.user_id}</span>
+                          <User className="w-3 h-3 inline mr-1" />
+                          User: <span className="font-mono text-xs">{log.user_id?.substring(0, 8)}...</span>
                         </div>
 
                         <div className="text-xs text-gray-500 mb-2">
                           <Calendar className="w-3 h-3 inline mr-1" />
                           {formatDistanceToNow(new Date(log.created_at))} ago
-                          <span className="ml-4">IP: {log.ip_address}</span>
+                          {' '}({format(new Date(log.created_at), 'MMM dd, HH:mm:ss')})
+                          {log.ip_address && (
+                            <>
+                              <MapPin className="w-3 h-3 inline ml-4 mr-1" />
+                              IP: {log.ip_address}
+                            </>
+                          )}
                         </div>
+
+                        {log.user_agent && (
+                          <div className="text-xs text-gray-500 mb-2 truncate">
+                            Browser: {log.user_agent}
+                          </div>
+                        )}
+
+                        {log.category && log.category !== 'general' && (
+                          <Badge variant="outline" className="mr-2 mb-2">
+                            {log.category}
+                          </Badge>
+                        )}
 
                         {log.details && Object.keys(log.details).length > 0 && (
                           <details className="text-xs">
-                            <summary className="cursor-pointer text-dlsl-green hover:underline">
-                              View Details
+                            <summary className="cursor-pointer text-dlsl-green hover:underline flex items-center gap-1">
+                              <Eye className="w-3 h-3" />
+                              View Technical Details
                             </summary>
-                            <pre className="mt-2 p-2 bg-gray-100 rounded text-xs overflow-x-auto">
+                            <pre className="mt-2 p-3 bg-gray-100 rounded text-xs overflow-x-auto max-h-40 overflow-y-auto">
                               {JSON.stringify(log.details, null, 2)}
                             </pre>
                           </details>
