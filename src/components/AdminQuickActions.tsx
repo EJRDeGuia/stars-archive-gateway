@@ -71,6 +71,13 @@ const AdminQuickActions: React.FC<AdminQuickActionsProps> = ({ onActionClick }) 
       color: 'bg-dlsl-green'
     },
     {
+      id: 'audit',
+      title: 'Audit Logs',
+      description: 'View detailed system activity logs',
+      icon: Shield,
+      color: 'bg-dlsl-green'
+    },
+    {
       id: 'content',
       title: 'Content Management',
       description: 'Manage site content and pages',
