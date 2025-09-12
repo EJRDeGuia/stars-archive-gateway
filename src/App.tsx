@@ -40,6 +40,7 @@ import ResourcesContentManager from "@/pages/ResourcesContentManager";
 import TeamMembersManager from "@/pages/TeamMembersManager";
 import AnnouncementsManager from "@/pages/AnnouncementsManager";
 import BackupManagement from "@/pages/BackupManagement";
+import ThesisEdit from "@/pages/ThesisEdit";
 import { getDashboardPath } from "@/utils/dashboardUtils";
 import DashboardRedirect from "@/components/DashboardRedirect";
 
@@ -92,6 +93,9 @@ function App() {
               <Route path="/system-settings" element={<ProtectedRoute requiredRole="admin"><SystemSettings /></ProtectedRoute>} />
               <Route path="/security-monitor" element={<ProtectedRoute requiredRole="admin"><SecurityMonitor /></ProtectedRoute>} />
               <Route path="/backup-management" element={<ProtectedRoute requiredRole="admin"><BackupManagement /></ProtectedRoute>} />
+              
+              {/* Thesis Edit Route - Available to Archivists and Admins */}
+              <Route path="/thesis/:id/edit" element={<ProtectedRoute requiredRole="archivist"><ThesisEdit /></ProtectedRoute>} />
               
               {/* Phase 5: Content Management Routes */}
               <Route path="/admin/content" element={<ProtectedRoute requiredRole="admin"><ContentManagement /></ProtectedRoute>} />

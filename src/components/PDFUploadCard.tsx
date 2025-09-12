@@ -44,20 +44,40 @@ const PDFUploadCard: React.FC<PDFUploadCardProps> = ({
     e.preventDefault();
     setIsDragging(false);
 
-    const files = Array.from(e.dataTransfer.files).filter(
-      (file) => file.type === "application/pdf"
-    );
+    const files = Array.from(e.dataTransfer.files);
     
-    if (files.length === 0) {
+    // Enhanced PDF validation for drag and drop
+    const pdfFiles = files.filter(file => {
+      const isPdfType = file.type === "application/pdf";
+      const isPdfExtension = file.name.toLowerCase().endsWith('.pdf');
+      return isPdfType && isPdfExtension;
+    });
+    
+    const invalidFiles = files.filter(file => {
+      const isPdfType = file.type === "application/pdf";
+      const isPdfExtension = file.name.toLowerCase().endsWith('.pdf');
+      return !(isPdfType && isPdfExtension);
+    });
+    
+    if (invalidFiles.length > 0) {
       toast({
         title: "Invalid file type",
+        description: `Please upload PDF files only. Invalid files: ${invalidFiles.map(f => f.name).join(', ')}`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (pdfFiles.length === 0) {
+      toast({
+        title: "No valid files",
         description: "Please upload PDF files only.",
         variant: "destructive",
       });
       return;
     }
     
-    if (files.length > 5) {
+    if (pdfFiles.length > 5) {
       toast({
         title: "Too many files",
         description: "Please upload a maximum of 5 files at once.",
@@ -66,22 +86,50 @@ const PDFUploadCard: React.FC<PDFUploadCardProps> = ({
       return;
     }
     
-    handleFileUpload(files);
+    handleFileUpload(pdfFiles);
   };
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     
-    if (files.length > 5) {
+    // Enhanced PDF validation
+    const pdfFiles = files.filter(file => {
+      const isPdfType = file.type === "application/pdf";
+      const isPdfExtension = file.name.toLowerCase().endsWith('.pdf');
+      return isPdfType && isPdfExtension;
+    });
+    
+    const invalidFiles = files.filter(file => {
+      const isPdfType = file.type === "application/pdf";
+      const isPdfExtension = file.name.toLowerCase().endsWith('.pdf');
+      return !(isPdfType && isPdfExtension);
+    });
+    
+    if (invalidFiles.length > 0) {
+      toast({
+        title: "Invalid file type",
+        description: `Please upload PDF files only. Invalid files: ${invalidFiles.map(f => f.name).join(', ')}`,
+        variant: "destructive",
+      });
+      
+      // Clear the input to prevent submission
+      e.target.value = '';
+      return;
+    }
+    
+    if (pdfFiles.length > 5) {
       toast({
         title: "Too many files",
         description: "Please upload a maximum of 5 files at once.",
         variant: "destructive",
       });
+      
+      // Clear the input
+      e.target.value = '';
       return;
     }
     
-    handleFileUpload(files);
+    handleFileUpload(pdfFiles);
     
     // Clear the input
     e.target.value = '';
@@ -126,7 +174,7 @@ const PDFUploadCard: React.FC<PDFUploadCardProps> = ({
       <CardHeader>
         <CardTitle>Upload PDF Document</CardTitle>
         <CardDescription>
-          Drag and drop your PDF files here, or click to browse. Maximum 5 files, 50MB each.
+          Drag and drop your PDF files here, or click to browse. Maximum 5 files, 50MB each. Only PDF files are accepted.
         </CardDescription>
       </CardHeader>
       <CardContent>
