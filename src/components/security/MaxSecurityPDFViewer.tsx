@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, ExternalLink, Lock, AlertCircle, X, Eye, Shield, Camera } from 'lucide-react';
+import { FileText, ExternalLink, Lock, AlertCircle, X, Eye, Shield, Camera, WifiOff, AlertTriangle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuditLog } from '@/hooks/useAuditLog';
 import { enhancedSecurityService } from '@/services/enhancedSecurityService';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { networkAccessService } from '@/services/networkAccess';
 
 // Set the workerSrc property for pdf.js
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
@@ -39,10 +40,12 @@ const MaxSecurityPDFViewer: React.FC<MaxSecurityPDFViewerProps> = ({
   const [securityViolations, setSecurityViolations] = useState(0);
   const [isMonitoringActive, setIsMonitoringActive] = useState(true);
   const [lastActivityTime, setLastActivityTime] = useState(Date.now());
+  const [networkAccessDenied, setNetworkAccessDenied] = useState(false);
   
   const viewerRef = useRef<HTMLDivElement>(null);
   const activityTimeoutRef = useRef<NodeJS.Timeout>();
   const screenshotAttempts = useRef(0);
+  const canvasOverlayRef = useRef<HTMLCanvasElement>(null);
 
   // Check if user has elevated access
   const hasElevatedAccess = user && ['archivist', 'admin'].includes(user.role);
@@ -228,10 +231,25 @@ const MaxSecurityPDFViewer: React.FC<MaxSecurityPDFViewerProps> = ({
     }
   }, [thesisId, user, canView, pdfSource, watermarkApplied, logEvent]);
 
+  // Check network access before loading PDF
+  useEffect(() => {
+    const checkNetworkAccess = async () => {
+      const accessResult = await networkAccessService.canAccessPDFsNow();
+      setNetworkAccessDenied(!accessResult.allowed);
+      
+      if (!accessResult.allowed) {
+        toast.error("PDF access blocked: " + accessResult.reason);
+        setPdfSource(null);
+      }
+    };
+    
+    checkNetworkAccess();
+  }, []);
+
   // Load PDF source with enhanced security
   useEffect(() => {
     const loadPDFSource = async () => {
-      if (!pdfUrl || !canView) {
+      if (!pdfUrl || !canView || networkAccessDenied) {
         setPdfSource(null);
         return;
       }
@@ -289,7 +307,7 @@ const MaxSecurityPDFViewer: React.FC<MaxSecurityPDFViewerProps> = ({
     };
 
     loadPDFSource();
-  }, [pdfUrl, thesisId, user, canView]);
+  }, [pdfUrl, thesisId, user, canView, networkAccessDenied]);
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
@@ -312,6 +330,35 @@ const MaxSecurityPDFViewer: React.FC<MaxSecurityPDFViewerProps> = ({
       });
     }
   };
+
+  // NETWORK ACCESS DENIED
+  if (networkAccessDenied) {
+    return (
+      <Card className={`${className} border-orange-200`}>
+        <CardContent className="p-8">
+          <div className="text-center flex flex-col items-center justify-center min-h-[400px]">
+            <div className="w-20 h-20 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-6 shadow">
+              <WifiOff className="w-10 h-10 text-orange-600" />
+            </div>
+            <h3 className="text-2xl font-bold text-orange-900 mb-4 tracking-tight">Testing Mode: PDF Access Blocked</h3>
+            <div className="bg-orange-50 border border-orange-300 rounded-lg p-6 mb-6 max-w-md">
+              <div className="flex items-center gap-2 text-orange-800 mb-3">
+                <AlertTriangle className="w-5 h-5" />
+                <span className="font-medium">Network Access Required</span>
+              </div>
+              <p className="text-orange-700 text-sm leading-relaxed">
+                PDF documents are restricted when Testing Mode is <strong>OFF</strong>. 
+                Connect to the LRC intranet or enable Testing Mode to access thesis materials.
+              </p>
+            </div>
+            <p className="text-sm text-orange-600 max-w-xs text-center">
+              Contact LRC staff for network access or use the Testing Mode toggle in development.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   // NO ACCESS
   if (!canView) {
@@ -452,6 +499,17 @@ const MaxSecurityPDFViewer: React.FC<MaxSecurityPDFViewerProps> = ({
             MozUserSelect: 'none'
           }}
         >
+          {/* Anti-Screenshot Canvas Overlay */}
+          <canvas
+            ref={canvasOverlayRef}
+            className="absolute inset-0 pointer-events-none z-10"
+            style={{
+              mixBlendMode: 'multiply',
+              opacity: 0.1,
+              width: '100%',
+              height: '100%'
+            }}
+          />
           <ScrollArea className="w-full h-[560px] md:h-[600px] lg:h-[640px] overflow-auto">
             <div className="flex flex-col items-center gap-6 px-2 pb-2 pointer-events-none">
               {pdfError ? (

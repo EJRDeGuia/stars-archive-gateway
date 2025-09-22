@@ -19,7 +19,7 @@ serve(async (req) => {
   }
 
   try {
-    const { query, match_threshold = 0.7, match_count = 20, similar_to_thesis } = await req.json();
+    const { query, match_threshold = 0.6, match_count = 20, similar_to_thesis } = await req.json(); // Lowered threshold for better recall
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -57,12 +57,39 @@ serve(async (req) => {
       embedding = await getGeminiEmbedding(query, geminiApiKey);
     }
 
-    // Perform semantic search using RPC function
-    const { data, error } = await supabase.rpc('match_theses_gemini', {
+    // Perform semantic search using RPC function with hybrid approach
+    const { data: semanticResults, error } = await supabase.rpc('match_theses_gemini', {
       query_embedding: embedding,
       match_threshold,
-      match_count
+      match_count: Math.min(match_count * 2, 40) // Get more results for hybrid ranking
     });
+
+    let results = semanticResults || [];
+
+    // If we have a query (not similar_to_thesis), add keyword boost for hybrid search
+    if (query && !similar_to_thesis && results.length > 0) {
+      results = results.map((thesis: any) => {
+        let hybridScore = thesis.similarity_score || thesis.similarity || 0;
+        
+        // Boost score based on keyword matches
+        const titleMatch = thesis.title?.toLowerCase().includes(query.toLowerCase());
+        const abstractMatch = thesis.abstract?.toLowerCase().includes(query.toLowerCase());
+        const keywordMatch = thesis.keywords?.some((k: string) => 
+          k.toLowerCase().includes(query.toLowerCase())
+        );
+        
+        if (titleMatch) hybridScore += 0.2;
+        if (abstractMatch) hybridScore += 0.1;
+        if (keywordMatch) hybridScore += 0.15;
+        
+        return {
+          ...thesis,
+          similarity_score: Math.min(hybridScore, 1.0),
+          similarity: Math.min(hybridScore, 1.0)
+        };
+      }).sort((a, b) => (b.similarity_score || b.similarity) - (a.similarity_score || a.similarity))
+        .slice(0, match_count); // Trim to requested count after hybrid ranking
+    }
 
     if (error) {
       console.error('RPC error:', error);
@@ -91,6 +118,9 @@ serve(async (req) => {
 
 async function getGeminiEmbedding(text: string, apiKey: string): Promise<number[]> {
   try {
+    // Enhanced text preprocessing for better embeddings
+    const processedText = preprocessTextForEmbedding(text);
+    
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${apiKey}`,
       {
@@ -100,10 +130,10 @@ async function getGeminiEmbedding(text: string, apiKey: string): Promise<number[
         },
         body: JSON.stringify({
           content: {
-            parts: [{ text }]
+            parts: [{ text: processedText }]
           },
           taskType: 'RETRIEVAL_QUERY',
-          outputDimensionality: 768
+          outputDimensionality: 1024 // Increased from 768 for better accuracy
         })
       }
     );
@@ -119,6 +149,42 @@ async function getGeminiEmbedding(text: string, apiKey: string): Promise<number[
     console.error('Error getting Gemini embedding:', error);
     throw error;
   }
+}
+
+// Enhanced text preprocessing for better semantic search
+function preprocessTextForEmbedding(text: string): string {
+  if (!text) return '';
+  
+  // Remove extra whitespace and normalize
+  let processed = text.trim().replace(/\s+/g, ' ');
+  
+  // Remove common academic boilerplate that doesn't add semantic value
+  const boilerplatePatterns = [
+    /^(abstract|introduction|conclusion|references|bibliography):?\s*/i,
+    /\b(thesis|dissertation|research|study|paper|document)\b/gi,
+    /\b(university|college|department|faculty)\b/gi,
+    /\b(page \d+|chapter \d+|section \d+)\b/gi,
+    /\b\d{4}[-\/]\d{2}[-\/]\d{2}\b/g, // dates
+    /\b[A-Z]{2,}\b/g // Remove all-caps abbreviations
+  ];
+  
+  boilerplatePatterns.forEach(pattern => {
+    processed = processed.replace(pattern, ' ');
+  });
+  
+  // Normalize and clean
+  processed = processed
+    .toLowerCase()
+    .replace(/[^\w\s]/g, ' ') // Remove special characters
+    .replace(/\s+/g, ' ')
+    .trim();
+  
+  // Limit length for better embedding quality (Gemini works better with focused text)
+  if (processed.length > 1000) {
+    processed = processed.substring(0, 1000);
+  }
+  
+  return processed;
 }
 
 async function performKeywordSearch(

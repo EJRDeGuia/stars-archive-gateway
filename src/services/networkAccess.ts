@@ -33,6 +33,20 @@ export class NetworkAccessService {
     return status;
   }
 
+  // New method for PDF access control
+  async canAccessPDFsNow(): Promise<{ allowed: boolean; reason: string }> {
+    const status = await this.getNetworkStatus();
+    
+    if (!status.isIntranet) {
+      return {
+        allowed: false,
+        reason: 'Network access restricted - Connect to LRC intranet to access thesis documents'
+      };
+    }
+    
+    return { allowed: true, reason: 'Access granted' };
+  }
+
   private async checkNetworkAccess(): Promise<NetworkStatus> {
     // Check for development environment
     const isDevelopment = this.isDevelopmentEnvironment();

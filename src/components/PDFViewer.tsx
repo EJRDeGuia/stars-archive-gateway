@@ -3,12 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, ExternalLink, Lock, AlertCircle, X } from 'lucide-react';
+import { FileText, ExternalLink, Lock, AlertCircle, X, WifiOff, AlertTriangle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuditLog } from '@/hooks/useAuditLog';
 import RequestAccessButton from './RequestAccessButton';
 import { supabase } from '@/integrations/supabase/client';
+import { networkAccessService } from '@/services/networkAccess';
+import { toast } from 'sonner';
 
 // Set the workerSrc property for pdf.js
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
@@ -35,6 +37,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const [numPages, setNumPages] = useState<number | null>(null);
   const [showSecurityNotice, setShowSecurityNotice] = useState(true);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const [networkAccessDenied, setNetworkAccessDenied] = useState(false);
 
   // Check if user has elevated access (archivist or admin)
   const hasElevatedAccess = user && ['archivist', 'admin'].includes(user.role);
@@ -44,10 +47,25 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
 
   const [pdfSource, setPdfSource] = useState<string | { url: string; httpHeaders: Record<string, string> } | null>(null);
 
+  // Check network access before loading PDF
+  useEffect(() => {
+    const checkNetworkAccess = async () => {
+      const accessResult = await networkAccessService.canAccessPDFsNow();
+      setNetworkAccessDenied(!accessResult.allowed);
+      
+      if (!accessResult.allowed) {
+        toast.error("PDF access blocked: " + accessResult.reason);
+        setPdfSource(null);
+      }
+    };
+    
+    checkNetworkAccess();
+  }, []);
+
   // Load PDF source when component mounts or pdfUrl changes
   useEffect(() => {
     const loadPDFSource = async () => {
-      if (!pdfUrl) {
+      if (!pdfUrl || networkAccessDenied) {
         setPdfSource(null);
         return;
       }
@@ -104,7 +122,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     };
 
     loadPDFSource();
-  }, [pdfUrl, thesisId, user]);
+  }, [pdfUrl, thesisId, user, networkAccessDenied]);
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
@@ -140,6 +158,31 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       });
     }
   };
+
+  // NETWORK ACCESS DENIED
+  if (networkAccessDenied) {
+    return (
+      <Card className={`${className} border-orange-200`}>
+        <CardContent className="p-8">
+          <div className="text-center flex flex-col items-center justify-center min-h-[300px]">
+            <div className="w-16 h-16 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-6">
+              <WifiOff className="w-8 h-8 text-orange-600" />
+            </div>
+            <h3 className="text-xl font-bold text-orange-900 mb-3">Testing Mode: PDF Access Blocked</h3>
+            <div className="bg-orange-50 border border-orange-300 rounded-lg p-4 mb-6 max-w-md">
+              <div className="flex items-center gap-2 text-orange-800 mb-2">
+                <AlertTriangle className="w-4 h-4" />
+                <span className="font-medium text-sm">Network Access Required</span>
+              </div>
+              <p className="text-orange-700 text-sm">
+                PDF documents are restricted when Testing Mode is OFF. Enable Testing Mode or connect to LRC intranet.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   // NO ACCESS
   if (!canView) {

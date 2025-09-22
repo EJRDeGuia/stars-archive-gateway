@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertTriangle, Wifi, WifiOff } from 'lucide-react';
+import { networkAccessService } from '@/services/networkAccess';
 
 interface NetworkAccessCheckerProps {
   children: React.ReactNode;
@@ -14,19 +15,8 @@ const NetworkAccessChecker: React.FC<NetworkAccessCheckerProps> = ({ children })
   useEffect(() => {
     const checkNetworkAccess = async () => {
       try {
-        // Check if user is accessing from LRC intranet
-        // This is a simplified check - in production, you'd verify against known IP ranges
-        const response = await fetch('/api/check-network', { 
-          method: 'GET',
-          headers: { 'X-Network-Check': 'true' }
-        }).catch(() => null);
-
-        // For demo purposes, we'll simulate intranet access based on localhost
-        const isLocalhost = window.location.hostname === 'localhost' || 
-                           window.location.hostname === '127.0.0.1' ||
-                           window.location.hostname.includes('lovable');
-        
-        setIsIntranetAccess(isLocalhost);
+        const accessResult = await networkAccessService.canAccessPDFsNow();
+        setIsIntranetAccess(accessResult.allowed);
       } catch (error) {
         // Network check failed, assuming external access for security
         setIsIntranetAccess(false);

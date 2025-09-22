@@ -40,7 +40,9 @@ export class GeminiEmbeddingService {
   }
 
   async getEmbedding(text: string, options: EmbeddingOptions = {}): Promise<number[]> {
-    const cacheKey = this.getCacheKey(text, options);
+    // Enhanced text preprocessing
+    const processedText = this.preprocessTextForEmbedding(text);
+    const cacheKey = this.getCacheKey(processedText, options);
     
     // Check cache first
     if (this.embeddingsCache.has(cacheKey)) {
@@ -50,7 +52,7 @@ export class GeminiEmbeddingService {
     if (!this.apiKey) {
       console.warn('No Gemini API key found, returning mock embedding');
       // Return mock embedding with appropriate dimensions
-      const dimensions = options.dimensionality || 768;
+      const dimensions = options.dimensionality || 1024; // Increased default
       return Array.from({ length: dimensions }, () => Math.random() - 0.5);
     }
 
@@ -60,15 +62,11 @@ export class GeminiEmbeddingService {
 
       const requestBody: any = {
         content: {
-          parts: [{ text }]
+          parts: [{ text: processedText }]
         },
-        taskType: options.taskType || 'SEMANTIC_SIMILARITY'
+        taskType: options.taskType || 'SEMANTIC_SIMILARITY',
+        outputDimensionality: options.dimensionality || 1024 // Enhanced default dimensions
       };
-
-      // Add dimensionality if specified
-      if (options.dimensionality) {
-        requestBody.outputDimensionality = options.dimensionality;
-      }
 
       const response = await fetch(url, {
         method: 'POST',
@@ -94,22 +92,59 @@ export class GeminiEmbeddingService {
     } catch (error) {
       console.error('Error getting Gemini embedding:', error);
       // Return mock embedding as fallback
-      const dimensions = options.dimensionality || 768;
+      const dimensions = options.dimensionality || 1024;
       return Array.from({ length: dimensions }, () => Math.random() - 0.5);
     }
+  }
+
+  // Enhanced text preprocessing for better embeddings
+  private preprocessTextForEmbedding(text: string): string {
+    if (!text) return '';
+    
+    // Chunking strategy for long text - use overlapping windows
+    const maxLength = 800; // Optimal for Gemini embeddings
+    if (text.length <= maxLength) {
+      return this.normalizeText(text);
+    }
+    
+    // For long text, take the most relevant parts
+    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 10);
+    let result = '';
+    let currentLength = 0;
+    
+    // Prioritize title and first sentences (usually most informative)
+    for (const sentence of sentences) {
+      const normalized = this.normalizeText(sentence);
+      if (currentLength + normalized.length > maxLength) break;
+      
+      result += normalized + '. ';
+      currentLength = result.length;
+    }
+    
+    return result.trim();
+  }
+
+  private normalizeText(text: string): string {
+    return text
+      .trim()
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .replace(/[^\w\s.,!?-]/g, ' ') // Remove most special chars but keep sentence structure
+      .replace(/\b(abstract|introduction|conclusion|references|thesis|dissertation)\b/gi, '') // Remove boilerplate
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
   async getQueryEmbedding(query: string, dimensionality?: 768 | 1024): Promise<number[]> {
     return this.getEmbedding(query, {
       taskType: 'RETRIEVAL_QUERY',
-      dimensionality
+      dimensionality: dimensionality || 1024 // Enhanced default
     });
   }
 
   async getDocumentEmbedding(document: string, dimensionality?: 768 | 1024): Promise<number[]> {
     return this.getEmbedding(document, {
       taskType: 'RETRIEVAL_DOCUMENT',
-      dimensionality
+      dimensionality: dimensionality || 1024 // Enhanced default
     });
   }
 
