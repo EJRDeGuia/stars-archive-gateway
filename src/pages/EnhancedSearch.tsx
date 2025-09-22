@@ -35,6 +35,7 @@ const EnhancedSearch: React.FC = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [sortBy, setSortBy] = useState('relevance');
   
   const [facets, setFacets] = useState<{
     colleges: any[];
@@ -99,13 +100,34 @@ const EnhancedSearch: React.FC = () => {
   };
 
   const handleSortChange = (sort: string) => {
-    // TODO: Implement sorting by updating search with sort parameter
-    console.log('Sort changed to:', sort);
+    setSortBy(sort);
+    // Re-run search with new sorting
+    const lastFilters = localStorage.getItem('lastAdvancedSearch');
+    if (lastFilters) {
+      const filters = JSON.parse(lastFilters);
+      handleAdvancedSearch({ ...filters, sortBy: sort });
+    }
   };
 
   const handleFacetFilter = (type: string, value: string) => {
-    // TODO: Implement facet filtering by updating search filters
-    console.log('Facet filter:', type, value);
+    const lastFilters = localStorage.getItem('lastAdvancedSearch');
+    if (lastFilters) {
+      const filters = JSON.parse(lastFilters);
+      const updatedFilters = { ...filters };
+      
+      // Toggle facet filter
+      if (!updatedFilters.facets) updatedFilters.facets = {};
+      if (!updatedFilters.facets[type]) updatedFilters.facets[type] = [];
+      
+      const index = updatedFilters.facets[type].indexOf(value);
+      if (index > -1) {
+        updatedFilters.facets[type].splice(index, 1);
+      } else {
+        updatedFilters.facets[type].push(value);
+      }
+      
+      handleAdvancedSearch(updatedFilters);
+    }
   };
 
   const handleViewThesis = (thesis: any) => {

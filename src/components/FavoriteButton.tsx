@@ -30,11 +30,11 @@ export default function FavoriteButton({ userId, thesisId, favoriteId, onToggle 
     setIsLoading(true);
     
     try {
-      console.log('[FavoriteButton] Starting toggle favorite:', { userId, thesisId, favoriteId, wasAlreadyFavorited });
+      // logger.userAction('Toggle favorite started', { userId, thesisId, favoriteId, wasAlreadyFavorited });
       
       const result = await toggleFavorite.mutateAsync({ userId, thesisId, favoriteId });
       
-      console.log('[FavoriteButton] Toggle favorite result:', result);
+      // logger.info('Favorite toggled successfully', { result });
       
       // Check if operation was successful
       if ('removed' in result && result.removed) {

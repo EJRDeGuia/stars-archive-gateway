@@ -166,7 +166,7 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
         (filters.statuses && filters.statuses.length > 0)
       )
     ) {
-      console.log('Applied filters:', filters);
+      // logger.info('Applied filters in chat search', filters);
     }
   }, [filters]);
 
@@ -178,7 +178,7 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
     setInput('');
     try {
       // Log query for debug
-      console.log('[SemanticSearch] User query:', query);
+      // logger.userAction('Semantic search performed', { query, fallback: query.toLowerCase().includes('ai') });
 
       let results = await semanticSearchService.semanticSearch(query, 10);
 
@@ -193,7 +193,7 @@ const ChatSearch: React.FC<ChatSearchProps> = ({ filters }) => {
             t.keywords?.some(k => k.toLowerCase().includes('ai')) ||
             t.abstract?.toLowerCase().includes('ai')
         );
-        console.log('[SemanticSearch] Fallback hit for "AI", results:', results);
+        // logger.info('Fallback search results returned', { query, resultCount: results.length });
       }
 
       if (results.length === 0) {
