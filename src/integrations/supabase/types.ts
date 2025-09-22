@@ -938,6 +938,7 @@ export type Database = {
           created_at: string | null
           download_count: number | null
           embedding: string | null
+          embedding_gemini: string | null
           file_url: string | null
           id: string
           keywords: string[] | null
@@ -959,6 +960,7 @@ export type Database = {
           created_at?: string | null
           download_count?: number | null
           embedding?: string | null
+          embedding_gemini?: string | null
           file_url?: string | null
           id?: string
           keywords?: string[] | null
@@ -980,6 +982,7 @@ export type Database = {
           created_at?: string | null
           download_count?: number | null
           embedding?: string | null
+          embedding_gemini?: string | null
           file_url?: string | null
           id?: string
           keywords?: string[] | null
@@ -1544,6 +1547,26 @@ export type Database = {
       mask_sensitive_data: {
         Args: { _data: string; _mask_type?: string }
         Returns: string
+      }
+      match_theses_gemini: {
+        Args: {
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+        }
+        Returns: {
+          abstract: string
+          author: string
+          college_name: string
+          cover_image_url: string
+          download_count: number
+          id: string
+          keywords: string[]
+          publish_date: string
+          similarity_score: number
+          title: string
+          view_count: number
+        }[]
       }
       sparsevec_out: {
         Args: { "": unknown }
