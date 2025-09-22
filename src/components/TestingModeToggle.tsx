@@ -2,15 +2,16 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { TestTube, Wifi } from 'lucide-react';
+import { networkAccessService } from '@/services/networkAccess';
 
 const TestingModeToggle: React.FC = () => {
   const isTestingMode = localStorage.getItem('bypassNetworkCheck') === 'true';
 
   const toggleTestingMode = () => {
     if (isTestingMode) {
-      localStorage.removeItem('bypassNetworkCheck');
+      networkAccessService.disableTestMode();
     } else {
-      localStorage.setItem('bypassNetworkCheck', 'true');
+      networkAccessService.enableTestMode();
     }
     window.location.reload();
   };
