@@ -28,7 +28,7 @@ const NetworkAccessChecker: React.FC<NetworkAccessCheckerProps> = ({ children })
         
         setIsIntranetAccess(isLocalhost);
       } catch (error) {
-        console.log('Network check failed, assuming external access');
+        // Network check failed, assuming external access for security
         setIsIntranetAccess(false);
       } finally {
         setIsChecking(false);

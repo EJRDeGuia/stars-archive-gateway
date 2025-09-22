@@ -1,52 +1,69 @@
 
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import TestingModeToggle from "@/components/TestingModeToggle";
-import Index from "@/pages/Index";
-import Login from "@/pages/Login";
-import ThesisDetail from "@/pages/ThesisDetail";
-import Upload from "@/pages/Upload";
-import EnhancedSearch from "@/pages/EnhancedSearch";
-import AdvancedSearch from "@/pages/AdvancedSearch";
-import AdvancedSearchPage from "@/pages/AdvancedSearchPage";
-import ArchivistDashboard from "@/pages/ArchivistDashboard";
-import AdminDashboard from "@/pages/AdminDashboard";
-import CollegePage from "@/pages/CollegePage";
-import Explore from "@/pages/Explore";
-import Collections from "@/pages/Collections";
-import CollectionView from "@/pages/CollectionView";
-import Library from "@/pages/Library";
-import Profile from "@/pages/Profile";
-import Settings from "@/pages/Settings";
-import About from "@/pages/About";
-import Resources from "@/pages/Resources";
-import ManageRecords from "@/pages/ManageRecords";
-import ManageCollections from "@/pages/ManageCollections";
-import UserManagement from "@/pages/UserManagement";
-import AuditLogs from "@/pages/AuditLogs";
-import CollegeManagement from "@/pages/CollegeManagement";
-import AnalyticsDashboard from "@/pages/AnalyticsDashboard";
-import SystemSettings from "@/pages/SystemSettings";
-import SecurityMonitor from "@/pages/SecurityMonitor";
-import RequestThesisAccess from "@/pages/RequestThesisAccess";
-import NotFound from "@/pages/NotFound";
-import ContentManagement from "@/pages/ContentManagement";
-import AboutContentManager from "@/pages/AboutContentManager";
-import ResourcesContentManager from "@/pages/ResourcesContentManager";
-import TeamMembersManager from "@/pages/TeamMembersManager";
-import AnnouncementsManager from "@/pages/AnnouncementsManager";
-import BackupManagement from "@/pages/BackupManagement";
-import ThesisEdit from "@/pages/ThesisEdit";
+import { PageSkeleton } from "@/utils/lazyLoading";
+import { logger } from "@/services/logger";
+
+// Lazy load all pages for optimal performance
+const Index = lazy(() => import("@/pages/Index"));
+const Login = lazy(() => import("@/pages/Login"));
+const ThesisDetail = lazy(() => import("@/pages/ThesisDetail"));
+const Upload = lazy(() => import("@/pages/Upload"));
+const EnhancedSearch = lazy(() => import("@/pages/EnhancedSearch"));
+const AdvancedSearch = lazy(() => import("@/pages/AdvancedSearch"));
+const AdvancedSearchPage = lazy(() => import("@/pages/AdvancedSearchPage"));
+const ArchivistDashboard = lazy(() => import("@/pages/ArchivistDashboard"));
+const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
+const CollegePage = lazy(() => import("@/pages/CollegePage"));
+const Explore = lazy(() => import("@/pages/Explore"));
+const Collections = lazy(() => import("@/pages/Collections"));
+const CollectionView = lazy(() => import("@/pages/CollectionView"));
+const Library = lazy(() => import("@/pages/Library"));
+const Profile = lazy(() => import("@/pages/Profile"));
+const Settings = lazy(() => import("@/pages/Settings"));
+const About = lazy(() => import("@/pages/About"));
+const Resources = lazy(() => import("@/pages/Resources"));
+const ManageRecords = lazy(() => import("@/pages/ManageRecords"));
+const ManageCollections = lazy(() => import("@/pages/ManageCollections"));
+const UserManagement = lazy(() => import("@/pages/UserManagement"));
+const AuditLogs = lazy(() => import("@/pages/AuditLogs"));
+const CollegeManagement = lazy(() => import("@/pages/CollegeManagement"));
+const AnalyticsDashboard = lazy(() => import("@/pages/AnalyticsDashboard"));
+const SystemSettings = lazy(() => import("@/pages/SystemSettings"));
+const SecurityMonitor = lazy(() => import("@/pages/SecurityMonitor"));
+const RequestThesisAccess = lazy(() => import("@/pages/RequestThesisAccess"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
+const ContentManagement = lazy(() => import("@/pages/ContentManagement"));
+const AboutContentManager = lazy(() => import("@/pages/AboutContentManager"));
+const ResourcesContentManager = lazy(() => import("@/pages/ResourcesContentManager"));
+const TeamMembersManager = lazy(() => import("@/pages/TeamMembersManager"));
+const AnnouncementsManager = lazy(() => import("@/pages/AnnouncementsManager"));
+const BackupManagement = lazy(() => import("@/pages/BackupManagement"));
+const ThesisEdit = lazy(() => import("@/pages/ThesisEdit"));
+
 import { getDashboardPath } from "@/utils/dashboardUtils";
 import DashboardRedirect from "@/components/DashboardRedirect";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: (failureCount, error) => {
+        logger.warn('Query retry', { failureCount, error: error.message });
+        return failureCount < 3;
+      },
+    },
+  },
+});
 
 function App() {
+  logger.info('Application initialized', { timestamp: new Date().toISOString() });
+
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
@@ -54,7 +71,8 @@ function App() {
           <div className="min-h-screen bg-background">
             <Toaster />
             <TestingModeToggle />
-            <Routes>
+            <Suspense fallback={<PageSkeleton />}>
+              <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
@@ -106,7 +124,8 @@ function App() {
               
               {/* 404 Route */}
               <Route path="*" element={<NotFound />} />
-            </Routes>
+              </Routes>
+            </Suspense>
           </div>
         </AuthProvider>
       </Router>

@@ -8,6 +8,7 @@ import { ThesisManagementService } from "@/services/thesisManagement";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
+import { logger } from "@/services/logger";
 import ThesisReviewDialog from "./ThesisReviewDialog";
 
 interface AdminRecentThesesProps {
@@ -33,13 +34,13 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
       return;
     }
 
-    console.log('User attempting to approve thesis:', { userId: user.id, userRole: user.role, thesisId });
+    logger.userAction('Admin thesis approval attempted', { userId: user.id, userRole: user.role, thesisId });
 
     setActionLoading(thesisId);
     
     try {
       const result = await ThesisManagementService.approveThesis(thesisId, user.id);
-      console.log('Approval result:', result);
+      logger.info('Thesis approval successful', { result });
 
       if (result.success) {
         toast.success(result.message);
@@ -76,13 +77,13 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
       return;
     }
 
-    console.log('User attempting to reject thesis:', { userId: user.id, userRole: user.role, thesisId });
+    logger.userAction('Admin thesis rejection attempted', { userId: user.id, userRole: user.role, thesisId });
 
     setActionLoading(thesisId);
     
     try {
       const result = await ThesisManagementService.rejectThesis(thesisId, user.id);
-      console.log('Rejection result:', result);
+      logger.info('Thesis rejection successful', { result });
 
       if (result.success) {
         toast.success(result.message);
@@ -118,7 +119,7 @@ const AdminRecentTheses: React.FC<AdminRecentThesesProps> = ({
       ...thesis,
       colleges: colleges.find(c => c.id === thesis.college_id)
     };
-    console.log('Opening review dialog for thesis:', thesisWithCollege);
+    logger.userAction('Review dialog opened', { thesisId: thesisWithCollege.id });
     setSelectedThesis(thesisWithCollege);
     setReviewDialogOpen(true);
   };
