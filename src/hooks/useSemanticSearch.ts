@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuditLog } from './useAuditLog';
 import { toast } from 'sonner';
+import { geminiEmbeddingService } from '@/services/geminiEmbeddings';
 
 export interface SemanticSearchResult {
   id: string;
@@ -38,8 +39,8 @@ export const useSemanticSearch = () => {
     try {
       console.log('Starting semantic search for:', query);
 
-      // Call the semantic search edge function
-      const { data, error } = await supabase.functions.invoke('semantic-search', {
+      // Call the new Gemini-based semantic search edge function
+      const { data, error } = await supabase.functions.invoke('semantic-search-gemini', {
         body: {
           query: query.trim(),
           match_threshold: matchThreshold,
@@ -67,7 +68,7 @@ export const useSemanticSearch = () => {
         keywords: result.keywords,
         college_name: result.college_name,
         publish_date: result.publish_date,
-        similarity_score: result.similarity,
+        similarity_score: result.similarity_score || result.similarity,
         view_count: result.view_count || 0,
         download_count: result.download_count || 0,
         cover_image_url: result.cover_image_url
@@ -85,7 +86,8 @@ export const useSemanticSearch = () => {
           results_count: searchResults.length,
           avg_similarity: searchResults.length > 0 
             ? searchResults.reduce((sum, r) => sum + (r.similarity_score || 0), 0) / searchResults.length
-            : 0
+            : 0,
+          search_type: 'gemini_embedding'
         }
       });
 
@@ -111,7 +113,7 @@ export const useSemanticSearch = () => {
     try {
       console.log('Finding similar theses for:', thesisId);
 
-      const { data, error } = await supabase.functions.invoke('semantic-search', {
+      const { data, error } = await supabase.functions.invoke('semantic-search-gemini', {
         body: {
           similar_to_thesis: thesisId,
           match_threshold: matchThreshold,
@@ -136,7 +138,7 @@ export const useSemanticSearch = () => {
         keywords: result.keywords,
         college_name: result.college_name,
         publish_date: result.publish_date,
-        similarity_score: result.similarity,
+        similarity_score: result.similarity_score || result.similarity,
         view_count: result.view_count || 0,
         download_count: result.download_count || 0,
         cover_image_url: result.cover_image_url
@@ -149,7 +151,8 @@ export const useSemanticSearch = () => {
         resourceId: thesisId,
         details: {
           match_threshold: matchThreshold,
-          results_count: similarTheses.length
+          results_count: similarTheses.length,
+          search_type: 'gemini_embedding'
         }
       });
 

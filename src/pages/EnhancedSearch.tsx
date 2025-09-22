@@ -6,6 +6,8 @@ import SemanticSearchInterface from '@/components/SemanticSearchInterface';
 import SearchResultsGrid from '@/components/SearchResultsGrid';
 import { useCollegesWithCounts } from '@/hooks/useCollegesWithCounts';
 import { SemanticSearchResult } from '@/hooks/useSemanticSearch';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { Search, Brain, Filter } from 'lucide-react';
 
 interface SearchFilters {
@@ -50,22 +52,60 @@ const EnhancedSearch: React.FC = () => {
 
   const handleAdvancedSearch = async (filters: SearchFilters) => {
     setIsAdvancedLoading(true);
-    // TODO: Implement advanced search logic here
-    // This would be similar to what was in AdvancedSearch.tsx
-    setIsAdvancedLoading(false);
+    try {
+      const { data, error } = await supabase.functions.invoke('advanced-search', {
+        body: {
+          query: filters.query,
+          college_id: filters.college,
+          year_from: filters.yearFrom ? parseInt(filters.yearFrom) : null,
+          year_to: filters.yearTo ? parseInt(filters.yearTo) : null,
+          author: filters.author,
+          adviser: filters.adviser,
+          keywords: filters.keywords,
+          status: filters.status || 'approved',
+          page: currentPage,
+          limit: 20
+        }
+      });
+
+      if (error) {
+        console.error('Advanced search error:', error);
+        toast.error('Search failed. Please try again.');
+        return;
+      }
+
+      if (data?.results) {
+        setAdvancedResults(data.results);
+        setTotalCount(data.totalCount || 0);
+        setTotalPages(Math.ceil((data.totalCount || 0) / 20));
+        setFacets(data.facets || { colleges: [], years: [], authors: [] });
+      }
+    } catch (error) {
+      console.error('Advanced search error:', error);
+      toast.error('Search failed. Please try again.');
+    } finally {
+      setIsAdvancedLoading(false);
+    }
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // TODO: Implement pagination
+    // Re-run the last search with new page
+    const lastFilters = localStorage.getItem('lastAdvancedSearch');
+    if (lastFilters) {
+      const filters = JSON.parse(lastFilters);
+      handleAdvancedSearch(filters);
+    }
   };
 
   const handleSortChange = (sort: string) => {
-    // TODO: Implement sorting
+    // TODO: Implement sorting by updating search with sort parameter
+    console.log('Sort changed to:', sort);
   };
 
   const handleFacetFilter = (type: string, value: string) => {
-    // TODO: Implement facet filtering
+    // TODO: Implement facet filtering by updating search filters
+    console.log('Facet filter:', type, value);
   };
 
   const handleViewThesis = (thesis: any) => {
