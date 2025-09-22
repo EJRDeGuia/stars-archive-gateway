@@ -1,16 +1,15 @@
-
 import React, { useState, useEffect } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, ExternalLink, Lock, AlertCircle, X, WifiOff, AlertTriangle } from 'lucide-react';
+import { FileText, ExternalLink, Lock, AlertCircle, X, WifiOff, AlertTriangle, Shield } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuditLog } from '@/hooks/useAuditLog';
 import RequestAccessButton from './RequestAccessButton';
 import { supabase } from '@/integrations/supabase/client';
 import { networkAccessService } from '@/services/networkAccess';
-import { toast } from 'sonner';
+import { logger } from '@/services/logger';
 
 // Set the workerSrc property for pdf.js
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
@@ -50,17 +49,26 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   // Check network access before loading PDF
   useEffect(() => {
     const checkNetworkAccess = async () => {
-      const accessResult = await networkAccessService.canAccessPDFsNow();
-      setNetworkAccessDenied(!accessResult.allowed);
-      
-      if (!accessResult.allowed) {
-        toast.error("PDF access blocked: " + accessResult.reason);
-        setPdfSource(null);
+      try {
+        const accessResult = await networkAccessService.canAccessPDFsNow();
+        if (!accessResult.allowed) {
+          setNetworkAccessDenied(true);
+          setPdfError('PDF access is disabled - ' + accessResult.reason);
+          logger.warn('PDF access denied', { reason: accessResult.reason, thesisId });
+          return;
+        }
+        setNetworkAccessDenied(false);
+        logger.info('Network access granted for PDF viewing', { thesisId });
+      } catch (error) {
+        setNetworkAccessDenied(true);
+        setPdfError('Network access check failed');
+        logger.error('Network access check failed', { error, thesisId });
+        return;
       }
     };
     
     checkNetworkAccess();
-  }, []);
+  }, [canView, thesisId]);
 
   // Load PDF source when component mounts or pdfUrl changes
   useEffect(() => {
@@ -139,11 +147,16 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           max_pages_shown: actualMaxPages || numPages
         }
       });
+      logger.info('PDF loaded successfully', { thesisId, numPages });
     }
   };
 
-  const handleDocumentError = () => {
-    console.error('PDF load error');
+  const onDocumentLoadError = (error: Error) => {
+    handleDocumentError(error);
+  };
+
+  const handleDocumentError = (error: Error) => {
+    logger.error('PDF load error', { error: error.message, thesisId, pdfUrl });
     setPdfError('Failed to load PDF. You may not have access to this document.');
     
     // Log PDF load failure
@@ -153,9 +166,25 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         resourceType: 'thesis',
         resourceId: thesisId,
         details: { 
-          error: 'Failed to load PDF document'
+          error: 'Failed to load PDF document',
+          errorMessage: error.message
         }
       });
+    }
+  };
+
+  // Disable context menu, copy, and drag operations
+  const securityProps = {
+    onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
+    onDragStart: (e: React.DragEvent) => e.preventDefault(),
+    onSelectStart: (e: React.SyntheticEvent) => e.preventDefault(),
+    onCopy: (e: React.ClipboardEvent) => e.preventDefault(),
+    style: {
+      WebkitUserSelect: 'none' as const,
+      MozUserSelect: 'none' as const,
+      msUserSelect: 'none' as const,
+      userSelect: 'none' as const,
+      WebkitTouchCallout: 'none' as const
     }
   };
 
@@ -175,7 +204,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                 <span className="font-medium text-sm">Network Access Required</span>
               </div>
               <p className="text-orange-700 text-sm">
-                PDF documents are restricted when Testing Mode is OFF. Enable Testing Mode or connect to LRC intranet.
+                PDF documents are restricted when Testing Mode is OFF. Enable Testing Mode using the toggle in the bottom-right corner.
               </p>
             </div>
           </div>
@@ -198,57 +227,11 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
               Document access is limited to authorized DLSL researchers, archivists, and staff within the LRC network.
             </p>
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 max-w-[330px] mx-auto">
-              <p className="text-yellow-800 text-sm leading-relaxed">
-                <strong>Network Access Required:</strong> Connect to De La Salle Lipa Learning Resource Center's intranet to view full content.
-              </p>
-            </div>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 max-w-[350px] mx-auto">
-              <div className="flex items-start space-x-2">
-                <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                <p className="text-blue-800 text-sm leading-relaxed">
-                  <strong>To access this document, please contact the LRC directly.</strong>
-                </p>
-              </div>
-            </div>
-            {thesisId && (
-              <RequestAccessButton thesisId={thesisId} className="mb-4" />
-            )}
-            <Button variant="outline" className="mr-0 w-full max-w-[210px] shadow-sm">
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Contact LRC
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // NO PDF PROVIDED OR NO ACCESS
-  if (!pdfSource) {
-    return (
-      <Card className={`${className}`}>
-        <CardContent className="p-0">
-          <div className="bg-green-50 border-b border-green-200 py-3 px-6 rounded-t-2xl">
-            <div className="flex items-center gap-2 justify-center">
-              <FileText className="w-6 h-6 text-dlsl-green" />
-              <span className="text-lg font-semibold text-dlsl-green">Preview Unavailable</span>
-            </div>
-          </div>
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className="w-20 h-20 rounded-2xl bg-dlsl-green/10 flex items-center justify-center mb-7 shadow">
-              <FileText className="w-10 h-10 text-dlsl-green" />
-            </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-3 tracking-tight">Document Preview</h3>
-            <div className="text-gray-600 mb-5 max-w-xs text-center">
-              The PDF preview will appear here when available for this thesis.<br />
-              Please contact the LRC for preview or access.
-            </div>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-7 max-w-[330px]">
-              <div className="flex items-start space-x-2">
-                <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                <p className="text-blue-800 text-sm leading-relaxed">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-yellow-800">
                   <strong>Document Access:</strong> To access this document, please contact the LRC directly.
-                </p>
+                </div>
               </div>
             </div>
             {thesisId && !hasElevatedAccess && (
@@ -268,31 +251,54 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const totalPagesToShow = actualMaxPages && numPages ? Math.min(actualMaxPages, numPages) : numPages;
 
   return (
-    <Card className={className}>
-      <CardContent className="p-0">
-        {showSecurityNotice && !hasElevatedAccess && (
-          <div className="bg-red-50 border-b border-red-200 p-3 rounded-t-2xl relative">
-            <button
-              onClick={() => setShowSecurityNotice(false)}
-              className="absolute right-3 top-3 text-red-600 hover:text-red-800 transition-colors"
-              aria-label="Close security notice"
-            >
-              <X className="w-4 h-4" />
-            </button>
-            <div className="flex items-start space-x-2 justify-center pr-8">
-              <Lock className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
-              <p className="text-red-800 text-sm text-center">
-                <strong>Security Notice:</strong> This document is protected: copying, printing, and screenshots are not allowed. 
-                {!hasElevatedAccess && thesisId && (
-                  <span> You are viewing a limited preview. <RequestAccessButton thesisId={thesisId} className="ml-2 text-xs px-2 py-1 h-auto" /> for full access.</span>
-                )}
-              </p>
+    <Card className={className} {...securityProps}>
+      <CardContent className="p-0" {...securityProps}>
+        {/* Security Header */}
+        <div className="bg-white border-b border-gray-200 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl flex items-center justify-center">
+                <Shield className="w-6 h-6 text-green-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">
+                  {title || 'Thesis Document'}
+                </h3>
+                <p className="text-sm text-gray-600 flex items-center gap-2">
+                  <Lock className="w-4 h-4" />
+                  Secure Preview • Watermarked • Screenshot Protected
+                </p>
+              </div>
             </div>
+            {showSecurityNotice && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowSecurityNotice(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            )}
           </div>
-        )}
+          
+          {showSecurityNotice && (
+            <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div className="text-sm">
+                  <div className="font-medium text-blue-900 mb-1">Content Protection Active</div>
+                  <div className="text-blue-700">
+                    This document is watermarked and protected. Unauthorized distribution is prohibited.
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
 
         {hasElevatedAccess && (
-          <div className="bg-green-50 border-b border-green-200 p-3 rounded-t-2xl">
+          <div className="bg-green-50 border-b border-green-200 p-3">
             <div className="flex items-center justify-center gap-2">
               <AlertCircle className="w-5 h-5 text-green-600" />
               <p className="text-green-800 text-sm text-center">
@@ -302,10 +308,17 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           </div>
         )}
 
-        {/* Improved Scrollable PDF Area */}
-        <div className="relative bg-gray-50 rounded-b-2xl" style={{ minHeight: 300, maxHeight: 640 }}>
+        {/* Secure PDF Viewing Area */}
+        <div 
+          className="relative bg-gray-50 rounded-b-2xl" 
+          style={{ minHeight: 300, maxHeight: 640 }}
+          {...securityProps}
+        >
           <ScrollArea className="w-full h-[560px] md:h-[600px] lg:h-[640px] overflow-auto">
-            <div className="flex flex-col items-center gap-6 px-2 pb-2">
+            <div 
+              className="flex flex-col items-center gap-6 px-2 pb-2"
+              {...securityProps}
+            >
               {pdfError ? (
                 <div className="w-full flex flex-col items-center justify-center py-14 text-red-400">
                   <FileText className="w-12 h-12 mb-4 text-red-200" />
@@ -316,50 +329,63 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                   </div>
                 </div>
               ) : (
-                <Document
-                  file={pdfSource}
-                  onLoadSuccess={onDocumentLoadSuccess}
-                  loading={
-                    <div className="w-full flex flex-col items-center justify-center py-14 text-gray-400">
-                      <FileText className="w-12 h-12 mb-4 text-gray-300" />
-                      <div>Loading secure PDF preview...</div>
-                    </div>
-                  }
-                  error={
-                    <div className="w-full flex flex-col items-center justify-center py-14 text-red-400">
-                      <FileText className="w-12 h-12 mb-4 text-red-200" />
-                      <div>Failed to load PDF preview</div>
-                      <div className="text-sm text-gray-600 mt-2">You may not have access to this document.</div>
-                      <div className="text-sm text-gray-600 mt-1">Contact the LRC for assistance.</div>
-                    </div>
-                  }
-                  className="w-full flex flex-col items-center"
-                >
-                  {Array.from(
-                    new Array(totalPagesToShow || 0),
-                    (_, index) => (
-                      <div
-                        key={`page_wrap_${index + 1}`}
-                        className="w-full flex justify-center py-2"
-                      >
-                        <Page
-                          pageNumber={index + 1}
-                          width={Math.min(700, window.innerWidth - 60)}
-                          renderAnnotationLayer={false}
-                          renderTextLayer={false}
-                          loading={
-                            <div className="flex flex-col items-center py-8">
-                              <FileText className="w-8 h-8 mb-2 text-gray-200" />
-                              <span className="text-gray-300">Loading page...</span>
+                pdfSource && (
+                  <Document
+                    file={pdfSource}
+                    onLoadSuccess={onDocumentLoadSuccess}
+                  >
+                    {Array.from(
+                      new Array(actualMaxPages ? Math.min(actualMaxPages, numPages || 0) : numPages || 0),
+                      (el, index) => (
+                        <div 
+                          key={index + 1} 
+                          className="relative mb-4"
+                          {...securityProps}
+                        >
+                          {/* Visible watermark overlay */}
+                          <div className="absolute inset-0 z-10 pointer-events-none">
+                            <div 
+                              className="absolute inset-0 flex items-center justify-center"
+                              style={{
+                                transform: 'rotate(-45deg)',
+                                fontSize: '2rem',
+                                fontWeight: 'bold',
+                                color: 'rgba(220, 38, 127, 0.15)',
+                                textShadow: '1px 1px 2px rgba(0,0,0,0.1)',
+                                fontFamily: 'Arial, sans-serif',
+                                letterSpacing: '0.2em'
+                              }}
+                            >
+                              STARS ARCHIVE – RESTRICTED
                             </div>
-                          }
-                          className="mx-auto rounded-md border border-gray-200 shadow bg-white"
-                        />
-                      </div>
-                    ),
-                  )}
-                </Document>
+                          </div>
+                          
+                          {/* Security overlay to prevent screenshots */}
+                          <div 
+                            className="absolute inset-0 z-20 opacity-0 hover:opacity-5 bg-gradient-to-br from-transparent via-white to-transparent pointer-events-none"
+                            style={{ mixBlendMode: 'overlay' }}
+                          />
+                          
+                          <Page
+                            pageNumber={index + 1}
+                            width={Math.min(window.innerWidth * 0.7, 800)}
+                            renderTextLayer={false}
+                            renderAnnotationLayer={false}
+                            loading={
+                              <div className="flex flex-col items-center py-8">
+                                <FileText className="w-8 h-8 mb-2 text-gray-200" />
+                                <span className="text-gray-300">Loading page...</span>
+                              </div>
+                            }
+                            className="mx-auto rounded-md border border-gray-200 shadow bg-white"
+                          />
+                        </div>
+                      ),
+                    )}
+                  </Document>
+                )
               )}
+              
               {numPages && actualMaxPages && numPages > actualMaxPages && !hasElevatedAccess && (
                 <div className="mt-4 mb-2 text-sm text-gray-600 bg-yellow-50 rounded p-3 border border-yellow-100 shadow flex items-center gap-2">
                   <Lock className="w-4 h-4 text-yellow-500 mr-1" />

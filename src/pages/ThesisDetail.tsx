@@ -18,7 +18,8 @@ import {
   Eye,
   Heart,
   MessageCircle,
-  Share2
+  Share2,
+  AlertTriangle
 } from 'lucide-react';
 import ThesisPDFPreviewDialog from '@/components/ThesisPDFPreviewDialog';
 import { useThesis } from '@/hooks/useApi';
@@ -26,6 +27,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Thesis } from '@/types/thesis';
 import { semanticSearchService } from '@/services/semanticSearch';
+import { networkAccessService } from '@/services/networkAccess';
 import { toast } from 'sonner';
 
 const ThesisDetail = () => {
@@ -56,9 +58,23 @@ const ThesisDetail = () => {
   const [showPreview, setShowPreview] = React.useState(false);
   const [relatedTheses, setRelatedTheses] = React.useState<Thesis[]>([]);
   const [loadingRelated, setLoadingRelated] = React.useState(false);
+  const [networkAccess, setNetworkAccess] = React.useState<{allowed: boolean; reason: string} | null>(null);
 
   // Find if this thesis is favorited by the user
   const favoriteEntry = userFavorites?.find(fav => fav.thesis_id === thesis?.id);
+
+  // Check network access on component mount
+  React.useEffect(() => {
+    const checkAccess = async () => {
+      try {
+        const accessResult = await networkAccessService.canAccessPDFsNow();
+        setNetworkAccess(accessResult);
+      } catch (error) {
+        setNetworkAccess({ allowed: false, reason: 'Network check failed' });
+      }
+    };
+    checkAccess();
+  }, []);
 
   // Load related theses when thesis data is available
   React.useEffect(() => {
@@ -152,7 +168,8 @@ const ThesisDetail = () => {
     );
   }
 
-  const canViewPDF = user?.role && ['researcher', 'archivist', 'admin'].includes(user.role);
+  // Enhanced access control: check both user role AND network access
+  const canViewPDF = user?.role && ['researcher', 'archivist', 'admin'].includes(user.role) && networkAccess?.allowed;
 
   const handleCite = () => {
     const citation = `${thesis.author}. (${thesisYearString}). ${thesis.title}. De La Salle Lipa University.`;
@@ -274,26 +291,39 @@ const ThesisDetail = () => {
                   </div>
                   
                   {/* Enhanced PDF Viewer with bigger dimensions */}
-                  {canViewPDF && thesis.file_url ? (
-                    <div className="border border-gray-200 rounded-xl overflow-hidden">
-                      <PDFViewer
-                        pdfUrl={thesis.file_url}
-                        title={thesis.title}
-                        canView={canViewPDF}
-                        maxPages={10}
-                        className="border-0 shadow-none"
-                        thesisId={thesis.id}
-                      />
-                    </div>
-                  ) : (
+          {canViewPDF && thesis.file_url ? (
+            <div className="border border-gray-200 rounded-xl overflow-hidden">
+              <PDFViewer
+                pdfUrl={thesis.file_url}
+                title={thesis.title}
+                canView={canViewPDF}
+                maxPages={10}
+                className="border-0 shadow-none"
+                thesisId={thesis.id}
+              />
+            </div>
+          ) : (
                     <div className="text-center py-16 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
                       <div className="text-gray-400 text-lg mb-2">PDF preview not available</div>
                       <div className="text-gray-500 text-sm">
-                        {!canViewPDF 
-                          ? "Please log in with appropriate permissions to view documents" 
+                        {!user?.role || !['researcher', 'archivist', 'admin'].includes(user.role)
+                          ? "Please log in with appropriate permissions to view documents"
+                          : !networkAccess?.allowed
+                          ? networkAccess?.reason || "Network access required"
                           : "No PDF file available for this thesis"
                         }
                       </div>
+                      {user?.role && ['researcher', 'archivist', 'admin'].includes(user.role) && !networkAccess?.allowed && (
+                        <div className="mt-4 p-4 bg-orange-50 rounded-lg border border-orange-200">
+                          <div className="flex items-center gap-2 text-orange-800 mb-2">
+                            <AlertTriangle className="w-5 h-5" />
+                            <span className="font-medium">Testing Mode Restriction</span>
+                          </div>
+                          <p className="text-sm text-orange-700">
+                            PDF access is currently disabled. Enable Testing Mode in the bottom-right toggle to access documents.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -386,9 +416,9 @@ const ThesisDetail = () => {
           </div>
         </div>
         
-        {/* PDF Secure Preview Dialog */}
+        {/* PDF Secure Preview Dialog - Enhanced with network access checking */}
         <ThesisPDFPreviewDialog
-          open={showPreview}
+          open={showPreview && canViewPDF}
           onOpenChange={setShowPreview}
           pdfUrl={thesis.file_url}
           title={thesis.title}
