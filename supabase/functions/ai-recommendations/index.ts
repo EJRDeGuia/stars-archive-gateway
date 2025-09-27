@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
     const { userId, thesisId, type = 'similar', limit = 5 } = await req.json()
     console.log('Generating recommendations for:', { userId, thesisId, type })
 
-    let recommendations = []
+    let recommendations: any[] = []
 
     if (type === 'similar' && thesisId) {
       // Get similar theses based on keywords and college
@@ -112,9 +112,10 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('AI recommendations error:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+    return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })

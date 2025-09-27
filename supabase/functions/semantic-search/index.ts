@@ -76,7 +76,8 @@ serve(async (req) => {
       return await performKeywordSearch(query, limit, thesisId, supabase, corsHeaders);
     } catch (fallbackError) {
       console.error("Fallback search also failed:", fallbackError);
-      return new Response(JSON.stringify({ error: error.message || String(error) }), {
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      return new Response(JSON.stringify({ error: errorMessage }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -118,17 +119,17 @@ async function performKeywordSearch(query: string, limit: number, thesisId: stri
     if (error) throw error;
     
     // Score results based on keyword relevance
-    const scoredResults = (theses || []).map(thesis => {
+    const scoredResults = (theses || []).map((thesis: any) => {
       let score = 0;
       const titleLower = thesis.title.toLowerCase();
       const abstractLower = (thesis.abstract || '').toLowerCase();
-      const keywordsLower = (thesis.keywords || []).map(k => k.toLowerCase());
+      const keywordsLower = (thesis.keywords || []).map((k: string) => k.toLowerCase());
       
       // Score based on query word matches
       queryWords.forEach(word => {
         if (titleLower.includes(word)) score += 10; // Title matches are most important
         if (abstractLower.includes(word)) score += 5;
-        if (keywordsLower.some(k => k.includes(word))) score += 8;
+        if (keywordsLower.some((k: string) => k.includes(word))) score += 8;
       });
       
       // Boost for view count and recent publications
@@ -143,8 +144,8 @@ async function performKeywordSearch(query: string, limit: number, thesisId: stri
         similarity_score: Math.round(score * 100) / 100
       };
     })
-    .filter(thesis => thesis.similarity_score > 0)
-    .sort((a, b) => b.similarity_score - a.similarity_score)
+    .filter((thesis: any) => thesis.similarity_score > 0)
+    .sort((a: any, b: any) => b.similarity_score - a.similarity_score)
     .slice(0, limit);
     
     console.log(`Keyword search found ${scoredResults.length} results`);
@@ -157,9 +158,10 @@ async function performKeywordSearch(query: string, limit: number, thesisId: stri
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
     
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Keyword search error:', error);
-    return new Response(JSON.stringify({ error: 'Search failed', details: error.message }), {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+    return new Response(JSON.stringify({ error: 'Search failed', details: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

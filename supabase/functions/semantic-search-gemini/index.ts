@@ -64,11 +64,11 @@ serve(async (req) => {
       match_count: Math.min(match_count * 2, 40) // Get more results for hybrid ranking
     });
 
-    let results = semanticResults || [];
+    let searchResults = semanticResults || [];
 
     // If we have a query (not similar_to_thesis), add keyword boost for hybrid search
-    if (query && !similar_to_thesis && results.length > 0) {
-      results = results.map((thesis: any) => {
+    if (query && !similar_to_thesis && searchResults.length > 0) {
+      searchResults = searchResults.map((thesis: any) => {
         let hybridScore = thesis.similarity_score || thesis.similarity || 0;
         
         // Boost score based on keyword matches
@@ -87,7 +87,7 @@ serve(async (req) => {
           similarity_score: Math.min(hybridScore, 1.0),
           similarity: Math.min(hybridScore, 1.0)
         };
-      }).sort((a, b) => (b.similarity_score || b.similarity) - (a.similarity_score || a.similarity))
+      }).sort((a: any, b: any) => (b.similarity_score || b.similarity) - (a.similarity_score || a.similarity))
         .slice(0, match_count); // Trim to requested count after hybrid ranking
     }
 
@@ -96,21 +96,22 @@ serve(async (req) => {
       return await performKeywordSearch(query, match_count, similar_to_thesis, supabase, corsHeaders);
     }
 
-    // Format results
-    const results = data?.map((thesis: any) => ({
+    // Format final results
+    const finalResults = searchResults.map((thesis: any) => ({
       ...thesis,
       similarity: thesis.similarity_score || thesis.similarity
-    })) || [];
+    }));
 
     return new Response(
-      JSON.stringify({ results }),
+      JSON.stringify({ results: finalResults }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in semantic search:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
@@ -262,10 +263,11 @@ async function performKeywordSearch(
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Keyword search error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
