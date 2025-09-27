@@ -1,8 +1,20 @@
+import { supabase } from '@/integrations/supabase/client';
+
 interface NetworkStatus {
   isIntranet: boolean;
   isTestMode: boolean;
   isDevelopment: boolean;
   networkType: 'intranet' | 'external' | 'development';
+  clientIP?: string;
+  reason?: string;
+}
+
+interface NetworkCheckResponse {
+  allowed: boolean;
+  reason: string;
+  networkType: 'authorized' | 'external' | 'localhost';
+  clientIP: string;
+  timestamp: string;
 }
 
 export class NetworkAccessService {
@@ -33,18 +45,30 @@ export class NetworkAccessService {
     return status;
   }
 
-  // New method for PDF access control
-  async canAccessPDFsNow(): Promise<{ allowed: boolean; reason: string }> {
+  // New method for PDF access control with detailed network information
+  async canAccessPDFsNow(): Promise<{ 
+    allowed: boolean; 
+    reason: string; 
+    networkType?: string;
+    clientIP?: string;
+  }> {
     const status = await this.getNetworkStatus();
     
     if (!status.isIntranet) {
       return {
         allowed: false,
-        reason: 'Network access restricted - Connect to LRC intranet to access thesis documents'
+        reason: status.reason || 'Access restricted: Please connect to the authorized Wi-Fi to view this content.',
+        networkType: status.networkType,
+        clientIP: status.clientIP
       };
     }
     
-    return { allowed: true, reason: 'Access granted' };
+    return { 
+      allowed: true, 
+      reason: status.reason || 'Access granted from authorized network',
+      networkType: status.networkType,
+      clientIP: status.clientIP
+    };
   }
 
   private async checkNetworkAccess(): Promise<NetworkStatus> {
@@ -103,15 +127,34 @@ export class NetworkAccessService {
   }
 
   private async checkIntranetAccess(): Promise<boolean> {
-    // This would be implemented with actual network checking logic
-    // For now, we'll use a placeholder that checks IP ranges or calls an edge function
-    
-    // In a real implementation, you might:
-    // 1. Check against known IP ranges for your institution
-    // 2. Call a Supabase Edge Function that does server-side IP checking
-    // 3. Check for specific network characteristics
-    
-    return false; // Default to external access for security
+    try {
+      // Call the Supabase Edge Function for server-side IP verification
+      const { data, error } = await supabase.functions.invoke('network-access-check', {
+        body: {
+          forceCheck: true,
+          userAgent: navigator.userAgent
+        }
+      });
+
+      if (error) {
+        console.error('Network access check failed:', error);
+        return false; // Default to deny access for security
+      }
+
+      const response = data as NetworkCheckResponse;
+      console.log('Network access check result:', response);
+
+      // Cache the network information
+      if (this.cachedStatus) {
+        this.cachedStatus.clientIP = response.clientIP;
+        this.cachedStatus.reason = response.reason;
+      }
+
+      return response.allowed;
+    } catch (error) {
+      console.error('Failed to verify network access:', error);
+      return false; // Default to deny access for security
+    }
   }
 
   enableTestMode(): void {

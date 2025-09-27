@@ -9,23 +9,37 @@ interface NetworkAccessCheckerProps {
 }
 
 const NetworkAccessChecker: React.FC<NetworkAccessCheckerProps> = ({ children }) => {
-  const [isIntranetAccess, setIsIntranetAccess] = useState<boolean | null>(null);
+  const [accessInfo, setAccessInfo] = useState<{
+    allowed: boolean;
+    reason: string;
+    networkType?: string;
+    clientIP?: string;
+  } | null>(null);
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
     const checkNetworkAccess = async () => {
       try {
         const accessResult = await networkAccessService.canAccessPDFsNow();
-        setIsIntranetAccess(accessResult.allowed);
+        setAccessInfo(accessResult);
       } catch (error) {
+        console.error('Network access check failed:', error);
         // Network check failed, assuming external access for security
-        setIsIntranetAccess(false);
+        setAccessInfo({
+          allowed: false,
+          reason: 'Network verification failed. Please check your connection and try again.',
+          networkType: 'external'
+        });
       } finally {
         setIsChecking(false);
       }
     };
 
     checkNetworkAccess();
+    
+    // Re-check network access every 5 minutes
+    const interval = setInterval(checkNetworkAccess, 5 * 60 * 1000);
+    return () => clearInterval(interval);
   }, []);
 
   if (isChecking) {
@@ -39,29 +53,55 @@ const NetworkAccessChecker: React.FC<NetworkAccessCheckerProps> = ({ children })
     );
   }
 
-  if (!isIntranetAccess) {
+  if (accessInfo && !accessInfo.allowed) {
+    const isTestMode = localStorage.getItem('bypassNetworkCheck') === 'true';
+    
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-        <Card className="max-w-md w-full border-orange-200 bg-orange-50">
+        <Card className="max-w-md w-full border-red-200 bg-red-50">
           <CardContent className="p-8 text-center">
-            <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <WifiOff className="w-8 h-8 text-orange-600" />
+            <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <WifiOff className="w-8 h-8 text-red-600" />
             </div>
-            <h2 className="text-2xl font-bold text-orange-900 mb-4">Restricted Access</h2>
-            <p className="text-orange-700 mb-6">
-              Access to thesis documents is restricted to users connected to the De La Salle Lipa University Learning Resource Center (LRC) intranet.
+            <h2 className="text-2xl font-bold text-red-900 mb-4">Wi-Fi Access Restricted</h2>
+            <p className="text-red-700 mb-6">
+              {accessInfo.reason}
             </p>
-            <div className="bg-orange-100 rounded-lg p-4 mb-6">
-              <div className="flex items-center gap-2 text-orange-800">
+            
+            <div className="bg-red-100 rounded-lg p-4 mb-6">
+              <div className="flex items-center gap-2 text-red-800 mb-2">
                 <AlertTriangle className="w-5 h-5" />
-                <span className="font-medium">Network Access Required</span>
+                <span className="font-medium">Authorized Wi-Fi Required</span>
               </div>
-              <p className="text-sm text-orange-700 mt-2">
-                Please connect to the LRC network to access thesis materials.
+              <p className="text-sm text-red-700">
+                Please connect to the De La Salle Lipa University Learning Resource Center (LRC) Wi-Fi network to access thesis materials.
               </p>
             </div>
-            <p className="text-sm text-orange-600">
-              Contact the LRC staff for assistance with network access.
+
+            {accessInfo.clientIP && (
+              <div className="bg-gray-100 rounded-lg p-3 mb-4">
+                <p className="text-xs text-gray-600">
+                  <span className="font-medium">Your IP:</span> {accessInfo.clientIP}
+                </p>
+                <p className="text-xs text-gray-600">
+                  <span className="font-medium">Network Type:</span> {accessInfo.networkType || 'External'}
+                </p>
+              </div>
+            )}
+
+            {isTestMode && (
+              <div className="bg-amber-100 border border-amber-300 rounded-lg p-3 mb-4">
+                <p className="text-sm text-amber-800 font-medium">
+                  ⚠️ Testing Mode Active
+                </p>
+                <p className="text-xs text-amber-700">
+                  Wi-Fi restrictions are currently bypassed for testing
+                </p>
+              </div>
+            )}
+            
+            <p className="text-sm text-red-600">
+              Contact the LRC staff for assistance with network access or if you believe this is an error.
             </p>
           </CardContent>
         </Card>

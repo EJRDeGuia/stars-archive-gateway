@@ -1,5 +1,8 @@
 project_id = "cylsbcjqemluouxblywl"
 
+[functions.network-access-check]
+verify_jwt = false
+
 [functions.semantic-search]
 verify_jwt = false
 
