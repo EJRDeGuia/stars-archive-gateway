@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import TestingModeToggle from "@/components/TestingModeToggle";
+import NetworkAccessChecker from "@/components/NetworkAccessChecker";
 import { PageSkeleton } from "@/utils/lazyLoading";
 import { logger } from "@/services/logger";
 
@@ -68,11 +69,12 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <Router>
         <AuthProvider>
-          <div className="min-h-screen bg-background">
-            <Toaster />
-            <TestingModeToggle />
-            <Suspense fallback={<PageSkeleton />}>
-              <Routes>
+          <NetworkAccessChecker>
+            <div className="min-h-screen bg-background">
+              <Toaster />
+              <TestingModeToggle />
+              <Suspense fallback={<PageSkeleton />}>
+                <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
@@ -124,9 +126,10 @@ function App() {
               
               {/* 404 Route */}
               <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </div>
+                </Routes>
+              </Suspense>
+            </div>
+          </NetworkAccessChecker>
         </AuthProvider>
       </Router>
     </QueryClientProvider>

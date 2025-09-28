@@ -56,6 +56,21 @@ const NetworkAccessChecker: React.FC<NetworkAccessCheckerProps> = ({ children })
   if (accessInfo && !accessInfo.allowed) {
     const isTestMode = localStorage.getItem('bypassNetworkCheck') === 'true';
     
+    // If test mode is enabled, allow access but show a warning indicator
+    if (isTestMode) {
+      return (
+        <div className="relative">
+          <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-amber-100 border border-amber-300 rounded-lg p-3 shadow-lg">
+            <p className="text-sm text-amber-800 font-medium flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              Testing Mode: Wi-Fi restrictions bypassed
+            </p>
+          </div>
+          {children}
+        </div>
+      );
+    }
+    
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
         <Card className="max-w-md w-full border-red-200 bg-red-50">

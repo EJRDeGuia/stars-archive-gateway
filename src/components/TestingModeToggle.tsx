@@ -9,12 +9,12 @@ const TestingModeToggle: React.FC = () => {
   const { user } = useAuth();
   const isTestingMode = localStorage.getItem('bypassNetworkCheck') === 'true';
 
-  // Only show to admins and archivists
-  const canUseToggle = user && ['admin', 'archivist'].includes(user.role);
+  // Show to admins, archivists, and researchers for testing
+  const canUseToggle = user && ['admin', 'archivist', 'researcher'].includes(user.role);
 
   const toggleTestingMode = () => {
     if (!canUseToggle) {
-      alert('Access denied: Only administrators and archivists can use the network bypass toggle.');
+      alert('Access denied: Only authorized users can use the network bypass toggle.');
       return;
     }
 
@@ -55,7 +55,7 @@ const TestingModeToggle: React.FC = () => {
         <div className="mt-3 p-2 bg-amber-50 rounded-lg">
           <p className="text-xs text-amber-700 font-medium flex items-center gap-1">
             <TestTube className="w-3 h-3" />
-            Admin Testing Tool
+            Testing Tool
           </p>
           <p className="text-xs text-amber-600 mt-1">
             Bypasses Wi-Fi restrictions for testing purposes
