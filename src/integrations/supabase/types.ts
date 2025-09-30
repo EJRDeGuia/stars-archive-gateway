@@ -1498,6 +1498,10 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
+      is_authorized_network: {
+        Args: { _ip_address: unknown }
+        Returns: boolean
+      }
       ivfflat_bit_support: {
         Args: { "": unknown }
         Returns: unknown
