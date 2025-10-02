@@ -20,6 +20,7 @@ const AdvancedSearch = lazy(() => import("@/pages/AdvancedSearch"));
 const AdvancedSearchPage = lazy(() => import("@/pages/AdvancedSearchPage"));
 const ArchivistDashboard = lazy(() => import("@/pages/ArchivistDashboard"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
+const ResearcherDashboard = lazy(() => import("@/pages/ResearcherDashboard"));
 const CollegePage = lazy(() => import("@/pages/CollegePage"));
 const Explore = lazy(() => import("@/pages/Explore"));
 const Collections = lazy(() => import("@/pages/Collections"));
@@ -103,6 +104,9 @@ function App() {
               <Route path="/archivist" element={<ProtectedRoute requiredRole="archivist"><ArchivistDashboard /></ProtectedRoute>} />
               <Route path="/manage-records" element={<ProtectedRoute requiredRole="archivist"><ManageRecords /></ProtectedRoute>} />
               <Route path="/manage-collections" element={<ProtectedRoute requiredRole="archivist"><ManageCollections /></ProtectedRoute>} />
+              
+              {/* Researcher Dashboard */}
+              <Route path="/researcher" element={<ProtectedRoute requiredRole="researcher"><ResearcherDashboard /></ProtectedRoute>} />
               
               {/* Admin Routes */}
               <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />

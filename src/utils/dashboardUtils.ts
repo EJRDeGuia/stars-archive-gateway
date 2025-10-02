@@ -15,8 +15,9 @@ export const getDashboardPath = (role: UserRole | string | undefined): string =>
       return '/archivist';
     case 'researcher':
     case 'guest_researcher':
+      return '/researcher';
     default:
-      return '/library'; // Researchers go to library as their main dashboard
+      return '/researcher'; // Default to researcher dashboard
   }
 };
 
@@ -31,7 +32,8 @@ export const getDashboardName = (role: UserRole | string | undefined): string =>
       return 'Archivist Dashboard';
     case 'researcher':
     case 'guest_researcher':
+      return 'Researcher Dashboard';
     default:
-      return 'Library';
+      return 'Researcher Dashboard';
   }
 };

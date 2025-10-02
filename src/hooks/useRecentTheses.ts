@@ -7,6 +7,8 @@ interface RecentThesis {
   id: string;
   title: string;
   author: string;
+  abstract?: string;
+  view_count?: number;
   college_name?: string;
   publish_date?: string;
 }
@@ -36,6 +38,8 @@ export function useRecentTheses() {
               id,
               title,
               author,
+              abstract,
+              view_count,
               publish_date,
               colleges (
                 name
@@ -57,6 +61,8 @@ export function useRecentTheses() {
           id: view.theses.id,
           title: view.theses.title,
           author: view.theses.author,
+          abstract: view.theses.abstract,
+          view_count: view.theses.view_count,
           college_name: view.theses.colleges?.name,
           publish_date: view.theses.publish_date
         })) || [];
