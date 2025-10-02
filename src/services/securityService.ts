@@ -306,10 +306,22 @@ class SecurityService {
   /**
    * Validate file access permissions
    */
-  async validateFileAccess(thesisId: string): Promise<boolean> {
+  async validateFileAccess(thesisId: string, userId?: string): Promise<boolean> {
     try {
+      // Get current user if not provided
+      if (!userId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return false;
+        userId = user.id;
+      }
+
+      // Check for bypass mode
+      const bypassEnabled = localStorage.getItem('bypassNetworkCheck') === 'true';
+
       const { data, error } = await supabase.rpc('can_access_thesis_file', {
-        _thesis_id: thesisId
+        _thesis_id: thesisId,
+        _user_id: userId,
+        _bypass_network_check: bypassEnabled
       });
 
       if (error) throw error;

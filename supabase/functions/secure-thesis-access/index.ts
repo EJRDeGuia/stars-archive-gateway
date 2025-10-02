@@ -52,10 +52,15 @@ serve(async (req) => {
     }
 
     // Check if user can access this thesis file using our secure function
+    // Check if bypass mode is enabled (from query param or testing mode)
+    const bypassParam = url.searchParams.get('bypass');
+    const bypassEnabled = bypassParam === 'true';
+
     const { data: canAccess, error: accessError } = await supabaseClient
       .rpc('can_access_thesis_file', { 
         _thesis_id: thesisId,
-        _user_id: user.id 
+        _user_id: user.id,
+        _bypass_network_check: bypassEnabled
       });
 
     if (accessError) {

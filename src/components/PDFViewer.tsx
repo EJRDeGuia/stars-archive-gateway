@@ -120,6 +120,12 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       const params = new URLSearchParams();
       params.set('thesisId', thesisId);
       params.set('path', storagePath);
+      
+      // Pass bypass parameter if testing mode is enabled
+      const bypassEnabled = localStorage.getItem('bypassNetworkCheck') === 'true';
+      if (bypassEnabled) {
+        params.set('bypass', 'true');
+      }
 
       setPdfSource({
         url: `https://cylsbcjqemluouxblywl.supabase.co/functions/v1/secure-thesis-access?${params.toString()}`,
