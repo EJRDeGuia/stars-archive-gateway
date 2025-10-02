@@ -1297,7 +1297,13 @@ export type Database = {
         Returns: unknown
       }
       can_access_thesis_file: {
-        Args: { _thesis_id: string; _user_id: string }
+        Args:
+          | {
+              _bypass_network_check?: boolean
+              _thesis_id: string
+              _user_id: string
+            }
+          | { _thesis_id: string; _user_id: string }
         Returns: boolean
       }
       check_failed_login_attempts: {
