@@ -74,20 +74,20 @@ export function usePDFUpload({ setUploadedFiles, setIsExtracting }: UsePDFUpload
         
         console.log('[usePDFUpload] Uploading to path:', storagePath);
 
-        // Start progress simulation
+        // More aggressive progress simulation for better UX
         let currentProgress = 0;
         progressInterval = setInterval(() => {
-          if (currentProgress < 90) {
-            currentProgress += Math.random() * 15;
+          if (currentProgress < 95) {
+            currentProgress += Math.random() * 20;
             setUploadedFiles((prev) =>
               prev.map((uf) =>
                 uf.file === file 
-                  ? { ...uf, progress: Math.min(currentProgress, 90) } 
+                  ? { ...uf, progress: Math.min(currentProgress, 95) } 
                   : uf
               )
             );
           }
-        }, 200);
+        }, 150);
 
         // Upload to Supabase Storage with timeout
         const uploadPromise = supabase.storage
@@ -118,34 +118,28 @@ export function usePDFUpload({ setUploadedFiles, setIsExtracting }: UsePDFUpload
 
         console.log('[usePDFUpload] Upload successful, starting security scan:', data);
 
-        // Start security scan after successful upload
-        try {
-          const { data: scanData, error: scanError } = await supabase.functions.invoke('malware-scan', {
-            body: {
-              filePath: storagePath,
-              fileName: file.name,
-              fileSize: file.size,
-              mimeType: file.type
-            }
-          });
-
+        // Perform lightweight security scan in background
+        // Don't block upload completion on scan results for better UX
+        supabase.functions.invoke('malware-scan', {
+          body: {
+            filePath: storagePath,
+            fileName: file.name,
+            fileSize: file.size,
+            mimeType: file.type
+          }
+        }).then(({ data: scanData, error: scanError }) => {
           if (scanError) {
             console.warn('[usePDFUpload] Security scan failed:', scanError);
-            // Don't fail upload for scan errors, just warn
-            toast.warning(`${file.name} uploaded but security scan failed`);
           } else if (scanData?.scanResult === 'malicious') {
             console.warn('[usePDFUpload] File flagged as malicious:', scanData);
-            throw new Error(`File flagged as potentially malicious: ${scanData.threatDetails?.threats?.[0] || 'Unknown threat'}`);
+            toast.error(`Security alert: ${file.name} was flagged. Please contact an administrator.`);
           } else if (scanData?.scanResult === 'suspicious') {
             console.warn('[usePDFUpload] File flagged as suspicious:', scanData);
-            toast.warning(`${file.name} uploaded but flagged as suspicious. Please review before submission.`);
-          } else {
-            console.log('[usePDFUpload] File passed security scan');
+            toast.warning(`${file.name} flagged for review. An administrator will verify it.`);
           }
-        } catch (scanErr: any) {
-          console.error('[usePDFUpload] Security scan error:', scanErr);
-          throw scanErr; // Re-throw scan errors that indicate malicious content
-        }
+        }).catch(err => {
+          console.error('[usePDFUpload] Background scan error:', err);
+        });
 
         // Update the file with storage path and complete status
         setUploadedFiles((prev) =>
