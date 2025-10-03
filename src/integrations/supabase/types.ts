@@ -387,6 +387,7 @@ export type Database = {
       file_scan_results: {
         Row: {
           created_at: string
+          file_name: string | null
           file_path: string
           id: string
           quarantined: boolean
@@ -398,6 +399,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          file_name?: string | null
           file_path: string
           id?: string
           quarantined?: boolean
@@ -409,6 +411,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          file_name?: string | null
           file_path?: string
           id?: string
           quarantined?: boolean
@@ -1330,6 +1333,13 @@ export type Database = {
       cleanup_expired_sessions: {
         Args: Record<PropertyKey, never>
         Returns: number
+      }
+      cleanup_orphaned_theses: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          deleted_count: number
+          deleted_ids: string[]
+        }[]
       }
       comprehensive_audit_log: {
         Args: {
