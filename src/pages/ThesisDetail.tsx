@@ -18,7 +18,8 @@ import {
   Heart,
   MessageCircle,
   Share2,
-  AlertTriangle
+  AlertTriangle,
+  FileText
 } from 'lucide-react';
 import ThesisPDFPreviewDialog from '@/components/ThesisPDFPreviewDialog';
 import { useThesis } from '@/hooks/useApi';
@@ -329,6 +330,15 @@ const ThesisDetail = () => {
                 <div className="p-6">
                   <h3 className="text-xl font-bold text-gray-900 mb-6">Actions</h3>
                   <div className="space-y-4">
+                    {!networkAccess?.allowed && user?.role === 'researcher' && (
+                      <Button 
+                        className="w-full bg-dlsl-green hover:bg-dlsl-green/90 rounded-xl py-3"
+                        onClick={() => navigate(`/request-access/${thesis.id}`)}
+                      >
+                        <FileText className="mr-2 h-5 w-5" />
+                        Request PDF Access
+                      </Button>
+                    )}
                     <Button 
                       variant="outline" 
                       className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl py-3"

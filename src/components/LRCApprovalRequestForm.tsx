@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useLRCApproval } from '@/hooks/useLRCApproval';
 import { FileText, Lock, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface LRCApprovalRequestFormProps {
   thesisId: string;
@@ -28,18 +29,37 @@ const LRCApprovalRequestForm: React.FC<LRCApprovalRequestFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!justification.trim()) {
+    // Comprehensive validation
+    const trimmedJustification = justification.trim();
+    
+    if (!trimmedJustification) {
+      toast.error('Please provide a justification for your request');
       return;
     }
 
-    const result = await submitApprovalRequest({
-      thesisId,
-      requestType,
-      justification
-    });
+    if (trimmedJustification.length < 50) {
+      toast.error('Justification must be at least 50 characters long');
+      return;
+    }
 
-    if (result.success && onSuccess) {
-      onSuccess();
+    if (!thesisId) {
+      toast.error('Invalid thesis ID');
+      return;
+    }
+
+    try {
+      const result = await submitApprovalRequest({
+        thesisId,
+        requestType,
+        justification: trimmedJustification
+      });
+
+      if (result.success && onSuccess) {
+        onSuccess();
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      toast.error('An unexpected error occurred. Please try again.');
     }
   };
 

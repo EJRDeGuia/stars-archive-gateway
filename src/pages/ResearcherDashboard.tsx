@@ -6,6 +6,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import CollegeGrid from '@/components/dashboard/CollegeGrid';
+import MyAccessRequests from '@/components/researcher/MyAccessRequests';
+import { useRequestNotifications } from '@/hooks/useRequestNotifications';
 import { 
   Heart, 
   FolderOpen, 
@@ -13,7 +15,8 @@ import {
   Library as LibraryIcon,
   FileText,
   Eye,
-  Calendar
+  Calendar,
+  ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -25,6 +28,9 @@ const ResearcherDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { recentTheses = [], isLoading: loadingRecent } = useRecentTheses();
+  
+  // Enable request notifications
+  useRequestNotifications();
   
   // Fetch user's favorites count
   const { data: favoritesCount = 0 } = useQuery({
@@ -212,6 +218,11 @@ const ResearcherDashboard = () => {
 
           {/* College Cards Section */}
           <CollegeGrid />
+
+          {/* My Access Requests Section */}
+          <div className="mb-12">
+            <MyAccessRequests />
+          </div>
 
           {/* Recent Theses */}
           <div>

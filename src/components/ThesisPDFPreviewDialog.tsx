@@ -67,7 +67,7 @@ const ThesisPDFPreviewDialog: React.FC<ThesisPDFPreviewDialogProps> = ({
               thesisId={thesisId}
             />
             <div className="px-8 py-3 text-center text-gray-500 text-xs bg-dlsl-green/5 border-t border-dlsl-green/10">
-              Only the first 10 pages are visible in this secure preview. Copying, screenshots, and printing are disabled to protect author rights.
+              Only the first 10 pages are visible in this secure preview to protect author rights.
             </div>
           </div>
         </div>

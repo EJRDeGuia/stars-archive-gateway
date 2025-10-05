@@ -17,12 +17,39 @@ export const useLRCApproval = () => {
   const submitApprovalRequest = async ({ thesisId, requestType, justification }: LRCApprovalRequest) => {
     setIsLoading(true);
     try {
+      // Validate inputs
+      if (!thesisId || !requestType || !justification.trim()) {
+        toast.error('All fields are required');
+        return { success: false, error: 'Invalid input' };
+      }
+
+      if (justification.trim().length < 50) {
+        toast.error('Justification must be at least 50 characters');
+        return { success: false, error: 'Justification too short' };
+      }
+
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        throw new Error('User not authenticated');
+        toast.error('Please log in to submit a request');
+        return { success: false, error: 'User not authenticated' };
       }
 
+      // Check for existing pending request
+      const { data: existingRequest } = await supabase
+        .from('lrc_approval_requests')
+        .select('id, status')
+        .eq('thesis_id', thesisId)
+        .eq('user_id', user.id)
+        .eq('status', 'pending')
+        .maybeSingle();
+
+      if (existingRequest) {
+        toast.error('You already have a pending request for this thesis');
+        return { success: false, error: 'Duplicate request' };
+      }
+
+      // Submit the request
       const { data, error } = await supabase
         .from('lrc_approval_requests')
         .insert({
@@ -35,11 +62,13 @@ export const useLRCApproval = () => {
         .single();
 
       if (error) {
-        if (error.code === '23505') { // Unique constraint violation
+        if (error.code === '23505') {
           toast.error('You already have a pending request for this thesis');
           return { success: false, error: 'Duplicate request' };
         }
-        throw error;
+        console.error('Database error:', error);
+        toast.error('Failed to submit request. Please try again.');
+        return { success: false, error: error.message };
       }
 
       // Log the request
@@ -53,12 +82,12 @@ export const useLRCApproval = () => {
         }
       });
 
-      toast.success('Access request submitted successfully. You will be notified when reviewed.');
+      toast.success('Access request submitted successfully! You will receive an email notification when reviewed.');
       return { success: true, data };
 
     } catch (error: any) {
       console.error('LRC approval request failed:', error);
-      toast.error('Failed to submit request. Please try again.');
+      toast.error('An unexpected error occurred. Please try again or contact support.');
       return { success: false, error: error.message };
     } finally {
       setIsLoading(false);

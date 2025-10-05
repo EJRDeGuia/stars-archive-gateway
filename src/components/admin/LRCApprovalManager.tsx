@@ -77,12 +77,34 @@ const LRCApprovalManager: React.FC = () => {
       status: 'approved' | 'rejected'; 
       notes?: string;
     }) => {
+      // Validate inputs
+      if (!id || !status) {
+        throw new Error('Invalid request data');
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      // Check if request still exists and is pending
+      const { data: currentRequest, error: checkError } = await supabase
+        .from('lrc_approval_requests')
+        .select('id, status, user_id, theses(title)')
+        .eq('id', id)
+        .single();
+
+      if (checkError || !currentRequest) {
+        throw new Error('Request not found');
+      }
+
+      if (currentRequest.status !== 'pending') {
+        throw new Error('This request has already been reviewed');
+      }
 
       const updates: any = {
         status,
-        reviewer_notes: notes,
+        reviewer_notes: notes?.trim() || null,
         reviewed_at: new Date().toISOString(),
         reviewed_by: user.id
       };
@@ -99,17 +121,33 @@ const LRCApprovalManager: React.FC = () => {
         .update(updates)
         .eq('id', id);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Update error:', error);
+        throw new Error('Failed to update request status');
+      }
+
+      // TODO: Send email notification to requester
+      // This would ideally be handled by a database trigger or edge function
+      
+      return { status, requesterId: currentRequest.user_id };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['lrc-approval-requests'] });
-      toast.success('Request updated successfully');
+      const action = data.status === 'approved' ? 'approved' : 'rejected';
+      toast.success(`Request ${action} successfully. User will be notified via email.`);
       setSelectedRequest(null);
       setReviewerNotes('');
     },
     onError: (error: any) => {
       console.error('Failed to update request:', error);
-      toast.error('Failed to update request');
+      if (error.message.includes('already been reviewed')) {
+        toast.error('This request has already been reviewed by another admin');
+      } else if (error.message.includes('not found')) {
+        toast.error('Request not found. It may have been deleted.');
+      } else {
+        toast.error('Failed to update request. Please try again.');
+      }
+      queryClient.invalidateQueries({ queryKey: ['lrc-approval-requests'] });
     },
   });
 
@@ -120,6 +158,12 @@ const LRCApprovalManager: React.FC = () => {
 
   const handleApprove = () => {
     if (!selectedRequest) return;
+    
+    if (!reviewerNotes.trim()) {
+      toast.warning('Please add a note explaining your approval decision');
+      return;
+    }
+    
     updateRequestMutation.mutate({
       id: selectedRequest.id,
       status: 'approved',
@@ -129,6 +173,12 @@ const LRCApprovalManager: React.FC = () => {
 
   const handleReject = () => {
     if (!selectedRequest) return;
+    
+    if (!reviewerNotes.trim()) {
+      toast.error('Please add a note explaining why the request is being rejected');
+      return;
+    }
+    
     updateRequestMutation.mutate({
       id: selectedRequest.id,
       status: 'rejected',
@@ -320,13 +370,19 @@ const LRCApprovalManager: React.FC = () => {
 
               {/* Reviewer Notes */}
               <div>
-                <h4 className="font-semibold mb-2">Reviewer Notes</h4>
+                <h4 className="font-semibold mb-2">Reviewer Notes *</h4>
                 <Textarea
                   value={reviewerNotes}
                   onChange={(e) => setReviewerNotes(e.target.value)}
-                  placeholder="Add notes about your decision..."
-                  rows={3}
+                  placeholder="Required: Add notes explaining your decision. This will be included in the notification email to the requester."
+                  rows={4}
+                  className={reviewerNotes.trim().length < 10 ? 'border-yellow-300' : ''}
                 />
+                {reviewerNotes.trim().length > 0 && reviewerNotes.trim().length < 10 && (
+                  <p className="text-xs text-yellow-600 mt-1">
+                    Please provide a more detailed explanation (at least 10 characters)
+                  </p>
+                )}
               </div>
 
               {/* Actions */}

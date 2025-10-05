@@ -272,7 +272,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                 </h3>
                 <p className="text-sm text-gray-600 flex items-center gap-2">
                   <Lock className="w-4 h-4" />
-                  Secure Preview • Watermarked • Screenshot Protected
+                  Secure Preview • Watermarked
                 </p>
               </div>
             </div>

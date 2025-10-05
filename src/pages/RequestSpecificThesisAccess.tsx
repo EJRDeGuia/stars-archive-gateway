@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LRCApprovalRequestForm from '@/components/LRCApprovalRequestForm';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -107,54 +108,56 @@ const RequestSpecificThesisAccess = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col">
-      <Header />
-      
-      <main className="flex-1 py-12 px-4">
-        <div className="container max-w-4xl mx-auto">
-          {/* Back Button */}
-          <Button
-            variant="ghost"
-            onClick={handleCancel}
-            className="mb-6"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col">
+        <Header />
+        
+        <main className="flex-1 py-12 px-4">
+          <div className="container max-w-4xl mx-auto">
+            {/* Back Button */}
+            <Button
+              variant="ghost"
+              onClick={handleCancel}
+              className="mb-6"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
 
-          {/* Thesis Information */}
-          <Card className="mb-6">
-            <CardContent className="p-6">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                {thesis.title}
-              </h1>
-              <div className="space-y-1 text-sm text-gray-600">
-                <p><span className="font-medium">Author:</span> {thesis.author}</p>
-                {thesis.colleges && (
-                  <p><span className="font-medium">College:</span> {thesis.colleges.name}</p>
-                )}
-              </div>
-              {thesis.abstract && (
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                  <p className="text-sm font-medium text-gray-700 mb-2">Abstract</p>
-                  <p className="text-sm text-gray-600 line-clamp-3">{thesis.abstract}</p>
+            {/* Thesis Information */}
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                  {thesis.title}
+                </h1>
+                <div className="space-y-1 text-sm text-gray-600">
+                  <p><span className="font-medium">Author:</span> {thesis.author}</p>
+                  {thesis.colleges && (
+                    <p><span className="font-medium">College:</span> {thesis.colleges.name}</p>
+                  )}
                 </div>
-              )}
-            </CardContent>
-          </Card>
+                {thesis.abstract && (
+                  <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                    <p className="text-sm font-medium text-gray-700 mb-2">Abstract</p>
+                    <p className="text-sm text-gray-600 line-clamp-3">{thesis.abstract}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-          {/* Request Form */}
-          <LRCApprovalRequestForm
-            thesisId={thesis.id}
-            thesisTitle={thesis.title}
-            onSuccess={handleSuccess}
-            onCancel={handleCancel}
-          />
-        </div>
-      </main>
+            {/* Request Form */}
+            <LRCApprovalRequestForm
+              thesisId={thesis.id}
+              thesisTitle={thesis.title}
+              onSuccess={handleSuccess}
+              onCancel={handleCancel}
+            />
+          </div>
+        </main>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </ErrorBoundary>
   );
 };
 
