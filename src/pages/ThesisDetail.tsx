@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -29,6 +28,7 @@ import type { Thesis } from '@/types/thesis';
 import { semanticSearchService } from '@/services/semanticSearch';
 import { networkAccessService } from '@/services/networkAccess';
 import { toast } from 'sonner';
+import { useViewTracking } from '@/hooks/useViewTracking';
 
 const ThesisDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -37,6 +37,9 @@ const ThesisDetail = () => {
   const queryClient = useQueryClient();
 
   const { data: thesis, isLoading, error } = useThesis(id || "") as { data: Thesis | undefined, isLoading: boolean, error: any };
+  
+  // Track view count with anti-spam logic
+  useViewTracking(thesis?.id);
   
   // Fetch user favorites to check if this thesis is favorited
   const { data: userFavorites } = useQuery({
@@ -303,7 +306,7 @@ const ThesisDetail = () => {
               />
             </div>
           ) : (
-                    <div className="text-center py-16 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                       <div className="text-center py-16 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
                       <div className="text-gray-400 text-lg mb-2">PDF preview not available</div>
                       <div className="text-gray-500 text-sm">
                         {!user?.role || !['researcher', 'archivist', 'admin'].includes(user.role)
@@ -313,17 +316,6 @@ const ThesisDetail = () => {
                           : "No PDF file available for this thesis"
                         }
                       </div>
-                      {user?.role && ['researcher', 'archivist', 'admin'].includes(user.role) && !networkAccess?.allowed && (
-                        <div className="mt-4 p-4 bg-orange-50 rounded-lg border border-orange-200">
-                          <div className="flex items-center gap-2 text-orange-800 mb-2">
-                            <AlertTriangle className="w-5 h-5" />
-                            <span className="font-medium">Testing Mode Restriction</span>
-                          </div>
-                          <p className="text-sm text-orange-700">
-                            PDF access is currently disabled. Enable Testing Mode in the bottom-right toggle to access documents.
-                          </p>
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>

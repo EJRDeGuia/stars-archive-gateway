@@ -4,17 +4,12 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import CollegeGrid from '@/components/dashboard/CollegeGrid';
 import { 
-  Search, 
-  BookOpen, 
   Heart, 
   FolderOpen, 
-  TrendingUp,
-  Sparkles,
   Clock,
-  Star,
   Library as LibraryIcon,
   FileText,
   Eye,
@@ -29,7 +24,6 @@ import { useRecentTheses } from '@/hooks/useRecentTheses';
 const ResearcherDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [searchQuery, setSearchQuery] = useState('');
   const { recentTheses = [], isLoading: loadingRecent } = useRecentTheses();
   
   // Fetch user's favorites count
@@ -80,28 +74,7 @@ const ResearcherDashboard = () => {
     },
   });
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search/enhanced?q=${encodeURIComponent(searchQuery)}`);
-    }
-  };
-
   const quickActions = [
-    {
-      icon: Search,
-      title: 'Search Theses',
-      description: 'Find research papers',
-      onClick: () => navigate('/explore'),
-      color: 'from-blue-500 to-blue-600'
-    },
-    {
-      icon: BookOpen,
-      title: 'Browse Colleges',
-      description: 'Explore by department',
-      onClick: () => navigate('/explore'),
-      color: 'from-green-500 to-green-600'
-    },
     {
       icon: FolderOpen,
       title: 'Collections',
@@ -110,11 +83,11 @@ const ResearcherDashboard = () => {
       color: 'from-purple-500 to-purple-600'
     },
     {
-      icon: Sparkles,
-      title: 'AI Search',
-      description: 'Semantic search',
-      onClick: () => navigate('/search/ai'),
-      color: 'from-pink-500 to-pink-600'
+      icon: Heart,
+      title: 'My Library',
+      description: 'Saved favorites',
+      onClick: () => navigate('/library'),
+      color: 'from-red-500 to-red-600'
     }
   ];
 
@@ -188,40 +161,33 @@ const ResearcherDashboard = () => {
             ))}
           </div>
 
-          {/* Search Section */}
-          <Card className="mb-12 bg-gradient-to-br from-dlsl-green to-emerald-600 text-white border-0">
+          {/* Explore Button */}
+          <Card className="mb-12 bg-gradient-to-br from-dlsl-green to-emerald-600 text-white border-0 hover:shadow-xl transition-shadow cursor-pointer" onClick={() => navigate('/explore')}>
             <CardContent className="p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
-                  <Search className="w-6 h-6 text-white" />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
+                    <FileText className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold mb-1">Explore Research</h2>
+                    <p className="text-white/90 text-lg">Use AI-powered search to find theses</p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-2xl font-bold">Find Research</h2>
-                  <p className="text-white/90">Search through thousands of theses</p>
-                </div>
-              </div>
-              
-              <form onSubmit={handleSearch} className="flex gap-3">
-                <Input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by title, author, keywords..."
-                  className="flex-1 h-14 bg-white border-0 text-gray-900 placeholder:text-gray-500"
-                />
                 <Button 
-                  type="submit"
-                  className="h-14 px-8 bg-white text-dlsl-green hover:bg-gray-100"
+                  className="h-14 px-8 bg-white text-dlsl-green hover:bg-gray-100 text-lg font-semibold"
+                  onClick={() => navigate('/explore')}
                 >
-                  Search
+                  Start Exploring →
                 </Button>
-              </form>
+              </div>
             </CardContent>
           </Card>
 
           {/* Quick Actions */}
           <div className="mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl">
               {quickActions.map((action, index) => (
                 <Card 
                   key={index}
@@ -243,6 +209,9 @@ const ResearcherDashboard = () => {
               ))}
             </div>
           </div>
+
+          {/* College Cards Section */}
+          <CollegeGrid />
 
           {/* Recent Theses */}
           <div>
