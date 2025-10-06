@@ -40,6 +40,7 @@ const SystemSettings = lazy(() => import("@/pages/SystemSettings"));
 const SecurityMonitor = lazy(() => import("@/pages/SecurityMonitor"));
 const RequestThesisAccess = lazy(() => import("@/pages/RequestThesisAccess"));
 const RequestSpecificThesisAccess = lazy(() => import("@/pages/RequestSpecificThesisAccess"));
+const ApprovedThesesAccess = lazy(() => import("@/pages/ApprovedThesesAccess"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const ContentManagement = lazy(() => import("@/pages/ContentManagement"));
 const AboutContentManager = lazy(() => import("@/pages/AboutContentManager"));
@@ -95,6 +96,7 @@ function App() {
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
               <Route path="/request-access" element={<ProtectedRoute><RequestThesisAccess /></ProtectedRoute>} />
               <Route path="/request-access/:id" element={<ProtectedRoute><RequestSpecificThesisAccess /></ProtectedRoute>} />
+              <Route path="/approved-access" element={<ProtectedRoute><ApprovedThesesAccess /></ProtectedRoute>} />
               
               {/* Search Routes */}
               <Route path="/search/enhanced" element={<ProtectedRoute><EnhancedSearch /></ProtectedRoute>} />

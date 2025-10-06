@@ -10,6 +10,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Eye, Check, X, Clock, FileText, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import PDFViewer from '@/components/PDFViewer';
 
 interface LRCApprovalRequest {
   id: string;
@@ -34,11 +36,15 @@ interface LRCApprovalRequest {
 }
 
 const LRCApprovalManager: React.FC = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedRequest, setSelectedRequest] = useState<LRCApprovalRequest | null>(null);
   const [reviewerNotes, setReviewerNotes] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
+  
+  // Check if user is archivist (only archivists can approve)
+  const isArchivist = user?.role === 'archivist';
 
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ['lrc-approval-requests', filterStatus],
@@ -109,10 +115,10 @@ const LRCApprovalManager: React.FC = () => {
         reviewed_by: user.id
       };
 
-      // Set expiration date if approved (30 days from now)
+      // Set expiration date if approved (24 hours from now)
       if (status === 'approved') {
         const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + 30);
+        expiresAt.setHours(expiresAt.getHours() + 24); // 24-hour access
         updates.expires_at = expiresAt.toISOString();
       }
 
@@ -159,8 +165,13 @@ const LRCApprovalManager: React.FC = () => {
   const handleApprove = () => {
     if (!selectedRequest) return;
     
-    if (!reviewerNotes.trim()) {
-      toast.warning('Please add a note explaining your approval decision');
+    if (!isArchivist) {
+      toast.error('Only archivists can approve thesis access requests');
+      return;
+    }
+    
+    if (!reviewerNotes.trim() || reviewerNotes.trim().length < 10) {
+      toast.warning('Please add a detailed note explaining your approval decision (at least 10 characters)');
       return;
     }
     
@@ -174,8 +185,13 @@ const LRCApprovalManager: React.FC = () => {
   const handleReject = () => {
     if (!selectedRequest) return;
     
-    if (!reviewerNotes.trim()) {
-      toast.error('Please add a note explaining why the request is being rejected');
+    if (!isArchivist) {
+      toast.error('Only archivists can reject thesis access requests');
+      return;
+    }
+    
+    if (!reviewerNotes.trim() || reviewerNotes.trim().length < 10) {
+      toast.error('Please add a detailed note explaining why the request is being rejected (at least 10 characters)');
       return;
     }
     
@@ -368,6 +384,21 @@ const LRCApprovalManager: React.FC = () => {
                 </div>
               </div>
 
+              {/* PDF Preview for Review */}
+              <div>
+                <h4 className="font-semibold mb-2">Thesis Preview</h4>
+                <div className="border rounded-lg overflow-hidden">
+                  <PDFViewer
+                    pdfUrl={`thesis-pdfs/${selectedRequest.thesis_id}.pdf`}
+                    title={selectedRequest.theses.title}
+                    canView={true}
+                    maxPages={5}
+                    thesisId={selectedRequest.thesis_id}
+                    className="max-h-[400px]"
+                  />
+                </div>
+              </div>
+
               {/* Reviewer Notes */}
               <div>
                 <h4 className="font-semibold mb-2">Reviewer Notes *</h4>
@@ -387,24 +418,33 @@ const LRCApprovalManager: React.FC = () => {
 
               {/* Actions */}
               {selectedRequest.status === 'pending' && (
-                <div className="flex gap-2 justify-end pt-4">
-                  <Button
-                    variant="destructive"
-                    onClick={handleReject}
-                    disabled={updateRequestMutation.isPending}
-                  >
-                    <X className="h-4 w-4 mr-2" />
-                    Reject
-                  </Button>
-                  <Button
-                    onClick={handleApprove}
-                    disabled={updateRequestMutation.isPending}
-                    className="bg-dlsl-green hover:bg-dlsl-green/90"
-                  >
-                    <Check className="h-4 w-4 mr-2" />
-                    Approve
-                  </Button>
-                </div>
+                <>
+                  {!isArchivist && (
+                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-sm text-yellow-800">
+                        <strong>View Only:</strong> Only archivists can approve or reject thesis access requests. Admins have view-only access for monitoring.
+                      </p>
+                    </div>
+                  )}
+                  <div className="flex gap-2 justify-end pt-4">
+                    <Button
+                      variant="destructive"
+                      onClick={handleReject}
+                      disabled={updateRequestMutation.isPending || !isArchivist}
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Reject
+                    </Button>
+                    <Button
+                      onClick={handleApprove}
+                      disabled={updateRequestMutation.isPending || !isArchivist}
+                      className="bg-dlsl-green hover:bg-dlsl-green/90"
+                    >
+                      <Check className="h-4 w-4 mr-2" />
+                      Approve (24h Access)
+                    </Button>
+                  </div>
+                </>
               )}
 
               {selectedRequest.status !== 'pending' && (

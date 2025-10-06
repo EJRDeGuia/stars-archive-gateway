@@ -41,8 +41,31 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   // Check if user has elevated access (archivist or admin)
   const hasElevatedAccess = user && ['archivist', 'admin'].includes(user.role);
   
-  // Determine actual max pages based on user role
-  const actualMaxPages = hasElevatedAccess ? undefined : (maxPages || 10);
+  // Check if user has approved access to this specific thesis
+  const [hasApprovedAccess, setHasApprovedAccess] = useState(false);
+  
+  useEffect(() => {
+    const checkApprovedAccess = async () => {
+      if (!thesisId || !user || hasElevatedAccess) return;
+      
+      const { data } = await supabase
+        .from('lrc_approval_requests')
+        .select('id, status, expires_at')
+        .eq('thesis_id', thesisId)
+        .eq('user_id', user.id)
+        .eq('status', 'approved')
+        .gt('expires_at', new Date().toISOString())
+        .maybeSingle();
+      
+      setHasApprovedAccess(!!data);
+    };
+    
+    checkApprovedAccess();
+  }, [thesisId, user, hasElevatedAccess]);
+  
+  // Determine actual max pages based on user role and approval status
+  // Non-approved users see only 3 pages, approved users see full document
+  const actualMaxPages = hasElevatedAccess || hasApprovedAccess ? undefined : (maxPages || 3);
 
   const [pdfSource, setPdfSource] = useState<string | { url: string; httpHeaders: Record<string, string> } | null>(null);
 

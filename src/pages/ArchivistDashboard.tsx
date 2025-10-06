@@ -9,7 +9,8 @@ import OptimizedStatisticsCards from '@/components/archivist/OptimizedStatistics
 import ArchivistQuickActions from '@/components/archivist/ArchivistQuickActions';
 import CollegeGrid from '@/components/dashboard/CollegeGrid';
 import RecentUploads from '@/components/archivist/RecentUploads';
-import AccessRequestsManager from '@/components/archivist/AccessRequestsManager';
+import LRCApprovalManager from '@/components/admin/LRCApprovalManager';
+import ThesisRequestsTracker from '@/components/admin/ThesisRequestsTracker';
 import { useOptimizedArchivistData } from '@/hooks/useOptimizedArchivistData';
 import ViewsChart from "@/components/analytics/ViewsChart";
 import { useOptimizedAnalytics } from "@/hooks/useOptimizedAnalytics";
@@ -88,9 +89,14 @@ const ArchivistDashboard = () => {
               <OptimizedStatisticsCards />
               <ArchivistQuickActions onActionClick={handleQuickAction} />
               
-              {/* Access Requests Management */}
+              {/* Thesis Requests Tracking */}
               <div className="mb-12">
-                <AccessRequestsManager />
+                <ThesisRequestsTracker />
+              </div>
+              
+              {/* LRC Approval Management */}
+              <div className="mb-12">
+                <LRCApprovalManager />
               </div>
               
               <CollegeGrid />

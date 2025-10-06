@@ -16,7 +16,8 @@ import {
   FileText,
   Eye,
   Calendar,
-  ShieldCheck
+  ShieldCheck,
+  CheckCircle
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -218,6 +219,31 @@ const ResearcherDashboard = () => {
 
           {/* College Cards Section */}
           <CollegeGrid />
+
+          {/* Approved Thesis Access Button */}
+          <div className="mb-12">
+            <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/approved-access')}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center">
+                      <CheckCircle className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900">Approved Thesis Access</h3>
+                      <p className="text-sm text-gray-600">View theses you have active access to (24-hour limited)</p>
+                    </div>
+                  </div>
+                  <Button
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    View Approved Access
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* My Access Requests Section */}
           <div className="mb-12">

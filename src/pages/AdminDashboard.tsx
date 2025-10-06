@@ -17,6 +17,7 @@ import ViewsChart from "@/components/analytics/ViewsChart";
 import { useSystemAnalytics } from "@/hooks/useSystemAnalytics";
 import SystemValidation from '@/components/admin/SystemValidation';
 import LRCApprovalManager from '@/components/admin/LRCApprovalManager';
+import ThesisRequestsTracker from '@/components/admin/ThesisRequestsTracker';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -111,6 +112,9 @@ const AdminDashboard = () => {
         </div>
         <div className="mb-12">
           <SystemValidation />
+        </div>
+        <div className="mb-12">
+          <ThesisRequestsTracker />
         </div>
         <div className="mb-12">
           <LRCApprovalManager />
