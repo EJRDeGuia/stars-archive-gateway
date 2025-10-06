@@ -295,13 +295,12 @@ const ThesisDetail = () => {
                   </div>
                   
                   {/* Enhanced PDF Viewer with bigger dimensions */}
-          {canViewPDF && thesis.file_url ? (
+           {canViewPDF && thesis.file_url ? (
             <div className="border border-gray-200 rounded-xl overflow-hidden">
               <PDFViewer
                 pdfUrl={thesis.file_url}
                 title={thesis.title}
                 canView={canViewPDF}
-                maxPages={10}
                 className="border-0 shadow-none"
                 thesisId={thesis.id}
               />
