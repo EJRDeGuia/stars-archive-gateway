@@ -63,11 +63,10 @@ const ThesisPDFPreviewDialog: React.FC<ThesisPDFPreviewDialogProps> = ({
               pdfUrl={pdfUrl}
               title={title}
               canView={true}
-              maxPages={10}
               thesisId={thesisId}
             />
             <div className="px-8 py-3 text-center text-gray-500 text-xs bg-dlsl-green/5 border-t border-dlsl-green/10">
-              Only the first 10 pages are visible in this secure preview to protect author rights.
+              Preview limited to first 3 pages. Request access for full viewing.
             </div>
           </div>
         </div>

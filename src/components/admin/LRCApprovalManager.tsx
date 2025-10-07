@@ -115,10 +115,10 @@ const LRCApprovalManager: React.FC = () => {
         reviewed_by: user.id
       };
 
-      // Set expiration date if approved (24 hours from now)
+      // Set expiration date if approved (30 minutes from now)
       if (status === 'approved') {
         const expiresAt = new Date();
-        expiresAt.setHours(expiresAt.getHours() + 24); // 24-hour access
+        expiresAt.setMinutes(expiresAt.getMinutes() + 30); // 30-minute access
         updates.expires_at = expiresAt.toISOString();
       }
 
@@ -441,7 +441,7 @@ const LRCApprovalManager: React.FC = () => {
                       className="bg-dlsl-green hover:bg-dlsl-green/90"
                     >
                       <Check className="h-4 w-4 mr-2" />
-                      Approve (24h Access)
+                      Approve (30 min Access)
                     </Button>
                   </div>
                 </>

@@ -64,8 +64,11 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   }, [thesisId, user, hasElevatedAccess]);
   
   // Determine actual max pages based on user role and approval status
-  // Non-approved users see only 3 pages, approved users see full document
-  const actualMaxPages = hasElevatedAccess || hasApprovedAccess ? undefined : (maxPages || 3);
+  // Non-approved users ALWAYS see only 3 pages regardless of maxPages prop
+  // Approved users and elevated roles see full document or specified maxPages
+  const actualMaxPages = hasElevatedAccess || hasApprovedAccess 
+    ? maxPages  // Elevated users can see maxPages or full document (undefined)
+    : 3;        // Everyone else limited to 3 pages
 
   const [pdfSource, setPdfSource] = useState<string | { url: string; httpHeaders: Record<string, string> } | null>(null);
 

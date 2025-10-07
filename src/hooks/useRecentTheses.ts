@@ -19,52 +19,48 @@ export function useRecentTheses() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!user?.id) {
-      console.log('No user ID, skipping recent theses fetch');
-      return;
-    }
+    // Fetch recent theses regardless of user (public data)
+    // User is only needed for auth context, not for filtering
 
     const fetchRecentTheses = async () => {
       setIsLoading(true);
       try {
-        console.log('Fetching recent theses for user:', user.id);
+        console.log('Fetching recently added theses');
         
+        // Fetch the most recently uploaded theses (not user-specific views)
         const { data, error } = await supabase
-          .from('thesis_views')
+          .from('theses')
           .select(`
-            thesis_id,
-            viewed_at,
-            theses!inner (
-              id,
-              title,
-              author,
-              abstract,
-              view_count,
-              publish_date,
-              colleges (
-                name
-              )
+            id,
+            title,
+            author,
+            abstract,
+            view_count,
+            publish_date,
+            created_at,
+            colleges (
+              name
             )
           `)
-          .eq('user_id', user.id)
-          .order('viewed_at', { ascending: false })
-          .limit(3);
+          .eq('status', 'approved')
+          .order('created_at', { ascending: false })
+          .limit(6);
 
         if (error) {
           console.error('Error fetching recent theses:', error);
           throw error;
         }
 
-        console.log('Recent theses data:', data);
+        console.log('Recently added theses data:', data);
 
-        const recent = data?.map(view => ({
-          id: view.theses.id,
-          title: view.theses.title,
-          author: view.theses.author,
-          abstract: view.theses.abstract,
-          view_count: view.theses.view_count,
-          college_name: view.theses.colleges?.name,
-          publish_date: view.theses.publish_date
+        const recent = data?.map(thesis => ({
+          id: thesis.id,
+          title: thesis.title,
+          author: thesis.author,
+          abstract: thesis.abstract,
+          view_count: thesis.view_count,
+          college_name: thesis.colleges?.name,
+          publish_date: thesis.publish_date
         })) || [];
 
         console.log('Processed recent theses:', recent);
@@ -78,7 +74,7 @@ export function useRecentTheses() {
     };
 
     fetchRecentTheses();
-  }, [user?.id]);
+  }, []); // Fetch once on mount
 
   return { recentTheses, isLoading };
 }
