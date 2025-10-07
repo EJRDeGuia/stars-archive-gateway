@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, User, GraduationCap, FileText, Check, X } from 'lucide-react';
+import { Calendar, User, GraduationCap, FileText, Check, X, Maximize2 } from 'lucide-react';
 import PDFViewer from '@/components/PDFViewer';
 
 interface ThesisReviewDialogProps {
@@ -30,6 +30,8 @@ const ThesisReviewDialog: React.FC<ThesisReviewDialogProps> = ({
   isLoading,
   userRole
 }) => {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  
   if (!thesis) return null;
 
   const getStatusBadge = (status: string) => {
@@ -159,7 +161,18 @@ const ThesisReviewDialog: React.FC<ThesisReviewDialogProps> = ({
 
           {/* Right Column - PDF Viewer */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Document Preview</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Document Preview</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsFullscreen(true)}
+                className="flex items-center gap-2"
+              >
+                <Maximize2 className="w-4 h-4" />
+                Fullscreen
+              </Button>
+            </div>
             {userRole === 'admin' && (
               <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
                 <p className="text-green-800 text-sm">
@@ -167,16 +180,45 @@ const ThesisReviewDialog: React.FC<ThesisReviewDialogProps> = ({
                 </p>
               </div>
             )}
+            <div className="border rounded-lg overflow-hidden">
+              <PDFViewer
+                pdfUrl={thesis.pdf_url || thesis.file_url}
+                title={thesis.title}
+                canView={canViewPDF}
+                className="h-[600px]"
+                thesisId={thesis.id}
+              />
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+
+      {/* Fullscreen PDF Dialog */}
+      <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-0">
+          <DialogHeader className="p-4 border-b">
+            <div className="flex items-center justify-between">
+              <DialogTitle>{thesis.title} - Full Document</DialogTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsFullscreen(false)}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </DialogHeader>
+          <div className="w-full h-[calc(95vh-80px)] overflow-auto">
             <PDFViewer
               pdfUrl={thesis.pdf_url || thesis.file_url}
               title={thesis.title}
               canView={canViewPDF}
-              className="h-[600px]"
+              className="h-full"
               thesisId={thesis.id}
             />
           </div>
-        </div>
-      </DialogContent>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 };
