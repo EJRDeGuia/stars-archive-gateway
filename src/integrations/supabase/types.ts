@@ -1330,6 +1330,10 @@ export type Database = {
         }
         Returns: Json
       }
+      cleanup_expired_notifications: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       cleanup_expired_sessions: {
         Args: Record<PropertyKey, never>
         Returns: number
@@ -1406,7 +1410,7 @@ export type Database = {
         Returns: string
       }
       generate_security_report: {
-        Args: { _end_date?: string; _start_date?: string }
+        Args: { _end_date: string; _start_date: string }
         Returns: Json
       }
       generate_watermark: {
