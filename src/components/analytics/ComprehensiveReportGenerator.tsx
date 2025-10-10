@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FileText, Download, Calendar, TrendingUp, Users, Shield } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ReportGeneratorProps {
   onGenerateReport?: (reportConfig: ReportConfig) => void;
@@ -125,16 +126,46 @@ const ComprehensiveReportGenerator: React.FC<ReportGeneratorProps> = ({
     setIsGenerating(true);
     
     try {
-      // Simulate report generation
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Generate real report from backend
+      const { data, error } = await supabase.functions.invoke('security-report-generator', {
+        body: {
+          action: reportType === 'security' ? 'generate_report' : 'generate_report',
+          data: {
+            startDate,
+            endDate,
+            reportType: reportConfig.type,
+            format: reportConfig.format
+          }
+        }
+      });
+
+      if (error) throw error;
+      if (!data.success) throw new Error(data.message || 'Report generation failed');
+
+      // For download format, trigger download
+      if (format === 'csv' || format === 'pdf') {
+        const downloadResponse = await supabase.functions.invoke('security-report-generator', {
+          body: {
+            action: 'download_report',
+            data: {
+              startDate,
+              endDate,
+              format: reportConfig.format
+            }
+          }
+        });
+
+        if (downloadResponse.error) throw downloadResponse.error;
+      }
       
       if (onGenerateReport) {
         onGenerateReport(reportConfig);
       }
       
       toast.success(`${reportTypes.find(t => t.value === reportType)?.label} generated successfully!`);
-    } catch (error) {
-      toast.error('Failed to generate report. Please try again.');
+    } catch (error: any) {
+      console.error('Report generation error:', error);
+      toast.error(error.message || 'Failed to generate report. Please try again.');
     } finally {
       setIsGenerating(false);
     }

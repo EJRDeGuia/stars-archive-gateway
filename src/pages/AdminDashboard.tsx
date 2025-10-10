@@ -9,6 +9,7 @@ import { Shield } from 'lucide-react';
 import React from 'react';
 import { useAdminDashboardData } from '@/hooks/useAdminDashboardData';
 import { useNotificationCleanup } from '@/hooks/useNotificationCleanup';
+import { useSecurityAlerting } from '@/hooks/useSecurityAlerting';
 import AdminStatsGrid from '@/components/admin/AdminStatsGrid';
 import AdminCollegesOverview from '@/components/admin/AdminCollegesOverview';
 import AdminRecentActivity from '@/components/admin/AdminRecentActivity';
@@ -26,6 +27,9 @@ const AdminDashboard = () => {
   
   // Enable automatic notification cleanup
   useNotificationCleanup();
+  
+  // Enable real-time security alerting
+  useSecurityAlerting();
 
   // Use custom hook to fetch admin dashboard data
   const { colleges, collegesLoading, theses, thesesLoading } = useAdminDashboardData();
